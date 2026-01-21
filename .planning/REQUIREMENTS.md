@@ -91,35 +91,35 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CYCLE-01 | TBD | Pending |
-| CYCLE-02 | TBD | Pending |
-| CYCLE-03 | TBD | Pending |
-| CYCLE-04 | TBD | Pending |
-| CONF-01 | TBD | Pending |
-| CONF-02 | TBD | Pending |
-| CONF-03 | TBD | Pending |
-| CONF-04 | TBD | Pending |
-| INV-01 | TBD | Pending |
-| INV-02 | TBD | Pending |
-| INV-03 | TBD | Pending |
-| INV-04 | TBD | Pending |
-| CHAR-01 | TBD | Pending |
-| CHAR-02 | TBD | Pending |
-| CHAR-03 | TBD | Pending |
-| CHAR-04 | TBD | Pending |
-| SAVE-01 | TBD | Pending |
-| SAVE-02 | TBD | Pending |
-| PROC-01 | TBD | Pending |
-| PROC-02 | TBD | Pending |
-| UI-01 | TBD | Pending |
-| UI-02 | TBD | Pending |
-| UI-03 | TBD | Pending |
+| CYCLE-01 | Phase 2 | Pending |
+| CYCLE-02 | Phase 2 | Pending |
+| CYCLE-03 | Phase 2 | Pending |
+| CYCLE-04 | Phase 2 | Pending |
+| CONF-01 | Phase 3 | Pending |
+| CONF-02 | Phase 3 | Pending |
+| CONF-03 | Phase 3 | Pending |
+| CONF-04 | Phase 3 | Pending |
+| INV-01 | Phase 5 | Pending |
+| INV-02 | Phase 5 | Pending |
+| INV-03 | Phase 5 | Pending |
+| INV-04 | Phase 5 | Pending |
+| CHAR-01 | Phase 4 | Pending |
+| CHAR-02 | Phase 4 | Pending |
+| CHAR-03 | Phase 4 | Pending |
+| CHAR-04 | Phase 4 | Pending |
+| SAVE-01 | Phase 7 | Pending |
+| SAVE-02 | Phase 7 | Pending |
+| PROC-01 | Phase 6 | Pending |
+| PROC-02 | Phase 6 | Pending |
+| UI-01 | Phase 1 | Pending |
+| UI-02 | Phase 1 | Pending |
+| UI-03 | Phase 2 | Pending |
 
 **Coverage:**
 - v1 requirements: 23 total
-- Mapped to phases: 0
-- Unmapped: 23 ⚠️
+- Mapped to phases: 23
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-20*
-*Last updated: 2026-01-20 after initial definition*
+*Last updated: 2026-01-20 after roadmap creation*
