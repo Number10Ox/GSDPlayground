@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** The player must be able to arrive in a procedurally generated town, discover its moral rot through investigation and NPC interaction, and resolve conflicts using the escalating stakes system — experiencing the weight of judgment that defines Dogs in the Vineyard.
-**Current focus:** Phase 2 - Cycle System
+**Current focus:** Phase 2.1 - E2E Testing Infrastructure
 
 ## Current Position
 
-Phase: 2 of 7 (Cycle System)
-Plan: 4 of 4 in current phase
-Status: Phase complete
-Last activity: 2026-01-22 — Completed 02-04-PLAN.md (Cycle UI Components)
+Phase: 2.1 of 7 (E2E Testing Infrastructure)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-01-21 — Completed 02.1-01-PLAN.md (Playwright Setup)
 
-Progress: [██████░░░░] 43%
+Progress: [██████░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
+- Total plans completed: 7
 - Average duration: 4 min
-- Total execution time: 0.4 hours
+- Total execution time: 0.5 hours
 
 **By Phase:**
 
@@ -29,10 +29,11 @@ Progress: [██████░░░░] 43%
 |-------|-------|-------|----------|
 | 01-foundation | 2 | 7 min | 3.5 min |
 | 02-cycle-system | 4 | 17 min | 4.25 min |
+| 02.1-e2e-testing | 1 | 4 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (2min), 02-01 (4min), 02-02 (3min), 02-03 (2min), 02-04 (8min)
-- Trend: Stable (02-04 longer due to checkpoint interaction)
+- Last 5 plans: 02-01 (4min), 02-02 (3min), 02-03 (2min), 02-04 (8min), 02.1-01 (4min)
+- Trend: Stable
 
 *Updated after each plan completion*
 
@@ -62,6 +63,9 @@ Recent decisions affecting current work:
 - [02-04]: AvailableAction type distinct from GameAction reducer union
 - [02-04]: CycleView single orchestration component for all phases
 - [02-04]: Action panel fixed position (temporary scaffolding, refine later)
+- [02.1-01]: Chromium-only Playwright project (add browsers later if needed)
+- [02.1-01]: data-testid attributes over CSS selectors for E2E stability
+- [02.1-01]: webServer config auto-starts Vite dev server for tests
 
 ### Pending Todos
 
@@ -70,11 +74,12 @@ None yet.
 ### Blockers/Concerns
 
 - Node v20+ required for development (Vite 7.3 requirement)
+- Node v18.19+ required for Playwright ESM (current: 18.16.1)
 
 ## Session Continuity
 
-Last session: 2026-01-22
-Stopped at: Completed Phase 2 (Cycle System) - all 4 plans
+Last session: 2026-01-21
+Stopped at: Completed 02.1-01-PLAN.md (Playwright Setup)
 Resume file: None
 
 ## Phase 2 Completion Notes
