@@ -9,17 +9,17 @@ See: .planning/PROJECT.md (updated 2026-01-20)
 
 ## Current Position
 
-Phase: 2.1 of 7 (E2E Testing Infrastructure)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-01-22 — Completed Phase 2.1 (E2E Testing Infrastructure)
+Phase: 3 of 7 (Conflict System)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-01-22 — Completed 03-01-PLAN.md (Conflict Foundation)
 
-Progress: [███████░░░] 65%
+Progress: [████████░░] 70%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
+- Total plans completed: 9
 - Average duration: 4 min
 - Total execution time: 0.5 hours
 
@@ -30,9 +30,10 @@ Progress: [███████░░░] 65%
 | 01-foundation | 2 | 7 min | 3.5 min |
 | 02-cycle-system | 4 | 17 min | 4.25 min |
 | 02.1-e2e-testing | 2 | 8 min | 4 min |
+| 03-conflict-system | 1 | 3 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (3min), 02-03 (2min), 02-04 (8min), 02.1-01 (4min), 02.1-02 (4min)
+- Last 5 plans: 02-03 (2min), 02-04 (8min), 02.1-01 (4min), 02.1-02 (4min), 03-01 (3min)
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -68,6 +69,10 @@ Recent decisions affecting current work:
 - [02.1-01]: webServer config auto-starts Vite dev server for tests
 - [02.1-02]: Step definitions as helper functions (not cucumber-style) for flexibility
 - [02.1-02]: data-testid includes semantic data attributes (data-die-type, data-action-id)
+- [03-01]: Discriminated union for ConflictState prevents invalid state combinations at compile time
+- [03-01]: Turn guards (PLAYER_RAISE/NPC_SEE etc) enforce valid action order in reducer
+- [03-01]: Silent fail pattern returns state unchanged on invalid actions (consistent with Phase 2)
+- [03-01]: CSS variables on document.body for global atmosphere theming
 
 ### Pending Todos
 
@@ -80,7 +85,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 02.1-02-PLAN.md (Cycle System E2E Tests)
+Stopped at: Completed 03-01-PLAN.md (Conflict Foundation)
 Resume file: None
 
 ## Phase 2 Completion Notes
@@ -101,3 +106,13 @@ E2E testing infrastructure complete:
 - data-testid attributes on all interactive components
 - Bug fixed: END_CYCLE was skipping REST phase
 - Test fix: Use global actions (Pray for Guidance) that are available from any location
+
+## Phase 3 Progress Notes
+
+Plan 03-01 complete. Conflict foundation in place:
+- ConflictState discriminated union (INACTIVE/ACTIVE/RESOLVED)
+- conflictReducer with phase and turn guards
+- Fallout calculation per DitV rules (7/11/15/19 thresholds)
+- useConflictAtmosphere hook for escalation theming
+
+Ready for Plan 03-02 (Conflict UI).
