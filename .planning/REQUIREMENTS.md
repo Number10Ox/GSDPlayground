@@ -9,10 +9,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Cycle System
 
-- [ ] **CYCLE-01**: Player experiences daily cycle structure (wake → allocate dice → take actions → end day)
-- [ ] **CYCLE-02**: Player receives dice pool based on character condition
-- [ ] **CYCLE-03**: Player sees dice values before deciding where to allocate them
-- [ ] **CYCLE-04**: Clocks advance threats and opportunities over time
+- [x] **CYCLE-01**: Player experiences daily cycle structure (wake → allocate dice → take actions → end day)
+- [x] **CYCLE-02**: Player receives dice pool based on character condition
+- [x] **CYCLE-03**: Player sees dice values before deciding where to allocate them
+- [x] **CYCLE-04**: Clocks advance threats and opportunities over time
 
 ### Conflict System
 
@@ -49,7 +49,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [ ] **UI-01**: Text-heavy, minimal visual style (like Citizen Sleeper)
 - [ ] **UI-02**: Readable text with appropriate sizing
-- [ ] **UI-03**: Dice visualization for allocation and conflicts
+- [x] **UI-03**: Dice visualization for allocation and conflicts
 
 ## v2 Requirements
 
@@ -91,10 +91,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CYCLE-01 | Phase 2 | Pending |
-| CYCLE-02 | Phase 2 | Pending |
-| CYCLE-03 | Phase 2 | Pending |
-| CYCLE-04 | Phase 2 | Pending |
+| CYCLE-01 | Phase 2 | Complete |
+| CYCLE-02 | Phase 2 | Complete |
+| CYCLE-03 | Phase 2 | Complete |
+| CYCLE-04 | Phase 2 | Complete |
 | CONF-01 | Phase 3 | Pending |
 | CONF-02 | Phase 3 | Pending |
 | CONF-03 | Phase 3 | Pending |
@@ -113,7 +113,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PROC-02 | Phase 6 | Pending |
 | UI-01 | Phase 1 | Complete |
 | UI-02 | Phase 1 | Complete |
-| UI-03 | Phase 2 | Pending |
+| UI-03 | Phase 2 | Complete |
 
 **Coverage:**
 - v1 requirements: 23 total
@@ -122,4 +122,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-20*
-*Last updated: 2026-01-21 after Phase 1 completion*
+*Last updated: 2026-01-22 after Phase 2 completion*
