@@ -30,10 +30,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Character
 
-- [ ] **CHAR-01**: Character has stats/traits that affect dice pools
-- [ ] **CHAR-02**: Character has inventory (coat, gun, Book of Life, sacred earth)
-- [ ] **CHAR-03**: Character gains traits from conflict fallout
-- [ ] **CHAR-04**: Character has relationships with NPCs that affect conflicts
+- [x] **CHAR-01**: Character has stats/traits that affect dice pools
+- [x] **CHAR-02**: Character has inventory (coat, gun, Book of Life, sacred earth)
+- [x] **CHAR-03**: Character gains traits from conflict fallout
+- [x] **CHAR-04**: Character has relationships with NPCs that affect conflicts
 
 ### Persistence
 

@@ -14,7 +14,7 @@ This roadmap delivers a browser-based CRPG adapting Dogs in the Vineyard. The jo
 - [x] **Phase 2: Cycle System** - Daily cycle structure with dice pool generation and allocation
 - [x] **Phase 2.1: E2E Testing Infrastructure** - Playwright + BDD setup with cycle system tests (INSERTED)
 - [x] **Phase 3: Conflict System** - DitV escalation, raise/see mechanics, and fallout
-- [ ] **Phase 4: Character System** - Stats, traits, inventory, and relationships affecting gameplay
+- [x] **Phase 4: Character System** - Stats, traits, inventory, and relationships affecting gameplay
 - [ ] **Phase 5: Investigation** - NPC dialogue, sin progression discovery, and resolution paths
 - [ ] **Phase 6: Town Generation** - Sin progression templates and NPC relationship generation
 - [ ] **Phase 7: Persistence** - Save/load system with manual and automatic saves
@@ -109,11 +109,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Character types, Immer reducer, and context provider (foundation for all character features)
-- [ ] 04-02-PLAN.md — Stat display with icons, character creation UI, stat-based dice pool generation
-- [ ] 04-03-PLAN.md — Inventory display, trait list, and mid-conflict trait/item invocation
-- [ ] 04-04-PLAN.md — Fallout-to-trait conversion and relationship dice in conflicts
-- [ ] 04-05-PLAN.md — Character system E2E tests (BDD feature file, step helpers, Playwright specs)
+- [x] 04-01-PLAN.md — Character types, Immer reducer, and context provider (foundation for all character features)
+- [x] 04-02-PLAN.md — Stat display with icons, character creation UI, stat-based dice pool generation
+- [x] 04-03-PLAN.md — Inventory display, trait list, and mid-conflict trait/item invocation
+- [x] 04-04-PLAN.md — Fallout-to-trait conversion and relationship dice in conflicts
+- [x] 04-05-PLAN.md — Character system E2E tests (BDD feature file, step helpers, Playwright specs)
 
 ### Phase 5: Investigation
 **Goal**: Player can investigate NPCs to discover the town's sin progression and find resolution paths
@@ -179,12 +179,12 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7
 | 2. Cycle System | 4/4 | Complete | 2026-01-22 |
 | 2.1 E2E Testing | 2/2 | Complete | 2026-01-22 |
 | 3. Conflict System | 5/5 | Complete | 2026-01-22 |
-| 4. Character System | 0/5 | Not started | - |
+| 4. Character System | 5/5 | Complete | 2026-01-22 |
 | 5. Investigation | 0/5 | Not started | - |
 | 6. Town Generation | 0/5 | Not started | - |
 | 7. Persistence | 0/4 | Not started | - |
 
-**Total:** 13/32 plans complete
+**Total:** 18/32 plans complete
 
 ---
 *Roadmap created: 2026-01-20*
