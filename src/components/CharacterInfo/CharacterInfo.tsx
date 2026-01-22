@@ -3,13 +3,17 @@ import { useGameState } from '@/hooks/useGameState';
 import { StatDisplay } from '@/components/Character/StatDisplay';
 import type { StatName } from '@/types/character';
 
+interface CharacterInfoProps {
+  onCreateCharacter?: () => void;
+}
+
 /**
  * CharacterInfo - Sidebar widget showing character stats and cycle info.
  *
  * When character exists: shows name, all four stats (compact mode), cycle number, condition.
  * When character is null: shows "Create Character" prompt.
  */
-export function CharacterInfo() {
+export function CharacterInfo({ onCreateCharacter }: CharacterInfoProps) {
   const { character } = useCharacter();
   const { state } = useGameState();
 
@@ -24,6 +28,7 @@ export function CharacterInfo() {
         <p className="text-gray-400 text-sm">No character yet.</p>
         <button
           data-testid="create-character-button"
+          onClick={onCreateCharacter}
           className="w-full py-2 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-lg transition-colors"
         >
           Create Character

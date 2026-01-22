@@ -3,11 +3,13 @@ import { AnimatePresence } from 'framer-motion';
 import { NodeMap } from '@/components/NodeMap/NodeMap';
 import { NarrativePanel } from '@/components/NarrativePanel/NarrativePanel';
 import { CharacterInfo } from '@/components/CharacterInfo/CharacterInfo';
+import { CharacterCreation } from '@/components/Character/CharacterCreation';
 import { CycleView } from '@/components/CycleView/CycleView';
 import { ClockList } from '@/components/Clocks/ClockList';
 import { ConflictMarker, RelationshipPanel } from '@/components/NPCMemory';
 import { ConflictView } from '@/components/Conflict/ConflictView';
 import { useGameState } from '@/hooks/useGameState';
+import { useCharacter } from '@/hooks/useCharacter';
 import { useNPCMemory } from '@/hooks/useNPCMemory';
 import { initialConflictState, conflictReducer } from '@/reducers/conflictReducer';
 import type { ConflictState } from '@/types/conflict';
@@ -15,11 +17,15 @@ import type { Die } from '@/types/game';
 
 export function GameView() {
   const { state, dispatch } = useGameState();
+  const { character } = useCharacter();
   const { clocks, cycleNumber, cyclePhase, currentLocation, locations, activeConflict } = state;
   const { npcs } = useNPCMemory();
 
   // Track selected NPC for relationship panel
   const [selectedNpcId, setSelectedNpcId] = useState<string | null>(null);
+
+  // Character creation modal state
+  const [showCreation, setShowCreation] = useState(false);
 
   // Conflict state for ConflictView (dev mode test conflicts)
   const [conflictState, setConflictState] = useState<ConflictState | null>(null);
@@ -99,7 +105,7 @@ export function GameView() {
 
       {/* Sidebar: character info, clocks, location */}
       <aside className="flex flex-col gap-4">
-        <CharacterInfo />
+        <CharacterInfo onCreateCharacter={() => setShowCreation(true)} />
 
         {/* Cycle status */}
         <div className="bg-surface rounded-lg p-4">
@@ -195,6 +201,11 @@ export function GameView() {
           npcName="Sheriff Jacob"
           onComplete={handleConflictComplete}
         />
+      )}
+
+      {/* Character creation (overlay) - shows when user clicks Create Character */}
+      {!character && showCreation && (
+        <CharacterCreation onComplete={() => setShowCreation(false)} />
       )}
     </div>
   );
