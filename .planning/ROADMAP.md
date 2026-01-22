@@ -10,7 +10,7 @@ This roadmap delivers a browser-based CRPG adapting Dogs in the Vineyard. The jo
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 1: Foundation** - Preact/Vite/TypeScript setup with minimal text-heavy UI shell
+- [ ] **Phase 1: Foundation** - React/Vite/TypeScript setup with minimal text-heavy UI shell
 - [ ] **Phase 2: Cycle System** - Daily cycle structure with dice pool generation and allocation
 - [ ] **Phase 3: Conflict System** - DitV escalation, raise/see mechanics, and fallout
 - [ ] **Phase 4: Character System** - Stats, traits, inventory, and relationships affecting gameplay
@@ -21,7 +21,7 @@ This roadmap delivers a browser-based CRPG adapting Dogs in the Vineyard. The jo
 ## Phase Details
 
 ### Phase 1: Foundation
-**Goal**: Player can launch the application and see a text-heavy, readable UI shell
+**Goal**: Player can launch the application and see a text-heavy, readable UI shell with interactive node-based town navigation
 **Depends on**: Nothing (first phase)
 **Requirements**: UI-01, UI-02
 **Success Criteria** (what must be TRUE):
@@ -29,11 +29,11 @@ This roadmap delivers a browser-based CRPG adapting Dogs in the Vineyard. The jo
   2. Text is readable at minimum 28px with appropriate line length
   3. UI reflects minimal, atmospheric aesthetic (no cluttered chrome)
   4. Basic navigation between screens works
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: Project setup (Preact, Vite, TypeScript, folder structure)
-- [ ] 01-02: Core UI components (text display, navigation, layout system)
+- [ ] 01-01-PLAN.md — Project setup (Vite, React, TypeScript, Tailwind, folder structure)
+- [ ] 01-02-PLAN.md — Core UI components (node map, narrative panel, character info sidebar)
 
 ### Phase 2: Cycle System
 **Goal**: Player experiences complete daily cycles with dice allocation decisions
@@ -145,7 +145,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/2 | Not started | - |
+| 1. Foundation | 0/2 | Planned | - |
 | 2. Cycle System | 0/4 | Not started | - |
 | 3. Conflict System | 0/4 | Not started | - |
 | 4. Character System | 0/4 | Not started | - |
@@ -157,5 +157,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 ---
 *Roadmap created: 2026-01-20*
+*Phase 1 planned: 2026-01-21*
 *Depth: comprehensive*
 *Coverage: 23/23 v1 requirements mapped*
