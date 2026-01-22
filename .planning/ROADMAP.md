@@ -12,7 +12,7 @@ This roadmap delivers a browser-based CRPG adapting Dogs in the Vineyard. The jo
 
 - [x] **Phase 1: Foundation** - React/Vite/TypeScript setup with minimal text-heavy UI shell
 - [x] **Phase 2: Cycle System** - Daily cycle structure with dice pool generation and allocation
-- [ ] **Phase 2.1: E2E Testing Infrastructure** - Playwright + BDD setup with cycle system tests (INSERTED)
+- [x] **Phase 2.1: E2E Testing Infrastructure** - Playwright + BDD setup with cycle system tests (INSERTED)
 - [ ] **Phase 3: Conflict System** - DitV escalation, raise/see mechanics, and fallout
 - [ ] **Phase 4: Character System** - Stats, traits, inventory, and relationships affecting gameplay
 - [ ] **Phase 5: Investigation** - NPC dialogue, sin progression discovery, and resolution paths
@@ -67,8 +67,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02.1-01-PLAN.md — Playwright setup (install, config, npm scripts, CI configuration)
-- [ ] 02.1-02-PLAN.md — Cycle system E2E tests (BDD feature files, step definitions, full cycle flow)
+- [x] 02.1-01-PLAN.md — Playwright setup (install, config, npm scripts, CI configuration)
+- [x] 02.1-02-PLAN.md — Cycle system E2E tests (BDD feature files, step definitions, full cycle flow)
 
 **Integration Pattern for Future Phases:**
 Each phase will include E2E tests as the final plan:
@@ -177,14 +177,14 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete | 2026-01-21 |
 | 2. Cycle System | 4/4 | Complete | 2026-01-22 |
-| 2.1 E2E Testing | 0/2 | Not started | - |
+| 2.1 E2E Testing | 2/2 | Complete | 2026-01-22 |
 | 3. Conflict System | 0/5 | Not started | - |
 | 4. Character System | 0/5 | Not started | - |
 | 5. Investigation | 0/5 | Not started | - |
 | 6. Town Generation | 0/5 | Not started | - |
 | 7. Persistence | 0/4 | Not started | - |
 
-**Total:** 6/32 plans complete
+**Total:** 8/32 plans complete
 
 ---
 *Roadmap created: 2026-01-20*

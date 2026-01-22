@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** The player must be able to arrive in a procedurally generated town, discover its moral rot through investigation and NPC interaction, and resolve conflicts using the escalating stakes system — experiencing the weight of judgment that defines Dogs in the Vineyard.
-**Current focus:** Phase 2.1 - E2E Testing Infrastructure
+**Current focus:** Phase 3 - Conflict System
 
 ## Current Position
 
 Phase: 2.1 of 7 (E2E Testing Infrastructure)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-01-22 — Completed 02.1-02-PLAN.md (Cycle System E2E Tests)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-01-22 — Completed Phase 2.1 (E2E Testing Infrastructure)
 
-Progress: [███████░░░] 60%
+Progress: [███████░░░] 65%
 
 ## Performance Metrics
 
@@ -75,8 +75,7 @@ None yet.
 
 ### Blockers/Concerns
 
-- Node v20+ required for development (Vite 7.3 requirement)
-- Node v18.19+ required for Playwright ESM (current: 18.16.1)
+- Node v20+ required for development (resolved - user set as default)
 
 ## Session Continuity
 
@@ -94,8 +93,11 @@ Phase 2 complete. Core cycle system functional:
 
 **User feedback:** Action panel positioning (fixed overlay) should evolve to Citizen Sleeper-style contextual display. Noted for future UX refinement - not blocking.
 
-## Phase 2.1 Progress Notes
+## Phase 2.1 Completion Notes
 
-E2E testing infrastructure building:
-- Plan 01: Playwright with Chromium, webServer auto-start, base fixtures
-- Plan 02: BDD feature file, step helpers, 9 cycle flow tests, bug fix for REST phase
+E2E testing infrastructure complete:
+- Playwright with Chromium, webServer auto-start, base fixtures
+- BDD feature file (4 Gherkin scenarios), 13 step helpers, 9 E2E tests
+- data-testid attributes on all interactive components
+- Bug fixed: END_CYCLE was skipping REST phase
+- Test fix: Use global actions (Pray for Guidance) that are available from any location
