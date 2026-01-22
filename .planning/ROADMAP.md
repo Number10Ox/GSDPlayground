@@ -12,6 +12,7 @@ This roadmap delivers a browser-based CRPG adapting Dogs in the Vineyard. The jo
 
 - [x] **Phase 1: Foundation** - React/Vite/TypeScript setup with minimal text-heavy UI shell
 - [x] **Phase 2: Cycle System** - Daily cycle structure with dice pool generation and allocation
+- [ ] **Phase 2.1: E2E Testing Infrastructure** - Playwright + BDD setup with cycle system tests (INSERTED)
 - [ ] **Phase 3: Conflict System** - DitV escalation, raise/see mechanics, and fallout
 - [ ] **Phase 4: Character System** - Stats, traits, inventory, and relationships affecting gameplay
 - [ ] **Phase 5: Investigation** - NPC dialogue, sin progression discovery, and resolution paths
@@ -53,6 +54,30 @@ Plans:
 - [x] 02-03-PLAN.md — Cycle state machine (phase transitions, dice selection/assignment actions)
 - [x] 02-04-PLAN.md — Actions and integration (action cards, allocation UI, summary screen, full loop)
 
+### Phase 2.1: E2E Testing Infrastructure (INSERTED)
+**Goal**: Automated browser tests validate gameplay flows using BDD-style specifications
+**Depends on**: Phase 2
+**Requirements**: None (infrastructure)
+**Success Criteria** (what must be TRUE):
+  1. Playwright installed and configured for the project
+  2. BDD feature files describe cycle system behavior in Gherkin syntax
+  3. `npm run test:e2e` executes browser tests against running dev server
+  4. Tests for Phase 2 cycle flow pass (wake, allocate, confirm, summary, next day)
+  5. CI-ready configuration (headless mode, proper timeouts)
+**Plans**: 2 plans
+
+Plans:
+- [ ] 02.1-01-PLAN.md — Playwright setup (install, config, npm scripts, CI configuration)
+- [ ] 02.1-02-PLAN.md — Cycle system E2E tests (BDD feature files, step definitions, full cycle flow)
+
+**Integration Pattern for Future Phases:**
+Each phase will include E2E tests as the final plan:
+- Phase 3: 03-05-PLAN.md — Conflict system E2E tests
+- Phase 4: 04-05-PLAN.md — Character system E2E tests
+- Phase 5: 05-05-PLAN.md — Investigation E2E tests
+- Phase 6: 06-05-PLAN.md — Town generation E2E tests
+- Phase 7: 07-04-PLAN.md — Persistence E2E tests
+
 ### Phase 3: Conflict System
 **Goal**: Player can engage in escalating conflicts using raise/see mechanics with meaningful fallout
 **Depends on**: Phase 2
@@ -70,6 +95,7 @@ Plans:
 - [ ] 03-02: Raise/see bidding mechanics
 - [ ] 03-03: Fallout calculation and application
 - [ ] 03-04: NPC witness/memory system
+- [ ] 03-05: Conflict system E2E tests
 
 ### Phase 4: Character System
 **Goal**: Player's Dog has meaningful stats, traits, and inventory that affect gameplay
@@ -87,6 +113,7 @@ Plans:
 - [ ] 04-02: Inventory system with usable items
 - [ ] 04-03: Fallout-to-trait conversion
 - [ ] 04-04: Relationship tracking and conflict dice bonuses
+- [ ] 04-05: Character system E2E tests
 
 ### Phase 5: Investigation
 **Goal**: Player can investigate NPCs to discover the town's sin progression and find resolution paths
@@ -104,6 +131,7 @@ Plans:
 - [ ] 05-02: Information revelation mechanics (what NPCs know and share)
 - [ ] 05-03: Sin progression discovery tracking
 - [ ] 05-04: Resolution path branching
+- [ ] 05-05: Investigation E2E tests
 
 ### Phase 6: Town Generation
 **Goal**: Towns are generated with coherent sin progressions and interconnected NPCs
@@ -121,6 +149,7 @@ Plans:
 - [ ] 06-02: Sin progression template system
 - [ ] 06-03: NPC generation with relationship graphs
 - [ ] 06-04: Town assembly and validation
+- [ ] 06-05: Town generation E2E tests
 
 ### Phase 7: Persistence
 **Goal**: Player can save progress and resume later
@@ -137,23 +166,25 @@ Plans:
 - [ ] 07-01: Save state serialization
 - [ ] 07-02: Manual save/load UI
 - [ ] 07-03: Autosave system with cycle hooks
+- [ ] 07-04: Persistence E2E tests
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
+Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete | 2026-01-21 |
 | 2. Cycle System | 4/4 | Complete | 2026-01-22 |
-| 3. Conflict System | 0/4 | Not started | - |
-| 4. Character System | 0/4 | Not started | - |
-| 5. Investigation | 0/4 | Not started | - |
-| 6. Town Generation | 0/4 | Not started | - |
-| 7. Persistence | 0/3 | Not started | - |
+| 2.1 E2E Testing | 0/2 | Not started | - |
+| 3. Conflict System | 0/5 | Not started | - |
+| 4. Character System | 0/5 | Not started | - |
+| 5. Investigation | 0/5 | Not started | - |
+| 6. Town Generation | 0/5 | Not started | - |
+| 7. Persistence | 0/4 | Not started | - |
 
-**Total:** 6/25 plans complete
+**Total:** 6/32 plans complete
 
 ---
 *Roadmap created: 2026-01-20*
