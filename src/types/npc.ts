@@ -1,15 +1,38 @@
 import type { LocationId } from '@/types/game';
 import type { EscalationLevel, ConflictOutcome } from '@/types/conflict';
+import type { KnowledgeFact, ApproachType } from '@/types/dialogue';
 
 /**
  * NPC - A non-player character in the game world.
  */
+/**
+ * NPCKnowledge - Full knowledge pool for an NPC.
+ * Contains all facts the NPC can potentially reveal.
+ */
+export interface NPCKnowledge {
+  npcId: string;
+  facts: KnowledgeFact[];
+  personality: string;
+  speechPattern: string;
+}
+
+/**
+ * ConflictThreshold - NPC-specific conflict trigger thresholds.
+ * Determines how likely an NPC is to resist a particular approach.
+ */
+export interface ConflictThreshold {
+  approach: ApproachType;
+  resistChance: number;
+}
+
 export interface NPC {
   id: string;
   name: string;
   locationId: LocationId;
   description: string;
   role: string; // e.g., "Sheriff", "Storekeeper"
+  knowledge?: NPCKnowledge;
+  conflictThresholds?: ConflictThreshold[];
 }
 
 /**
