@@ -45,13 +45,13 @@ Plans:
   3. Player can allocate dice to available actions and see results
   4. Clocks visually advance when their conditions are met
   5. Day ends when dice are exhausted or player chooses to rest
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 02-01: Dice pool generation and visualization
-- [ ] 02-02: Cycle state machine (wake, allocate, resolve, end day)
-- [ ] 02-03: Clock system with visual progress indicators
-- [ ] 02-04: Action resolution using allocated dice
+- [ ] 02-01-PLAN.md — Types and dice pool visualization (DitV polyhedral dice, keyboard-accessible pool)
+- [ ] 02-02-PLAN.md — Clock system (SVG segmented progress clocks for threats/opportunities)
+- [ ] 02-03-PLAN.md — Cycle state machine (phase transitions, dice selection/assignment actions)
+- [ ] 02-04-PLAN.md — Actions and integration (action cards, allocation UI, summary screen, full loop)
 
 ### Phase 3: Conflict System
 **Goal**: Player can engage in escalating conflicts using raise/see mechanics with meaningful fallout
@@ -146,7 +146,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete | 2026-01-21 |
-| 2. Cycle System | 0/4 | Not started | - |
+| 2. Cycle System | 0/4 | Planned | - |
 | 3. Conflict System | 0/4 | Not started | - |
 | 4. Character System | 0/4 | Not started | - |
 | 5. Investigation | 0/4 | Not started | - |
@@ -158,5 +158,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 ---
 *Roadmap created: 2026-01-20*
 *Phase 1 planned: 2026-01-21*
+*Phase 2 planned: 2026-01-21*
 *Depth: comprehensive*
 *Coverage: 23/23 v1 requirements mapped*
