@@ -1,3 +1,5 @@
+import type { FalloutSeverity } from '@/types/conflict';
+
 export type LocationId = string;
 
 export interface Location {
@@ -30,6 +32,15 @@ export interface GameState {
   selectedDieId: string | null;
   clocks: Clock[];
   availableActions: AvailableAction[];
+
+  // Character condition (affects dice pool size and quality)
+  characterCondition: number;  // 0-100
+
+  // Active conflict tracking (null when not in conflict)
+  activeConflict: {
+    npcId: string;
+    stakes: string;
+  } | null;
 }
 
 export type GameAction =
@@ -47,7 +58,11 @@ export type GameAction =
   | { type: 'ADVANCE_CLOCK'; clockId: string; amount: number }
   | { type: 'VIEW_SUMMARY' }
   | { type: 'END_CYCLE' }
-  | { type: 'REST_EARLY' };
+  | { type: 'REST_EARLY' }
+  // Conflict actions
+  | { type: 'APPLY_FALLOUT'; severity: FalloutSeverity }
+  | { type: 'START_GAME_CONFLICT'; npcId: string; stakes: string }
+  | { type: 'END_GAME_CONFLICT' };
 
 // Dice types (DitV polyhedral)
 export type DieType = 'd4' | 'd6' | 'd8' | 'd10';

@@ -40,6 +40,12 @@ const initialState: GameState = {
   selectedDieId: null,
   clocks: SAMPLE_CLOCKS,
   availableActions: SAMPLE_ACTIONS,
+
+  // Character condition (full health at start)
+  characterCondition: 100,
+
+  // No active conflict at start
+  activeConflict: null,
 };
 
 function gameReducer(state: GameState, action: GameAction): GameState {
@@ -79,11 +85,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           cycleNumber: state.cycleNumber + 1,
         };
       }
-      // From WAKE: go to ALLOCATE and generate dice
+      // From WAKE: go to ALLOCATE and generate dice based on condition
       return {
         ...state,
         cyclePhase: 'ALLOCATE',
-        dicePool: generateDicePool(100), // Full health for now
+        dicePool: generateDicePool(state.characterCondition),
         selectedDieId: null,
       };
     }
@@ -234,6 +240,44 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         cyclePhase: 'SUMMARY',
         selectedDieId: null,
+      };
+    }
+
+    // Conflict actions
+    case 'APPLY_FALLOUT': {
+      // Apply fallout severity to character condition
+      // NONE: no change, MINOR: -10, SERIOUS: -30, DEADLY: -50, DEATH: 0
+      const severityPenalty: Record<string, number> = {
+        NONE: 0,
+        MINOR: 10,
+        SERIOUS: 30,
+        DEADLY: 50,
+        DEATH: state.characterCondition, // Set to 0
+      };
+      const penalty = severityPenalty[action.severity] ?? 0;
+      const newCondition = Math.max(0, state.characterCondition - penalty);
+      return {
+        ...state,
+        characterCondition: newCondition,
+      };
+    }
+
+    case 'START_GAME_CONFLICT': {
+      // Set up active conflict tracking in game state
+      return {
+        ...state,
+        activeConflict: {
+          npcId: action.npcId,
+          stakes: action.stakes,
+        },
+      };
+    }
+
+    case 'END_GAME_CONFLICT': {
+      // Clear active conflict
+      return {
+        ...state,
+        activeConflict: null,
       };
     }
 
