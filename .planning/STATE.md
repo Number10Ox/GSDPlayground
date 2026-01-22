@@ -92,6 +92,11 @@ Recent decisions affecting current work:
 - [04-01]: Stat.modifier tracks temporary injury reduction without mutating base dice
 - [04-01]: CharacterProvider wraps outermost (character is most fundamental entity)
 - [04-01]: Character state starts null until SET_CHARACTER (no character until creation)
+- [04-02]: Lucide icons: Lightbulb (Acuity), Hand (Body), Heart (Heart), Cross (Will)
+- [04-02]: Condition filter: <50 removes 25% weakest dice, <25 removes 50%
+- [04-02]: Point-buy: min 2d6, max 6d6 per stat, total must match background
+- [04-02]: generateDicePool backward compatible (falls back without character)
+- [04-02]: Pool computed in CycleView, passed via START_CYCLE action payload
 - [04-03]: CharacterDie rolled to Die (with value) at invocation time, not pre-rolled
 - [04-03]: Unified trait+item panel (single component with section headers)
 - [04-03]: TraitAndItemInvocation receives props from ConflictView (testable, decoupled)
