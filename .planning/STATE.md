@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-01-20)
 
 ## Current Position
 
-Phase: 3 of 7 (Conflict System)
-Plan: 5 of 5 in current phase
-Status: Phase complete (with E2E tests)
-Last activity: 2026-01-22 — Completed 03-05-PLAN.md (E2E Testing for Conflict)
+Phase: 4 of 7 (Character System)
+Plan: 1 of 4 in current phase
+Status: In progress
+Last activity: 2026-01-22 — Completed 04-01-PLAN.md (Character Types and State)
 
-Progress: [████████░░] 87%
+Progress: [████████░░] 88%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
-- Average duration: 4.6 min
-- Total execution time: 1.1 hours
+- Total plans completed: 15
+- Average duration: 4.4 min
+- Total execution time: 1.13 hours
 
 **By Phase:**
 
@@ -33,8 +33,8 @@ Progress: [████████░░] 87%
 | 03-conflict-system | 5 | 35 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-01 (3min), 03-02 (5min), 03-03 (5min), 03-04 (6min), 03-05 (16min)
-- Trend: E2E test plan longer due to flakiness debugging
+- Last 5 plans: 03-02 (5min), 03-03 (5min), 03-04 (6min), 03-05 (16min), 04-01 (2min)
+- Trend: Fast execution for type/reducer plans; E2E plans remain longer
 
 *Updated after each plan completion*
 
@@ -88,6 +88,10 @@ Recent decisions affecting current work:
 - [03-05]: Deterministic dice pools for E2E tests (fixed values instead of random)
 - [03-05]: Promise.race pattern for NPC wait (handles give up vs continue)
 - [03-05]: Dev-mode test trigger using import.meta.env.DEV guard
+- [04-01]: CharacterDie simpler than game Die (no assignedTo/value - computed during conflict)
+- [04-01]: Stat.modifier tracks temporary injury reduction without mutating base dice
+- [04-01]: CharacterProvider wraps outermost (character is most fundamental entity)
+- [04-01]: Character state starts null until SET_CHARACTER (no character until creation)
 
 ### Pending Todos
 
@@ -100,7 +104,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 03-05-PLAN.md (E2E Testing for Conflict)
+Stopped at: Completed 04-01-PLAN.md (Character Types and State)
 Resume file: None
 
 ## Phase 2 Completion Notes
