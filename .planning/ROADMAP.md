@@ -11,7 +11,7 @@ This roadmap delivers a browser-based CRPG adapting Dogs in the Vineyard. The jo
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
 - [x] **Phase 1: Foundation** - React/Vite/TypeScript setup with minimal text-heavy UI shell
-- [ ] **Phase 2: Cycle System** - Daily cycle structure with dice pool generation and allocation
+- [x] **Phase 2: Cycle System** - Daily cycle structure with dice pool generation and allocation
 - [ ] **Phase 3: Conflict System** - DitV escalation, raise/see mechanics, and fallout
 - [ ] **Phase 4: Character System** - Stats, traits, inventory, and relationships affecting gameplay
 - [ ] **Phase 5: Investigation** - NPC dialogue, sin progression discovery, and resolution paths
@@ -48,10 +48,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Types and dice pool visualization (DitV polyhedral dice, keyboard-accessible pool)
-- [ ] 02-02-PLAN.md — Clock system (SVG segmented progress clocks for threats/opportunities)
-- [ ] 02-03-PLAN.md — Cycle state machine (phase transitions, dice selection/assignment actions)
-- [ ] 02-04-PLAN.md — Actions and integration (action cards, allocation UI, summary screen, full loop)
+- [x] 02-01-PLAN.md — Types and dice pool visualization (DitV polyhedral dice, keyboard-accessible pool)
+- [x] 02-02-PLAN.md — Clock system (SVG segmented progress clocks for threats/opportunities)
+- [x] 02-03-PLAN.md — Cycle state machine (phase transitions, dice selection/assignment actions)
+- [x] 02-04-PLAN.md — Actions and integration (action cards, allocation UI, summary screen, full loop)
 
 ### Phase 3: Conflict System
 **Goal**: Player can engage in escalating conflicts using raise/see mechanics with meaningful fallout
@@ -146,14 +146,14 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete | 2026-01-21 |
-| 2. Cycle System | 0/4 | Planned | - |
+| 2. Cycle System | 4/4 | Complete | 2026-01-22 |
 | 3. Conflict System | 0/4 | Not started | - |
 | 4. Character System | 0/4 | Not started | - |
 | 5. Investigation | 0/4 | Not started | - |
 | 6. Town Generation | 0/4 | Not started | - |
 | 7. Persistence | 0/3 | Not started | - |
 
-**Total:** 2/25 plans complete
+**Total:** 6/25 plans complete
 
 ---
 *Roadmap created: 2026-01-20*
