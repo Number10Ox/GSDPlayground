@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-20)
 ## Current Position
 
 Phase: 3 of 7 (Conflict System)
-Plan: 4 of 4 in current phase
-Status: Phase complete
-Last activity: 2026-01-22 — Completed 03-04-PLAN.md (NPC Witness/Memory System)
+Plan: 5 of 5 in current phase
+Status: Phase complete (with E2E tests)
+Last activity: 2026-01-22 — Completed 03-05-PLAN.md (E2E Testing for Conflict)
 
-Progress: [████████░░] 85%
+Progress: [████████░░] 87%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
-- Average duration: 4 min
-- Total execution time: 0.8 hours
+- Total plans completed: 14
+- Average duration: 4.6 min
+- Total execution time: 1.1 hours
 
 **By Phase:**
 
@@ -30,11 +30,11 @@ Progress: [████████░░] 85%
 | 01-foundation | 2 | 7 min | 3.5 min |
 | 02-cycle-system | 4 | 17 min | 4.25 min |
 | 02.1-e2e-testing | 2 | 8 min | 4 min |
-| 03-conflict-system | 4 | 19 min | 4.75 min |
+| 03-conflict-system | 5 | 35 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 02.1-02 (4min), 03-01 (3min), 03-02 (5min), 03-03 (5min), 03-04 (6min)
-- Trend: Stable
+- Last 5 plans: 03-01 (3min), 03-02 (5min), 03-03 (5min), 03-04 (6min), 03-05 (16min)
+- Trend: E2E test plan longer due to flakiness debugging
 
 *Updated after each plan completion*
 
@@ -85,6 +85,9 @@ Recent decisions affecting current work:
 - [03-04]: Targeted NPCs receive double relationship penalty
 - [03-04]: Three marker types based on severity: crossed fists (amber), crossed guns (red), broken trust (dark red)
 - [03-04]: NPCMemoryProvider wraps app inside GameProvider
+- [03-05]: Deterministic dice pools for E2E tests (fixed values instead of random)
+- [03-05]: Promise.race pattern for NPC wait (handles give up vs continue)
+- [03-05]: Dev-mode test trigger using import.meta.env.DEV guard
 
 ### Pending Todos
 
@@ -97,7 +100,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 03-04-PLAN.md (NPC Witness/Memory System)
+Stopped at: Completed 03-05-PLAN.md (E2E Testing for Conflict)
 Resume file: None
 
 ## Phase 2 Completion Notes
@@ -139,7 +142,7 @@ Plan 03-02 complete. Conflict UI functional:
 
 ## Phase 3 Completion Notes
 
-Phase 3 complete. Full conflict system functional:
+Phase 3 complete with E2E test coverage. Full conflict system functional:
 - Conflict state machine with discriminated unions and turn guards
 - Raise/see bidding with DitV rules (reverse, block, take the blow)
 - Escalation system with dramatic internal monologues
@@ -149,5 +152,7 @@ Phase 3 complete. Full conflict system functional:
 - NPC witness/memory system with conflict history tracking
 - ConflictMarker and RelationshipPanel for visual feedback
 - Violence has persistent consequences through relationship levels
+- E2E tests: 7 BDD scenarios, 15 step helpers, all tests passing
+- Total E2E suite: 16 tests (9 cycle + 7 conflict)
 
 Ready for Phase 4 (NPC AI and town generation integration).
