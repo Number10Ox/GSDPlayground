@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** The player must be able to arrive in a procedurally generated town, discover its moral rot through investigation and NPC interaction, and resolve conflicts using the escalating stakes system — experiencing the weight of judgment that defines Dogs in the Vineyard.
-**Current focus:** Phase 4 - Character System
+**Current focus:** Phase 4 - Character System (E2E testing complete)
 
 ## Current Position
 
 Phase: 4 of 7 (Character System)
-Plan: 4 of 4 in current phase
-Status: Phase complete
-Last activity: 2026-01-22 — Completed 04-04-PLAN.md (Fallout Traits & Relationship Dice)
+Plan: 5 of 5 in current phase
+Status: Phase complete (including E2E tests)
+Last activity: 2026-01-22 — Completed 04-05-PLAN.md (Character System E2E Tests)
 
 Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18
-- Average duration: 4.3 min
-- Total execution time: 1.3 hours
+- Total plans completed: 19
+- Average duration: 5.0 min
+- Total execution time: 1.6 hours
 
 **By Phase:**
 
@@ -31,10 +31,11 @@ Progress: [██████████] 100%
 | 02-cycle-system | 4 | 17 min | 4.25 min |
 | 02.1-e2e-testing | 2 | 8 min | 4 min |
 | 03-conflict-system | 5 | 35 min | 7 min |
+| 04-character-system | 5 | 29 min | 5.8 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-05 (16min), 04-01 (2min), 04-02 (2min), 04-03 (3min), 04-04 (5min)
-- Trend: Component+reducer plans consistently fast (2-5 min)
+- Last 5 plans: 04-01 (2min), 04-02 (2min), 04-03 (3min), 04-04 (5min), 04-05 (17min)
+- Trend: E2E test plans take longer due to wiring up missing app integration
 
 *Updated after each plan completion*
 
@@ -104,6 +105,9 @@ Recent decisions affecting current work:
 - [04-04]: FalloutReveal uses useCharacter() directly (not prop-drilled dispatch)
 - [04-04]: usedRelationships parallels usedTraits/usedItems one-use-per-conflict pattern
 - [04-04]: Relationship dice show all NPCs with relevance sorting (direct first)
+- [04-05]: CharacterCreation triggered by button click (not auto-shown) to avoid blocking existing tests
+- [04-05]: Dev-mode Add Test Trait button for deterministic trait invocation testing
+- [04-05]: CharacterSheet overlay accessible via "View Character Sheet" button in sidebar
 
 ### Pending Todos
 
@@ -116,7 +120,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 04-04-PLAN.md (Fallout Traits & Relationship Dice) - Phase 4 complete
+Stopped at: Completed 04-05-PLAN.md (Character System E2E Tests) - Phase 4 fully complete with E2E coverage
 Resume file: None
 
 ## Phase 2 Completion Notes
@@ -175,7 +179,7 @@ Ready for Phase 4 (Character System - stats, traits, inventory).
 
 ## Phase 4 Completion Notes
 
-Phase 4 complete. Full character system with gameplay loops:
+Phase 4 complete with full E2E test coverage. Character system with gameplay loops:
 - Character state (stats, traits, items, relationships) with CharacterProvider
 - Stat-based dice pool generation with condition modifiers
 - CharacterCreation with point-buy allocation and CharacterSheet display
@@ -183,5 +187,8 @@ Phase 4 complete. Full character system with gameplay loops:
 - Fallout-to-trait conversion (consequences become permanent character traits)
 - Relationship dice provide bonus in relevant conflicts
 - Character-gameplay loop closed: stats->pool, traits/items->bonus dice, fallout->new traits, relationships->conflict dice
+- E2E tests: 6 BDD scenarios, 16 step helpers, 7 Playwright tests
+- Total E2E suite: 23 tests (9 cycle + 7 conflict + 7 character), all passing
+- CharacterCreation and CharacterSheet overlays wired into GameView
 
 Ready for Phase 5 (NPC & Town Generation).
