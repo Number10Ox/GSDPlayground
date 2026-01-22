@@ -92,17 +92,25 @@ export function CycleView() {
   switch (cyclePhase) {
     case 'WAKE':
       return (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20">
+        <div
+          data-testid="cycle-wake-overlay"
+          className="absolute inset-0 flex items-center justify-center bg-black/50 z-20"
+        >
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-surface rounded-lg p-8 text-center shadow-xl"
           >
-            <h2 className="text-3xl font-bold text-gray-100 mb-2">
+            <h2
+              data-testid="day-number"
+              data-day={cycleNumber}
+              className="text-3xl font-bold text-gray-100 mb-2"
+            >
               Day {cycleNumber} Begins
             </h2>
             <p className="text-gray-400 mb-6">The sun rises over Bridal Falls.</p>
             <button
+              data-testid="start-day-button"
               onClick={() => dispatch({ type: 'START_CYCLE' })}
               className="px-8 py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400"
             >
@@ -117,6 +125,7 @@ export function CycleView() {
         <LayoutGroup>
           {/* Action panel on the right side */}
           <motion.div
+            data-testid="action-panel"
             initial={{ x: 300, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 300, opacity: 0 }}
@@ -137,6 +146,7 @@ export function CycleView() {
             {/* Action buttons */}
             <div className="mt-4 pt-4 border-t border-gray-700 space-y-2">
               <button
+                data-testid="confirm-allocations-button"
                 onClick={() => dispatch({ type: 'CONFIRM_ALLOCATIONS' })}
                 disabled={!hasAssignedDice}
                 className={`
@@ -150,6 +160,7 @@ export function CycleView() {
                 Confirm Allocations
               </button>
               <button
+                data-testid="rest-early-button"
                 onClick={() => dispatch({ type: 'REST_EARLY' })}
                 className="w-full py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg font-semibold transition-colors"
               >
@@ -160,6 +171,7 @@ export function CycleView() {
 
           {/* Dice pool at bottom */}
           <motion.div
+            data-testid="dice-pool"
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
@@ -201,7 +213,10 @@ export function CycleView() {
 
     case 'REST':
       return (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20">
+        <div
+          data-testid="cycle-rest-overlay"
+          className="absolute inset-0 flex items-center justify-center bg-black/50 z-20"
+        >
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -210,6 +225,7 @@ export function CycleView() {
             <h2 className="text-2xl font-bold text-gray-100 mb-2">Night Falls</h2>
             <p className="text-gray-400 mb-6">You rest and prepare for tomorrow.</p>
             <button
+              data-testid="next-day-button"
               onClick={() => dispatch({ type: 'START_CYCLE' })}
               className="px-8 py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400"
             >
