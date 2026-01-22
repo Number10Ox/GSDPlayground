@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-20)
 ## Current Position
 
 Phase: 4 of 7 (Character System)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-01-22 — Completed 04-03-PLAN.md (Trait & Item Invocation)
+Plan: 4 of 4 in current phase
+Status: Phase complete
+Last activity: 2026-01-22 — Completed 04-04-PLAN.md (Fallout Traits & Relationship Dice)
 
-Progress: [█████████░] 94%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 17
-- Average duration: 4.2 min
-- Total execution time: 1.2 hours
+- Total plans completed: 18
+- Average duration: 4.3 min
+- Total execution time: 1.3 hours
 
 **By Phase:**
 
@@ -33,8 +33,8 @@ Progress: [█████████░] 94%
 | 03-conflict-system | 5 | 35 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-04 (6min), 03-05 (16min), 04-01 (2min), 04-02 (2min), 04-03 (3min)
-- Trend: Component+reducer plans consistently fast (2-3 min)
+- Last 5 plans: 03-05 (16min), 04-01 (2min), 04-02 (2min), 04-03 (3min), 04-04 (5min)
+- Trend: Component+reducer plans consistently fast (2-5 min)
 
 *Updated after each plan completion*
 
@@ -100,6 +100,10 @@ Recent decisions affecting current work:
 - [04-03]: CharacterDie rolled to Die (with value) at invocation time, not pre-rolled
 - [04-03]: Unified trait+item panel (single component with section headers)
 - [04-03]: TraitAndItemInvocation receives props from ConflictView (testable, decoupled)
+- [04-04]: Fallout trait die scales with severity: MINOR=d4, SERIOUS=d6, DEADLY=d8
+- [04-04]: FalloutReveal uses useCharacter() directly (not prop-drilled dispatch)
+- [04-04]: usedRelationships parallels usedTraits/usedItems one-use-per-conflict pattern
+- [04-04]: Relationship dice show all NPCs with relevance sorting (direct first)
 
 ### Pending Todos
 
@@ -112,7 +116,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 04-03-PLAN.md (Trait & Item Invocation)
+Stopped at: Completed 04-04-PLAN.md (Fallout Traits & Relationship Dice) - Phase 4 complete
 Resume file: None
 
 ## Phase 2 Completion Notes
@@ -168,3 +172,16 @@ Phase 3 complete with E2E test coverage. Full conflict system functional:
 - Total E2E suite: 16 tests (9 cycle + 7 conflict)
 
 Ready for Phase 4 (Character System - stats, traits, inventory).
+
+## Phase 4 Completion Notes
+
+Phase 4 complete. Full character system with gameplay loops:
+- Character state (stats, traits, items, relationships) with CharacterProvider
+- Stat-based dice pool generation with condition modifiers
+- CharacterCreation with point-buy allocation and CharacterSheet display
+- Trait & item invocation during conflicts (once per conflict each)
+- Fallout-to-trait conversion (consequences become permanent character traits)
+- Relationship dice provide bonus in relevant conflicts
+- Character-gameplay loop closed: stats->pool, traits/items->bonus dice, fallout->new traits, relationships->conflict dice
+
+Ready for Phase 5 (NPC & Town Generation).
