@@ -13,7 +13,7 @@ This roadmap delivers a browser-based CRPG adapting Dogs in the Vineyard. The jo
 - [x] **Phase 1: Foundation** - React/Vite/TypeScript setup with minimal text-heavy UI shell
 - [x] **Phase 2: Cycle System** - Daily cycle structure with dice pool generation and allocation
 - [x] **Phase 2.1: E2E Testing Infrastructure** - Playwright + BDD setup with cycle system tests (INSERTED)
-- [ ] **Phase 3: Conflict System** - DitV escalation, raise/see mechanics, and fallout
+- [x] **Phase 3: Conflict System** - DitV escalation, raise/see mechanics, and fallout
 - [ ] **Phase 4: Character System** - Stats, traits, inventory, and relationships affecting gameplay
 - [ ] **Phase 5: Investigation** - NPC dialogue, sin progression discovery, and resolution paths
 - [ ] **Phase 6: Town Generation** - Sin progression templates and NPC relationship generation
@@ -91,11 +91,11 @@ Each phase will include E2E tests as the final plan:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Conflict types and state machine (discriminated unions, reducer, fallout utils, theming hook)
-- [ ] 03-02-PLAN.md — Raise/see bidding UI (RaiseControls, EscalationConfirm, EscalationIndicator, BiddingHistory, ConflictView)
-- [ ] 03-03-PLAN.md — Fallout reveal and game state integration (FalloutReveal animation, ConflictResolution, condition tracking)
-- [ ] 03-04-PLAN.md — NPC witness/memory system (NPC types, memory context, ConflictMarker, RelationshipPanel)
-- [ ] 03-05-PLAN.md — Conflict system E2E tests (BDD feature file, step helpers, Playwright specs)
+- [x] 03-01-PLAN.md — Conflict types and state machine (discriminated unions, reducer, fallout utils, theming hook)
+- [x] 03-02-PLAN.md — Raise/see bidding UI (RaiseControls, EscalationConfirm, EscalationIndicator, BiddingHistory, ConflictView)
+- [x] 03-03-PLAN.md — Fallout reveal and game state integration (FalloutReveal animation, ConflictResolution, condition tracking)
+- [x] 03-04-PLAN.md — NPC witness/memory system (NPC types, memory context, ConflictMarker, RelationshipPanel)
+- [x] 03-05-PLAN.md — Conflict system E2E tests (BDD feature file, step helpers, Playwright specs)
 
 ### Phase 4: Character System
 **Goal**: Player's Dog has meaningful stats, traits, and inventory that affect gameplay
@@ -178,13 +178,13 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7
 | 1. Foundation | 2/2 | Complete | 2026-01-21 |
 | 2. Cycle System | 4/4 | Complete | 2026-01-22 |
 | 2.1 E2E Testing | 2/2 | Complete | 2026-01-22 |
-| 3. Conflict System | 0/5 | Planned | - |
+| 3. Conflict System | 5/5 | Complete | 2026-01-22 |
 | 4. Character System | 0/5 | Not started | - |
 | 5. Investigation | 0/5 | Not started | - |
 | 6. Town Generation | 0/5 | Not started | - |
 | 7. Persistence | 0/4 | Not started | - |
 
-**Total:** 8/32 plans complete
+**Total:** 13/32 plans complete
 
 ---
 *Roadmap created: 2026-01-20*

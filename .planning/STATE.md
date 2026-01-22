@@ -5,7 +5,7 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** The player must be able to arrive in a procedurally generated town, discover its moral rot through investigation and NPC interaction, and resolve conflicts using the escalating stakes system — experiencing the weight of judgment that defines Dogs in the Vineyard.
-**Current focus:** Phase 3 - Conflict System
+**Current focus:** Phase 4 - Character System
 
 ## Current Position
 
@@ -155,4 +155,4 @@ Phase 3 complete with E2E test coverage. Full conflict system functional:
 - E2E tests: 7 BDD scenarios, 15 step helpers, all tests passing
 - Total E2E suite: 16 tests (9 cycle + 7 conflict)
 
-Ready for Phase 4 (NPC AI and town generation integration).
+Ready for Phase 4 (Character System - stats, traits, inventory).

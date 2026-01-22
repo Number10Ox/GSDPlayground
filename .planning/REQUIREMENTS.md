@@ -16,10 +16,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Conflict System
 
-- [ ] **CONF-01**: Conflicts have escalation levels (talking → physical → fighting → gunplay)
-- [ ] **CONF-02**: Conflicts use raise and see bidding mechanic
-- [ ] **CONF-03**: Conflicts produce fallout based on severity
-- [ ] **CONF-04**: NPCs remember violence they witnessed
+- [x] **CONF-01**: Conflicts have escalation levels (talking → physical → fighting → gunplay)
+- [x] **CONF-02**: Conflicts use raise and see bidding mechanic
+- [x] **CONF-03**: Conflicts produce fallout based on severity
+- [x] **CONF-04**: NPCs remember violence they witnessed
 
 ### Investigation
 
@@ -95,10 +95,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CYCLE-02 | Phase 2 | Complete |
 | CYCLE-03 | Phase 2 | Complete |
 | CYCLE-04 | Phase 2 | Complete |
-| CONF-01 | Phase 3 | Pending |
-| CONF-02 | Phase 3 | Pending |
-| CONF-03 | Phase 3 | Pending |
-| CONF-04 | Phase 3 | Pending |
+| CONF-01 | Phase 3 | Complete |
+| CONF-02 | Phase 3 | Complete |
+| CONF-03 | Phase 3 | Complete |
+| CONF-04 | Phase 3 | Complete |
 | INV-01 | Phase 5 | Pending |
 | INV-02 | Phase 5 | Pending |
 | INV-03 | Phase 5 | Pending |
@@ -122,4 +122,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-20*
-*Last updated: 2026-01-22 after Phase 2 completion*
+*Last updated: 2026-01-22 after Phase 3 completion*
