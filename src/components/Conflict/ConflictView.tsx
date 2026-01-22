@@ -1,14 +1,16 @@
 import { useState, useReducer, useCallback, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
-import type { EscalationLevel } from '@/types/conflict';
+import { AnimatePresence, LayoutGroup } from 'framer-motion';
+import type { EscalationLevel, FalloutSeverity } from '@/types/conflict';
 import type { Die } from '@/types/game';
 import { ESCALATION_ORDER } from '@/types/conflict';
 import { conflictReducer, initialConflictState } from '@/reducers/conflictReducer';
 import { useConflictAtmosphere } from '@/hooks/useConflictAtmosphere';
+import { useGameState } from '@/hooks/useGameState';
 import { RaiseControls } from './RaiseControls';
 import { EscalationConfirm } from './EscalationConfirm';
 import { EscalationIndicator } from './EscalationIndicator';
 import { BiddingHistory } from './BiddingHistory';
+import { ConflictResolution } from './ConflictResolution';
 import { DieIcon } from '@/components/DicePool/DieIcon';
 
 /**
@@ -64,6 +66,12 @@ function selectRaiseDice(pool: Die[]): [Die, Die] | null {
 interface ConflictViewProps {
   // Optional initial state for testing
   initialState?: ReturnType<typeof conflictReducer>;
+  // NPC display name
+  npcName?: string;
+  // Witnesses to violence
+  witnesses?: string[];
+  // Callback when conflict completes
+  onComplete?: () => void;
 }
 
 /**
@@ -72,10 +80,36 @@ interface ConflictViewProps {
  * Manages the raise/see bidding loop, escalation, and resolution.
  * NPC AI makes simple decisions (raise with 2 random dice, see with minimum).
  */
-export function ConflictView({ initialState }: ConflictViewProps) {
+export function ConflictView({
+  initialState,
+  npcName: npcNameProp,
+  witnesses = [],
+  onComplete,
+}: ConflictViewProps) {
+  const { dispatch: gameDispatch } = useGameState();
   const [state, dispatch] = useReducer(
     conflictReducer,
     initialState ?? initialConflictState
+  );
+
+  // Get NPC name from state or prop
+  const npcName = useMemo(() => {
+    if (npcNameProp) return npcNameProp;
+    if (state.phase === 'ACTIVE') return state.npcId;
+    return 'Opponent';
+  }, [state, npcNameProp]);
+
+  // Handle resolution dismiss - apply fallout and cleanup
+  const handleResolutionDismiss = useCallback(
+    (severity: FalloutSeverity) => {
+      // Apply fallout to character condition
+      gameDispatch({ type: 'APPLY_FALLOUT', severity });
+      // Clear active conflict in game state
+      gameDispatch({ type: 'END_GAME_CONFLICT' });
+      // Notify parent
+      onComplete?.();
+    },
+    [gameDispatch, onComplete]
   );
 
   // Escalation modal state
@@ -219,69 +253,26 @@ export function ConflictView({ initialState }: ConflictViewProps) {
   }
 
   if (state.phase === 'RESOLVED') {
-    const outcomeText =
-      state.outcome === 'PLAYER_GAVE'
-        ? 'You gave. The opponent wins.'
-        : state.outcome === 'NPC_GAVE'
-          ? 'The opponent gave. You win!'
-          : 'You won!';
+    // Determine stakes text from active conflict if available (from initialState)
+    const stakesText = initialState && initialState.phase === 'ACTIVE'
+      ? initialState.stakes
+      : 'the conflict';
 
-    const severityColors = {
-      NONE: 'text-green-400',
-      MINOR: 'text-yellow-400',
-      SERIOUS: 'text-orange-400',
-      DEADLY: 'text-red-400',
-      DEATH: 'text-red-600',
-    };
+    // Build fallout dice for the resolution reveal
+    // Use the dice that were rolled during fallout calculation
+    const falloutDiceForReveal = state.fallout.diceRolled.length > 0
+      ? [{ dice: state.fallout.diceRolled, escalationLevel: state.fallout.falloutType === 'LETHAL' ? 'GUNPLAY' : state.fallout.falloutType === 'VIOLENT' ? 'FIGHTING' : state.fallout.falloutType === 'PHYSICAL' ? 'PHYSICAL' : 'JUST_TALKING' as EscalationLevel }]
+      : [];
 
     return (
-      <div
-        data-testid="conflict-resolved"
-        className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
-      >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-surface rounded-lg p-8 max-w-md text-center shadow-2xl"
-        >
-          <h2 className="text-2xl font-bold text-gray-100 mb-4">{outcomeText}</h2>
-
-          {/* Fallout result */}
-          <div className="mb-6 p-4 bg-black/30 rounded-lg">
-            <h3 className="text-sm text-gray-400 mb-2">Fallout</h3>
-            <p className={`text-xl font-bold ${severityColors[state.fallout.severity]}`}>
-              {state.fallout.severity === 'NONE'
-                ? 'No Fallout'
-                : `${state.fallout.severity} ${state.fallout.falloutType} Fallout`}
-            </p>
-            {state.fallout.diceRolled.length > 0 && (
-              <div className="flex justify-center gap-1 mt-2">
-                {state.fallout.diceRolled.map((die) => (
-                  <DieIcon key={die.id} type={die.type} value={die.value} size="sm" />
-                ))}
-              </div>
-            )}
-            {state.fallout.total > 0 && (
-              <p className="text-gray-400 text-sm mt-1">Total: {state.fallout.total}</p>
-            )}
-          </div>
-
-          {/* Witnesses reminder for violent conflicts */}
-          {state.witnesses.length > 0 && (
-            <p className="text-gray-400 text-sm mb-4">
-              Witnesses will remember this.
-            </p>
-          )}
-
-          <button
-            data-testid="conflict-continue-button"
-            onClick={() => window.location.reload()} // Placeholder - proper integration in Phase 4
-            className="px-8 py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg transition-colors"
-          >
-            Continue
-          </button>
-        </motion.div>
-      </div>
+      <ConflictResolution
+        outcome={state.outcome}
+        stakes={stakesText}
+        npcName={npcName}
+        falloutDice={falloutDiceForReveal}
+        witnesses={state.witnesses.length > 0 ? state.witnesses : witnesses}
+        onDismiss={handleResolutionDismiss}
+      />
     );
   }
 
@@ -314,7 +305,7 @@ export function ConflictView({ initialState }: ConflictViewProps) {
           <EscalationIndicator
             playerLevel={state.playerEscalation}
             npcLevel={state.npcEscalation}
-            npcName={state.npcId} // Use npcId as name for now
+            npcName={npcName}
           />
         </div>
 
@@ -328,7 +319,7 @@ export function ConflictView({ initialState }: ConflictViewProps) {
             <BiddingHistory
               turns={state.turnHistory}
               currentRaise={state.currentRaise}
-              npcName={state.npcId}
+              npcName={npcName}
             />
           </div>
 

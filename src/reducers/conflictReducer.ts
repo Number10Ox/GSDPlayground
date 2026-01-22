@@ -3,7 +3,6 @@ import type {
   ConflictAction,
   ConflictTurn,
   EscalationLevel,
-  FalloutDice,
 } from '@/types/conflict';
 import type { Die } from '@/types/game';
 import { ESCALATION_ORDER, ESCALATION_DICE } from '@/types/conflict';

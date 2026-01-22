@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { FalloutDice, FalloutResult, FalloutSeverity } from '@/types/conflict';
 import { calculateFallout } from '@/utils/fallout';
@@ -170,7 +170,7 @@ export function FalloutReveal({ falloutDice, onComplete }: FalloutRevealProps) {
                       ${phase === 'CALCULATION' && isHighlighted ? 'ring-2 ring-amber-400 bg-amber-900/30' : ''}
                     `}
                   >
-                    <DieIcon type={die.type} size="md" />
+                    <DieIcon type={die.type} value={die.value} size="md" />
                     {/* Show value after ROLLING phase */}
                     {(phase === 'CALCULATION' || phase === 'VERDICT') && rolledDie && (
                       <motion.span
