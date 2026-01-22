@@ -341,11 +341,15 @@ export function ConflictView({
     <LayoutGroup>
       <div
         data-testid="conflict-view"
-        className="fixed inset-0 bg-black/80 flex flex-col z-40"
-        style={{
-          backgroundColor: 'var(--conflict-bg, rgba(0,0,0,0.8))',
-        }}
+        className="fixed inset-0 flex flex-col z-40 bg-gray-950"
       >
+        {/* Atmosphere overlay - tints based on escalation level */}
+        <div
+          className="absolute inset-0 pointer-events-none transition-colors duration-500"
+          style={{
+            backgroundColor: 'var(--conflict-bg, transparent)',
+          }}
+        />
         {/* Header: Stakes */}
         <div className="p-4 bg-black/50">
           <h2
