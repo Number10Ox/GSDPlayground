@@ -1,5 +1,6 @@
 import { createContext, useContext, useReducer, type ReactNode, type Dispatch } from 'react';
-import type { GameState, GameAction, Location } from '@/types/game';
+import type { GameState, GameAction, Location, Clock } from '@/types/game';
+import { generateDicePool } from '@/utils/dice';
 
 // Sample town data for Phase 1 (will be procedurally generated later)
 const SAMPLE_LOCATIONS: Location[] = [
@@ -10,15 +11,30 @@ const SAMPLE_LOCATIONS: Location[] = [
   { id: 'cemetery', name: 'Cemetery', description: 'The town buries its dead here', x: 500, y: 50, connections: ['church'] },
 ];
 
+// Sample clocks for testing the cycle system
+const SAMPLE_CLOCKS: Clock[] = [
+  { id: 'murder-plot', label: 'Murder Plot', segments: 6, filled: 2, type: 'danger', autoAdvance: true },
+  { id: 'trust-earned', label: 'Trust Earned', segments: 4, filled: 1, type: 'progress', autoAdvance: false },
+];
+
 const initialState: GameState = {
+  // Existing Phase 1 state
   currentLocation: 'town-square',
   isPanelOpen: false,
   currentScene: null,
   locations: SAMPLE_LOCATIONS,
+
+  // Cycle state
+  cyclePhase: 'WAKE',
+  cycleNumber: 1,
+  dicePool: [],
+  selectedDieId: null,
+  clocks: SAMPLE_CLOCKS,
 };
 
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
+    // Existing Phase 1 actions
     case 'NAVIGATE': {
       const location = state.locations.find(l => l.id === action.locationId);
       if (!location) return state;
@@ -38,6 +54,171 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, isPanelOpen: true, currentScene: action.scene };
     case 'CLOSE_PANEL':
       return { ...state, isPanelOpen: false };
+
+    // Cycle actions
+    case 'START_CYCLE': {
+      // Valid in: WAKE, REST
+      if (state.cyclePhase !== 'WAKE' && state.cyclePhase !== 'REST') {
+        return state;
+      }
+      return {
+        ...state,
+        cyclePhase: 'ALLOCATE',
+        dicePool: generateDicePool(100), // Full health for now
+        selectedDieId: null,
+      };
+    }
+
+    case 'SELECT_DIE': {
+      // Valid in: ALLOCATE
+      if (state.cyclePhase !== 'ALLOCATE') {
+        return state;
+      }
+      const die = state.dicePool.find(d => d.id === action.dieId);
+      // Only allow selecting unassigned dice
+      if (!die || die.assignedTo !== null) {
+        return state;
+      }
+      // Toggle behavior: if same die selected, deselect
+      if (state.selectedDieId === action.dieId) {
+        return { ...state, selectedDieId: null };
+      }
+      return { ...state, selectedDieId: action.dieId };
+    }
+
+    case 'ASSIGN_DIE': {
+      // Valid in: ALLOCATE
+      if (state.cyclePhase !== 'ALLOCATE') {
+        return state;
+      }
+      // Requires a selected die
+      if (state.selectedDieId === null) {
+        return state;
+      }
+      return {
+        ...state,
+        dicePool: state.dicePool.map(die =>
+          die.id === state.selectedDieId
+            ? { ...die, assignedTo: action.actionId }
+            : die
+        ),
+        selectedDieId: null, // Clear selection after assignment
+      };
+    }
+
+    case 'UNASSIGN_DIE': {
+      // Valid in: ALLOCATE
+      if (state.cyclePhase !== 'ALLOCATE') {
+        return state;
+      }
+      const dieToUnassign = state.dicePool.find(d => d.id === action.dieId);
+      if (!dieToUnassign) {
+        return state;
+      }
+      return {
+        ...state,
+        dicePool: state.dicePool.map(die =>
+          die.id === action.dieId
+            ? { ...die, assignedTo: null }
+            : die
+        ),
+        // If unassigned die was selected, clear selection
+        selectedDieId: state.selectedDieId === action.dieId ? null : state.selectedDieId,
+      };
+    }
+
+    case 'CONFIRM_ALLOCATIONS': {
+      // Valid in: ALLOCATE
+      if (state.cyclePhase !== 'ALLOCATE') {
+        return state;
+      }
+      // At least one die must be assigned
+      const hasAssignedDice = state.dicePool.some(die => die.assignedTo !== null);
+      if (!hasAssignedDice) {
+        return state;
+      }
+      return {
+        ...state,
+        cyclePhase: 'RESOLVE',
+        selectedDieId: null,
+      };
+    }
+
+    case 'RESOLVE_NEXT': {
+      // Valid in: RESOLVE
+      if (state.cyclePhase !== 'RESOLVE') {
+        return state;
+      }
+      // For now, just transition to SUMMARY (actual resolution logic in Plan 04)
+      return {
+        ...state,
+        cyclePhase: 'SUMMARY',
+      };
+    }
+
+    case 'VIEW_SUMMARY': {
+      // Valid in: RESOLVE
+      if (state.cyclePhase !== 'RESOLVE') {
+        return state;
+      }
+      return {
+        ...state,
+        cyclePhase: 'SUMMARY',
+      };
+    }
+
+    case 'ADVANCE_CLOCK': {
+      // Valid in: any phase (typically called during RESOLVE)
+      const clockIndex = state.clocks.findIndex(c => c.id === action.clockId);
+      if (clockIndex === -1) {
+        return state;
+      }
+      const clock = state.clocks[clockIndex];
+      const newFilled = Math.min(clock.segments, clock.filled + action.amount);
+      return {
+        ...state,
+        clocks: [
+          ...state.clocks.slice(0, clockIndex),
+          { ...clock, filled: newFilled },
+          ...state.clocks.slice(clockIndex + 1),
+        ],
+      };
+    }
+
+    case 'END_CYCLE': {
+      // Valid in: SUMMARY
+      if (state.cyclePhase !== 'SUMMARY') {
+        return state;
+      }
+      // Advance autoAdvance clocks by 1
+      const advancedClocks = state.clocks.map(clock =>
+        clock.autoAdvance
+          ? { ...clock, filled: Math.min(clock.segments, clock.filled + 1) }
+          : clock
+      );
+      return {
+        ...state,
+        cyclePhase: 'WAKE',
+        cycleNumber: state.cycleNumber + 1,
+        dicePool: [], // Clear dice pool
+        selectedDieId: null,
+        clocks: advancedClocks,
+      };
+    }
+
+    case 'REST_EARLY': {
+      // Valid in: ALLOCATE
+      if (state.cyclePhase !== 'ALLOCATE') {
+        return state;
+      }
+      // Skip to SUMMARY with remaining dice unused
+      return {
+        ...state,
+        cyclePhase: 'SUMMARY',
+        selectedDieId: null,
+      };
+    }
+
     default:
       return state;
   }
