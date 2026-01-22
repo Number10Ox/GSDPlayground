@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer, type ReactNode, type Dispatch } from 'react';
-import type { GameState, GameAction, Location, Clock } from '@/types/game';
+import type { GameState, GameAction, Location, Clock, AvailableAction } from '@/types/game';
 import { generateDicePool } from '@/utils/dice';
 
 // Sample town data for Phase 1 (will be procedurally generated later)
@@ -17,6 +17,15 @@ const SAMPLE_CLOCKS: Clock[] = [
   { id: 'trust-earned', label: 'Trust Earned', segments: 4, filled: 1, type: 'progress', autoAdvance: false },
 ];
 
+// Sample actions for testing the cycle system
+const SAMPLE_ACTIONS: AvailableAction[] = [
+  { id: 'investigate-chapel', name: 'Investigate the Chapel', description: 'Look for signs of what troubles this place', locationId: 'church', diceCost: 1, available: true },
+  { id: 'talk-sheriff', name: 'Talk to the Sheriff', description: 'The law might know something', locationId: 'sheriffs-office', diceCost: 1, available: true },
+  { id: 'search-store', name: 'Search the Store', description: 'Ezekiel seems nervous', locationId: 'general-store', diceCost: 2, available: true },
+  { id: 'pray', name: 'Pray for Guidance', description: 'Seek wisdom from the King of Life', locationId: null, diceCost: 1, available: true },
+  { id: 'rest-early', name: 'Rest Early', description: 'End the day and recover', locationId: null, diceCost: 0, available: true },
+];
+
 const initialState: GameState = {
   // Existing Phase 1 state
   currentLocation: 'town-square',
@@ -30,6 +39,7 @@ const initialState: GameState = {
   dicePool: [],
   selectedDieId: null,
   clocks: SAMPLE_CLOCKS,
+  availableActions: SAMPLE_ACTIONS,
 };
 
 function gameReducer(state: GameState, action: GameAction): GameState {

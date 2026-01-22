@@ -29,6 +29,7 @@ export interface GameState {
   dicePool: Die[];
   selectedDieId: string | null;
   clocks: Clock[];
+  availableActions: AvailableAction[];
 }
 
 export type GameAction =
@@ -71,4 +72,15 @@ export interface Clock {
   filled: number;       // How many segments filled (0 to segments)
   type: ClockType;
   autoAdvance: boolean; // Whether it advances each cycle automatically
+}
+
+// Actions available to player during allocation phase
+export interface AvailableAction {
+  id: string;
+  name: string;
+  description: string;
+  locationId: LocationId | null;  // null = available anywhere
+  diceCost: number;               // 0 = free action (movement, observation)
+  available: boolean;             // Requirements met?
+  requirementHint?: string;       // "Requires: Talk to Sheriff first"
 }
