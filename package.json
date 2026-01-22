@@ -14,6 +14,8 @@
     "test:e2e:debug": "playwright test --debug"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.23",
+    "ai": "^6.0.48",
     "framer-motion": "^12.28.1",
     "immer": "^11.1.3",
     "lucide-react": "^0.562.0",
