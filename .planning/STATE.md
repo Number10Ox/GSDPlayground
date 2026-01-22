@@ -10,16 +10,16 @@ See: .planning/PROJECT.md (updated 2026-01-20)
 ## Current Position
 
 Phase: 2.1 of 7 (E2E Testing Infrastructure)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-01-21 — Completed 02.1-01-PLAN.md (Playwright Setup)
+Last activity: 2026-01-22 — Completed 02.1-02-PLAN.md (Cycle System E2E Tests)
 
-Progress: [██████░░░░] 50%
+Progress: [███████░░░] 60%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
+- Total plans completed: 8
 - Average duration: 4 min
 - Total execution time: 0.5 hours
 
@@ -29,10 +29,10 @@ Progress: [██████░░░░] 50%
 |-------|-------|-------|----------|
 | 01-foundation | 2 | 7 min | 3.5 min |
 | 02-cycle-system | 4 | 17 min | 4.25 min |
-| 02.1-e2e-testing | 1 | 4 min | 4 min |
+| 02.1-e2e-testing | 2 | 8 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (4min), 02-02 (3min), 02-03 (2min), 02-04 (8min), 02.1-01 (4min)
+- Last 5 plans: 02-02 (3min), 02-03 (2min), 02-04 (8min), 02.1-01 (4min), 02.1-02 (4min)
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -66,6 +66,8 @@ Recent decisions affecting current work:
 - [02.1-01]: Chromium-only Playwright project (add browsers later if needed)
 - [02.1-01]: data-testid attributes over CSS selectors for E2E stability
 - [02.1-01]: webServer config auto-starts Vite dev server for tests
+- [02.1-02]: Step definitions as helper functions (not cucumber-style) for flexibility
+- [02.1-02]: data-testid includes semantic data attributes (data-die-type, data-action-id)
 
 ### Pending Todos
 
@@ -78,8 +80,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-21
-Stopped at: Completed 02.1-01-PLAN.md (Playwright Setup)
+Last session: 2026-01-22
+Stopped at: Completed 02.1-02-PLAN.md (Cycle System E2E Tests)
 Resume file: None
 
 ## Phase 2 Completion Notes
@@ -91,3 +93,9 @@ Phase 2 complete. Core cycle system functional:
 - Action allocation UI with dice assignment flow
 
 **User feedback:** Action panel positioning (fixed overlay) should evolve to Citizen Sleeper-style contextual display. Noted for future UX refinement - not blocking.
+
+## Phase 2.1 Progress Notes
+
+E2E testing infrastructure building:
+- Plan 01: Playwright with Chromium, webServer auto-start, base fixtures
+- Plan 02: BDD feature file, step helpers, 9 cycle flow tests, bug fix for REST phase
