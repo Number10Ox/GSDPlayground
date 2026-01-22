@@ -111,8 +111,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SAVE-02 | Phase 7 | Pending |
 | PROC-01 | Phase 6 | Pending |
 | PROC-02 | Phase 6 | Pending |
-| UI-01 | Phase 1 | Pending |
-| UI-02 | Phase 1 | Pending |
+| UI-01 | Phase 1 | Complete |
+| UI-02 | Phase 1 | Complete |
 | UI-03 | Phase 2 | Pending |
 
 **Coverage:**
@@ -122,4 +122,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-20*
-*Last updated: 2026-01-20 after roadmap creation*
+*Last updated: 2026-01-21 after Phase 1 completion*

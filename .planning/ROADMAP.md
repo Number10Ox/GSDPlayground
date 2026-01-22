@@ -10,7 +10,7 @@ This roadmap delivers a browser-based CRPG adapting Dogs in the Vineyard. The jo
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 1: Foundation** - React/Vite/TypeScript setup with minimal text-heavy UI shell
+- [x] **Phase 1: Foundation** - React/Vite/TypeScript setup with minimal text-heavy UI shell
 - [ ] **Phase 2: Cycle System** - Daily cycle structure with dice pool generation and allocation
 - [ ] **Phase 3: Conflict System** - DitV escalation, raise/see mechanics, and fallout
 - [ ] **Phase 4: Character System** - Stats, traits, inventory, and relationships affecting gameplay
@@ -32,8 +32,8 @@ This roadmap delivers a browser-based CRPG adapting Dogs in the Vineyard. The jo
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Project setup (Vite, React, TypeScript, Tailwind, folder structure)
-- [ ] 01-02-PLAN.md — Core UI components (node map, narrative panel, character info sidebar)
+- [x] 01-01-PLAN.md — Project setup (Vite, React, TypeScript, Tailwind, folder structure)
+- [x] 01-02-PLAN.md — Core UI components (node map, narrative panel, character info sidebar)
 
 ### Phase 2: Cycle System
 **Goal**: Player experiences complete daily cycles with dice allocation decisions
@@ -145,7 +145,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/2 | Planned | - |
+| 1. Foundation | 2/2 | Complete | 2026-01-21 |
 | 2. Cycle System | 0/4 | Not started | - |
 | 3. Conflict System | 0/4 | Not started | - |
 | 4. Character System | 0/4 | Not started | - |
@@ -153,7 +153,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 6. Town Generation | 0/4 | Not started | - |
 | 7. Persistence | 0/3 | Not started | - |
 
-**Total:** 0/25 plans complete
+**Total:** 2/25 plans complete
 
 ---
 *Roadmap created: 2026-01-20*
