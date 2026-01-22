@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-20)
 ## Current Position
 
 Phase: 3 of 7 (Conflict System)
-Plan: 3 of 3 in current phase
+Plan: 4 of 4 in current phase
 Status: Phase complete
-Last activity: 2026-01-22 — Completed 03-03-PLAN.md (Fallout Revelation)
+Last activity: 2026-01-22 — Completed 03-04-PLAN.md (NPC Witness/Memory System)
 
-Progress: [████████░░] 80%
+Progress: [████████░░] 85%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
+- Total plans completed: 13
 - Average duration: 4 min
-- Total execution time: 0.7 hours
+- Total execution time: 0.8 hours
 
 **By Phase:**
 
@@ -30,10 +30,10 @@ Progress: [████████░░] 80%
 | 01-foundation | 2 | 7 min | 3.5 min |
 | 02-cycle-system | 4 | 17 min | 4.25 min |
 | 02.1-e2e-testing | 2 | 8 min | 4 min |
-| 03-conflict-system | 3 | 13 min | 4.3 min |
+| 03-conflict-system | 4 | 19 min | 4.75 min |
 
 **Recent Trend:**
-- Last 5 plans: 02.1-01 (4min), 02.1-02 (4min), 03-01 (3min), 03-02 (5min), 03-03 (5min)
+- Last 5 plans: 02.1-02 (4min), 03-01 (3min), 03-02 (5min), 03-03 (5min), 03-04 (6min)
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -81,6 +81,10 @@ Recent decisions affecting current work:
 - [03-03]: Four-phase fallout reveal sequence (GATHERING/ROLLING/CALCULATION/VERDICT)
 - [03-03]: Severity penalties: MINOR=-10, SERIOUS=-30, DEADLY=-50, DEATH=0
 - [03-03]: characterCondition (0-100) affects dice pool generation
+- [03-04]: Relationship penalties: JUST_TALKING=0, PHYSICAL=-5, FIGHTING=-15, GUNPLAY=-30
+- [03-04]: Targeted NPCs receive double relationship penalty
+- [03-04]: Three marker types based on severity: crossed fists (amber), crossed guns (red), broken trust (dark red)
+- [03-04]: NPCMemoryProvider wraps app inside GameProvider
 
 ### Pending Todos
 
@@ -93,7 +97,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 03-03-PLAN.md (Fallout Revelation)
+Stopped at: Completed 03-04-PLAN.md (NPC Witness/Memory System)
 Resume file: None
 
 ## Phase 2 Completion Notes
@@ -142,5 +146,8 @@ Phase 3 complete. Full conflict system functional:
 - Fallout reveal with four-phase animated sequence
 - Game state integration (characterCondition affects dice pool)
 - APPLY_FALLOUT action applies severity-based penalties
+- NPC witness/memory system with conflict history tracking
+- ConflictMarker and RelationshipPanel for visual feedback
+- Violence has persistent consequences through relationship levels
 
 Ready for Phase 4 (NPC AI and town generation integration).
