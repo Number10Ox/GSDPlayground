@@ -17,16 +17,36 @@ export interface Scene {
 }
 
 export interface GameState {
+  // Existing Phase 1 state
   currentLocation: LocationId;
   isPanelOpen: boolean;
   currentScene: Scene | null;
   locations: Location[];
+
+  // Cycle state
+  cyclePhase: CyclePhase;
+  cycleNumber: number;
+  dicePool: Die[];
+  selectedDieId: string | null;
+  clocks: Clock[];
 }
 
 export type GameAction =
+  // Existing Phase 1 actions
   | { type: 'NAVIGATE'; locationId: LocationId }
   | { type: 'OPEN_PANEL'; scene: Scene }
-  | { type: 'CLOSE_PANEL' };
+  | { type: 'CLOSE_PANEL' }
+  // Cycle actions
+  | { type: 'START_CYCLE' }
+  | { type: 'SELECT_DIE'; dieId: string }
+  | { type: 'ASSIGN_DIE'; actionId: string }
+  | { type: 'UNASSIGN_DIE'; dieId: string }
+  | { type: 'CONFIRM_ALLOCATIONS' }
+  | { type: 'RESOLVE_NEXT' }
+  | { type: 'ADVANCE_CLOCK'; clockId: string; amount: number }
+  | { type: 'VIEW_SUMMARY' }
+  | { type: 'END_CYCLE' }
+  | { type: 'REST_EARLY' };
 
 // Dice types (DitV polyhedral)
 export type DieType = 'd4' | 'd6' | 'd8' | 'd10';
