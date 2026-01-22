@@ -71,6 +71,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (state.cyclePhase !== 'WAKE' && state.cyclePhase !== 'REST') {
         return state;
       }
+      // From REST: go to WAKE for next day with incremented cycle number
+      if (state.cyclePhase === 'REST') {
+        return {
+          ...state,
+          cyclePhase: 'WAKE',
+          cycleNumber: state.cycleNumber + 1,
+        };
+      }
+      // From WAKE: go to ALLOCATE and generate dice
       return {
         ...state,
         cyclePhase: 'ALLOCATE',
@@ -208,8 +217,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       );
       return {
         ...state,
-        cyclePhase: 'WAKE',
-        cycleNumber: state.cycleNumber + 1,
+        cyclePhase: 'REST',
         dicePool: [], // Clear dice pool
         selectedDieId: null,
         clocks: advancedClocks,
