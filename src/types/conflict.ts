@@ -87,6 +87,8 @@ export type ConflictState =
       currentTurn: ConflictTurnPhase;
       currentRaise: CurrentRaise | null;
       falloutDice: FalloutDice[];
+      usedTraits: string[];   // Trait IDs invoked this conflict (once per trait)
+      usedItems: string[];    // Item IDs used this conflict (once per item)
     }
   | {
       phase: 'RESOLVED';
@@ -140,4 +142,14 @@ export type ConflictAction =
       type: 'RESOLVE_CONFLICT';
       outcome: ConflictOutcome;
       witnesses: string[];
+    }
+  | {
+      type: 'INVOKE_TRAIT';
+      traitId: string;
+      dice: Die[];  // Already rolled dice to add to player pool
+    }
+  | {
+      type: 'USE_ITEM';
+      itemId: string;
+      dice: Die[];  // Already rolled dice to add to player pool
     };

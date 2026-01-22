@@ -86,6 +86,8 @@ export function conflictReducer(
         currentTurn: 'PLAYER_RAISE',
         currentRaise: null,
         falloutDice: [],
+        usedTraits: [],
+        usedItems: [],
       };
     }
 
@@ -417,6 +419,48 @@ export function conflictReducer(
         outcome: action.outcome,
         fallout,
         witnesses: action.witnesses,
+      };
+    }
+
+    case 'INVOKE_TRAIT': {
+      // Phase guard: ACTIVE only
+      if (state.phase !== 'ACTIVE') {
+        return state;
+      }
+      // Turn guard: only during player's raise or see
+      if (state.currentTurn !== 'PLAYER_RAISE' && state.currentTurn !== 'PLAYER_SEE') {
+        return state;
+      }
+      // Guard: trait must not already be used this conflict
+      if (state.usedTraits.includes(action.traitId)) {
+        return state;
+      }
+
+      return {
+        ...state,
+        usedTraits: [...state.usedTraits, action.traitId],
+        playerPool: [...state.playerPool, ...action.dice],
+      };
+    }
+
+    case 'USE_ITEM': {
+      // Phase guard: ACTIVE only
+      if (state.phase !== 'ACTIVE') {
+        return state;
+      }
+      // Turn guard: only during player's raise or see
+      if (state.currentTurn !== 'PLAYER_RAISE' && state.currentTurn !== 'PLAYER_SEE') {
+        return state;
+      }
+      // Guard: item must not already be used this conflict
+      if (state.usedItems.includes(action.itemId)) {
+        return state;
+      }
+
+      return {
+        ...state,
+        usedItems: [...state.usedItems, action.itemId],
+        playerPool: [...state.playerPool, ...action.dice],
       };
     }
 
