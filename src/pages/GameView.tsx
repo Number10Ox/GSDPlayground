@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { NodeMap } from '@/components/NodeMap/NodeMap';
 import { NarrativePanel } from '@/components/NarrativePanel/NarrativePanel';
@@ -6,16 +6,70 @@ import { CharacterInfo } from '@/components/CharacterInfo/CharacterInfo';
 import { CycleView } from '@/components/CycleView/CycleView';
 import { ClockList } from '@/components/Clocks/ClockList';
 import { ConflictMarker, RelationshipPanel } from '@/components/NPCMemory';
+import { ConflictView } from '@/components/Conflict/ConflictView';
 import { useGameState } from '@/hooks/useGameState';
 import { useNPCMemory } from '@/hooks/useNPCMemory';
+import { initialConflictState, conflictReducer } from '@/reducers/conflictReducer';
+import type { ConflictState } from '@/types/conflict';
+import type { Die } from '@/types/game';
 
 export function GameView() {
-  const { state } = useGameState();
-  const { clocks, cycleNumber, cyclePhase, currentLocation, locations } = state;
+  const { state, dispatch } = useGameState();
+  const { clocks, cycleNumber, cyclePhase, currentLocation, locations, activeConflict } = state;
   const { npcs } = useNPCMemory();
 
   // Track selected NPC for relationship panel
   const [selectedNpcId, setSelectedNpcId] = useState<string | null>(null);
+
+  // Conflict state for ConflictView (dev mode test conflicts)
+  const [conflictState, setConflictState] = useState<ConflictState | null>(null);
+
+  // Start a test conflict (dev mode)
+  const handleStartTestConflict = useCallback(() => {
+    // Create deterministic dice pools for predictable E2E tests
+    // Player: 6 dice with good values (total ~30)
+    const playerDice: Die[] = [
+      { id: 'player-d1', type: 'd8', value: 6, assignedTo: null },
+      { id: 'player-d2', type: 'd8', value: 5, assignedTo: null },
+      { id: 'player-d3', type: 'd6', value: 4, assignedTo: null },
+      { id: 'player-d4', type: 'd6', value: 4, assignedTo: null },
+      { id: 'player-d5', type: 'd6', value: 3, assignedTo: null },
+      { id: 'player-d6', type: 'd4', value: 2, assignedTo: null },
+    ];
+
+    // NPC: 6 dice with similar values (total ~30)
+    const npcDice: Die[] = [
+      { id: 'npc-d1', type: 'd8', value: 6, assignedTo: null },
+      { id: 'npc-d2', type: 'd8', value: 5, assignedTo: null },
+      { id: 'npc-d3', type: 'd6', value: 4, assignedTo: null },
+      { id: 'npc-d4', type: 'd6', value: 4, assignedTo: null },
+      { id: 'npc-d5', type: 'd6', value: 3, assignedTo: null },
+      { id: 'npc-d6', type: 'd4', value: 2, assignedTo: null },
+    ];
+
+    // Create initial conflict state
+    const initialState = conflictReducer(initialConflictState, {
+      type: 'START_CONFLICT',
+      npcId: 'sheriff-jacob',
+      stakes: 'who controls the law in this town',
+      playerDice,
+      npcDice,
+    });
+
+    // Track in game state and local conflict state
+    dispatch({
+      type: 'START_GAME_CONFLICT',
+      npcId: 'sheriff-jacob',
+      stakes: 'who controls the law in this town',
+    });
+
+    setConflictState(initialState);
+  }, [dispatch]);
+
+  // Handle conflict completion
+  const handleConflictComplete = useCallback(() => {
+    setConflictState(null);
+  }, []);
 
   // Get current location info
   const currentLocationInfo = useMemo(() => {
@@ -111,6 +165,17 @@ export function GameView() {
             {currentLocationInfo?.description ?? 'A small town nestled in the mountains. Something feels wrong here.'}
           </p>
         </div>
+
+        {/* Dev mode: Test conflict button */}
+        {import.meta.env.DEV && !activeConflict && (
+          <button
+            data-testid="start-test-conflict"
+            onClick={handleStartTestConflict}
+            className="bg-red-900/50 hover:bg-red-800/50 text-red-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            Start Test Conflict
+          </button>
+        )}
       </aside>
 
       {/* Relationship panel (overlay) */}
@@ -122,6 +187,15 @@ export function GameView() {
           />
         )}
       </AnimatePresence>
+
+      {/* Conflict view (overlay) */}
+      {conflictState && conflictState.phase !== 'INACTIVE' && (
+        <ConflictView
+          initialState={conflictState}
+          npcName="Sheriff Jacob"
+          onComplete={handleConflictComplete}
+        />
+      )}
     </div>
   );
 }

@@ -37,26 +37,60 @@ export async function raiseWithDice(page: Page, count: number = 2) {
 
 /**
  * See the current raise with a specified number of dice.
+ * If specified count isn't enough to meet the raise, selects more dice.
  */
 export async function seeWithDice(page: Page, count: number) {
-  // Select dice to meet raise total
   const dice = page.locator('[data-testid^="raise-die-"]');
-  for (let i = 0; i < count; i++) {
+  const seeButton = page.getByTestId('see-submit-button');
+
+  // Select the specified count of dice
+  const availableCount = await dice.count();
+  const toSelect = Math.min(count, availableCount);
+
+  for (let i = 0; i < toSelect; i++) {
     await dice.nth(i).click();
   }
-  await page.getByTestId('see-submit-button').click();
+
+  // Check if see button is enabled
+  const isEnabled = await seeButton.isEnabled().catch(() => false);
+
+  // If not enough, select more dice until enabled or we run out
+  if (!isEnabled) {
+    for (let i = toSelect; i < availableCount; i++) {
+      await dice.nth(i).click();
+      const nowEnabled = await seeButton.isEnabled().catch(() => false);
+      if (nowEnabled) break;
+    }
+  }
+
+  // Click the see button (should be enabled now)
+  await expect(seeButton).toBeEnabled({ timeout: 2000 });
+  await seeButton.click();
 }
 
 /**
  * Give up in the current conflict.
+ * Waits for the give button to be visible (player's turn).
+ * If conflict has already resolved, does nothing.
  */
 export async function giveUp(page: Page) {
-  await page.getByTestId('give-button').click();
+  // Check if conflict is already resolved
+  const resolution = page.getByTestId('conflict-resolution');
+  const isResolved = await resolution.isVisible().catch(() => false);
+  if (isResolved) {
+    // Conflict already resolved (NPC gave up)
+    return;
+  }
+
+  // Wait for the give button to be visible (player's turn)
+  const giveButton = page.getByTestId('give-button');
+  await expect(giveButton).toBeVisible({ timeout: 8000 });
+  await giveButton.click();
+
   // Confirm give dialog
   const confirmBtn = page.getByTestId('give-confirm-button');
-  if (await confirmBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await confirmBtn.click();
-  }
+  await expect(confirmBtn).toBeVisible({ timeout: 2000 });
+  await confirmBtn.click();
 }
 
 // Escalation helpers
@@ -138,12 +172,22 @@ export async function openRelationshipPanel(page: Page, npcId: string) {
 // Wait helpers
 
 /**
- * Wait for NPC turn to complete (NPC thinking indicator disappears).
+ * Wait for NPC turn to complete.
+ * After player raises, NPC needs to: See (1-2s) + Raise (1-2s) = 2-4s total
+ * NPC might also give up if they can't see/raise, which ends the conflict.
  */
 export async function waitForNPCTurn(page: Page) {
-  // Wait for NPC to take their turn - the turn indicator changes back to player
-  // Give NPCs 1-2 seconds "thinking" time plus buffer
-  await page.waitForTimeout(2500);
+  // Wait for either:
+  // 1. Give button is visible (NPC finished, player's turn)
+  // 2. Conflict resolution is visible (NPC gave up)
+  const giveButton = page.getByTestId('give-button');
+  const resolution = page.getByTestId('conflict-resolution');
+
+  // Wait for either condition
+  await Promise.race([
+    expect(giveButton).toBeVisible({ timeout: 8000 }),
+    expect(resolution).toBeVisible({ timeout: 8000 }),
+  ]);
 }
 
 /**
