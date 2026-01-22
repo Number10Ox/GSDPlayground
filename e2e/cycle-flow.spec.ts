@@ -81,9 +81,9 @@ test.describe('Cycle System', () => {
     await expectDayNumber(page, 1);
     await startDay(page);
 
-    // Allocate dice
+    // Allocate dice (use global action available from any location)
     await selectFirstAvailableDie(page);
-    await assignDieToAction(page, 'Talk to the Sheriff');
+    await assignDieToAction(page, 'Pray for Guidance');
     await confirmAllocations(page);
 
     // Summary
@@ -107,18 +107,18 @@ test.describe('Cycle System', () => {
     await expectCycleSummaryVisible(page);
   });
 
-  test('can assign multiple dice to different actions', async ({ page }) => {
+  test('can assign multiple dice to same action', async ({ page }) => {
     await startDay(page);
 
     const initialCount = await getDiceCount(page);
 
-    // Assign first die
+    // Assign first die to Pray for Guidance
     await selectFirstAvailableDie(page);
     await assignDieToAction(page, 'Pray for Guidance');
 
-    // Assign second die
+    // Assign second die to same action (costs 1, but can take more)
     await selectFirstAvailableDie(page);
-    await assignDieToAction(page, 'Investigate the Chapel');
+    await assignDieToAction(page, 'Pray for Guidance');
 
     // Should have 2 fewer dice
     const finalCount = await getDiceCount(page);
