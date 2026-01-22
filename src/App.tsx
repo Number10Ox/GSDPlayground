@@ -1,9 +1,12 @@
+import { GameProvider } from '@/hooks/useGameState';
+import { GameView } from '@/pages/GameView';
+
 function App() {
   return (
-    <div className="min-h-screen bg-background text-gray-100">
-      <h1 className="text-narrative p-8">Dogs in the Vineyard</h1>
-    </div>
-  )
+    <GameProvider>
+      <GameView />
+    </GameProvider>
+  );
 }
 
-export default App
+export default App;
