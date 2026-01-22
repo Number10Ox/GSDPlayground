@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-20)
 ## Current Position
 
 Phase: 4 of 7 (Character System)
-Plan: 1 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-01-22 — Completed 04-01-PLAN.md (Character Types and State)
+Last activity: 2026-01-22 — Completed 04-03-PLAN.md (Trait & Item Invocation)
 
-Progress: [████████░░] 88%
+Progress: [█████████░] 94%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15
-- Average duration: 4.4 min
-- Total execution time: 1.13 hours
+- Total plans completed: 17
+- Average duration: 4.2 min
+- Total execution time: 1.2 hours
 
 **By Phase:**
 
@@ -33,8 +33,8 @@ Progress: [████████░░] 88%
 | 03-conflict-system | 5 | 35 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-02 (5min), 03-03 (5min), 03-04 (6min), 03-05 (16min), 04-01 (2min)
-- Trend: Fast execution for type/reducer plans; E2E plans remain longer
+- Last 5 plans: 03-04 (6min), 03-05 (16min), 04-01 (2min), 04-02 (2min), 04-03 (3min)
+- Trend: Component+reducer plans consistently fast (2-3 min)
 
 *Updated after each plan completion*
 
@@ -92,6 +92,9 @@ Recent decisions affecting current work:
 - [04-01]: Stat.modifier tracks temporary injury reduction without mutating base dice
 - [04-01]: CharacterProvider wraps outermost (character is most fundamental entity)
 - [04-01]: Character state starts null until SET_CHARACTER (no character until creation)
+- [04-03]: CharacterDie rolled to Die (with value) at invocation time, not pre-rolled
+- [04-03]: Unified trait+item panel (single component with section headers)
+- [04-03]: TraitAndItemInvocation receives props from ConflictView (testable, decoupled)
 
 ### Pending Todos
 
@@ -104,7 +107,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 04-01-PLAN.md (Character Types and State)
+Stopped at: Completed 04-03-PLAN.md (Trait & Item Invocation)
 Resume file: None
 
 ## Phase 2 Completion Notes
