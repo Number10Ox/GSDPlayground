@@ -49,6 +49,8 @@ export function ActionCard({
   return (
     <div
       onClick={handleCardClick}
+      data-testid="action-card"
+      data-action-id={action.id}
       className={`
         bg-surface-light rounded-lg p-4 transition-all
         ${!isAvailable ? 'opacity-50 cursor-not-allowed' : ''}
@@ -91,6 +93,7 @@ export function ActionCard({
               <button
                 key={die.id}
                 onClick={(e) => handleDieClick(e, die.id)}
+                data-testid={`assigned-die-${die.id}`}
                 className="hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-amber-400 rounded"
                 aria-label={`Unassign ${die.type} showing ${die.value}`}
               >

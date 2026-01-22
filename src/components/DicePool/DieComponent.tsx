@@ -33,6 +33,11 @@ export function DieComponent({ die, isSelected, isFocused, onSelect }: DieCompon
       aria-selected={isSelected}
       aria-label={`${die.type} showing ${die.value}`}
       tabIndex={-1}
+      data-testid="die"
+      data-die-id={die.id}
+      data-die-type={die.type}
+      data-die-value={die.value}
+      data-selected={isSelected}
       className={`
         relative p-1 rounded-lg transition-all duration-150
         focus:outline-none

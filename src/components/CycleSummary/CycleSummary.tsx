@@ -45,6 +45,7 @@ export function CycleSummary({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        data-testid="cycle-summary-overlay"
         className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
       >
         <motion.div
@@ -55,7 +56,10 @@ export function CycleSummary({
           className="bg-surface max-w-lg w-full mx-4 rounded-lg p-6 shadow-xl"
         >
           {/* Title */}
-          <h2 className="text-2xl font-bold text-gray-100 border-b border-gray-700 pb-3 mb-4">
+          <h2
+            data-testid="cycle-summary-title"
+            className="text-2xl font-bold text-gray-100 border-b border-gray-700 pb-3 mb-4"
+          >
             End of Day {cycleNumber}
           </h2>
 
@@ -67,7 +71,7 @@ export function CycleSummary({
             {hasActions ? (
               <ul className="space-y-3">
                 {actionsCompleted.map((item, index) => (
-                  <li key={index} className="bg-surface-light rounded p-3">
+                  <li key={index} data-testid="action-result" className="bg-surface-light rounded p-3">
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-gray-100">{item.action.name}</span>
                       <div className="flex gap-1">
@@ -114,6 +118,7 @@ export function CycleSummary({
           {/* Continue Button */}
           <button
             onClick={onContinue}
+            data-testid="continue-button"
             className="w-full py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-gray-900"
           >
             Continue
