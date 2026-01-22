@@ -1,10 +1,13 @@
 import { GameProvider } from '@/hooks/useGameState';
+import { NPCMemoryProvider } from '@/hooks/useNPCMemory';
 import { GameView } from '@/pages/GameView';
 
 function App() {
   return (
     <GameProvider>
-      <GameView />
+      <NPCMemoryProvider>
+        <GameView />
+      </NPCMemoryProvider>
     </GameProvider>
   );
 }

@@ -1,11 +1,12 @@
-import { useState, useReducer, useCallback, useEffect, useMemo } from 'react';
+import { useState, useReducer, useCallback, useEffect, useMemo, useRef } from 'react';
 import { AnimatePresence, LayoutGroup } from 'framer-motion';
-import type { EscalationLevel, FalloutSeverity } from '@/types/conflict';
+import type { EscalationLevel, FalloutSeverity, ConflictOutcome } from '@/types/conflict';
 import type { Die } from '@/types/game';
 import { ESCALATION_ORDER } from '@/types/conflict';
 import { conflictReducer, initialConflictState } from '@/reducers/conflictReducer';
 import { useConflictAtmosphere } from '@/hooks/useConflictAtmosphere';
 import { useGameState } from '@/hooks/useGameState';
+import { useNPCMemory } from '@/hooks/useNPCMemory';
 import { RaiseControls } from './RaiseControls';
 import { EscalationConfirm } from './EscalationConfirm';
 import { EscalationIndicator } from './EscalationIndicator';
@@ -83,14 +84,31 @@ interface ConflictViewProps {
 export function ConflictView({
   initialState,
   npcName: npcNameProp,
-  witnesses = [],
+  witnesses: witnessesProp = [],
   onComplete,
 }: ConflictViewProps) {
-  const { dispatch: gameDispatch } = useGameState();
+  const { state: gameState, dispatch: gameDispatch } = useGameState();
+  const { dispatch: npcDispatch, getWitnessesAtLocation } = useNPCMemory();
   const [state, dispatch] = useReducer(
     conflictReducer,
     initialState ?? initialConflictState
   );
+
+  // Track whether we've recorded this conflict's outcome
+  const hasRecordedConflict = useRef(false);
+
+  // Get witnesses at current location (including the conflict opponent)
+  const witnesses = useMemo(() => {
+    if (witnessesProp.length > 0) return witnessesProp;
+
+    const locationWitnesses = getWitnessesAtLocation(gameState.currentLocation);
+    // Include the NPC opponent if they're not already in the witness list
+    const opponentId = state.phase === 'ACTIVE' ? state.npcId : null;
+    if (opponentId && !locationWitnesses.includes(opponentId)) {
+      return [...locationWitnesses, opponentId];
+    }
+    return locationWitnesses;
+  }, [witnessesProp, getWitnessesAtLocation, gameState.currentLocation, state]);
 
   // Get NPC name from state or prop
   const npcName = useMemo(() => {
@@ -127,6 +145,44 @@ export function ConflictView({
 
   // Apply atmosphere theming
   useConflictAtmosphere(highestEscalation);
+
+  // Record conflict to NPC memory when resolved
+  useEffect(() => {
+    if (state.phase !== 'RESOLVED') return;
+    if (hasRecordedConflict.current) return;
+
+    // Mark as recorded to prevent duplicate dispatches
+    hasRecordedConflict.current = true;
+
+    // Generate description from outcome
+    const outcomeDescriptions: Record<ConflictOutcome, string> = {
+      PLAYER_WON: 'The Dog prevailed in the conflict',
+      PLAYER_GAVE: 'The Dog backed down from the confrontation',
+      NPC_GAVE: 'They yielded to the Dog\'s pressure',
+    };
+
+    // Determine the target NPC if the opponent was directly involved
+    const targetNpcId = gameState.activeConflict?.npcId;
+
+    // Record to NPC memory
+    npcDispatch({
+      type: 'RECORD_CONFLICT',
+      conflictData: {
+        escalationLevel: state.fallout.falloutType === 'LETHAL'
+          ? 'GUNPLAY'
+          : state.fallout.falloutType === 'VIOLENT'
+            ? 'FIGHTING'
+            : state.fallout.falloutType === 'PHYSICAL'
+              ? 'PHYSICAL'
+              : 'JUST_TALKING',
+        outcome: state.outcome,
+        location: gameState.currentLocation,
+        description: outcomeDescriptions[state.outcome],
+        targetNpcId,
+      },
+      witnesses: state.witnesses.length > 0 ? state.witnesses : witnesses,
+    });
+  }, [state, gameState.activeConflict, gameState.currentLocation, npcDispatch, witnesses]);
 
   // NPC AI turn handling
   useEffect(() => {
