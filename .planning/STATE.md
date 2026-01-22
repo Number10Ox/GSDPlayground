@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-20)
 ## Current Position
 
 Phase: 3 of 7 (Conflict System)
-Plan: 1 of 3 in current phase
-Status: In progress
-Last activity: 2026-01-22 — Completed 03-01-PLAN.md (Conflict Foundation)
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-01-22 — Completed 03-03-PLAN.md (Fallout Revelation)
 
-Progress: [████████░░] 70%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
+- Total plans completed: 12
 - Average duration: 4 min
-- Total execution time: 0.5 hours
+- Total execution time: 0.7 hours
 
 **By Phase:**
 
@@ -30,10 +30,10 @@ Progress: [████████░░] 70%
 | 01-foundation | 2 | 7 min | 3.5 min |
 | 02-cycle-system | 4 | 17 min | 4.25 min |
 | 02.1-e2e-testing | 2 | 8 min | 4 min |
-| 03-conflict-system | 1 | 3 min | 3 min |
+| 03-conflict-system | 3 | 13 min | 4.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-03 (2min), 02-04 (8min), 02.1-01 (4min), 02.1-02 (4min), 03-01 (3min)
+- Last 5 plans: 02.1-01 (4min), 02.1-02 (4min), 03-01 (3min), 03-02 (5min), 03-03 (5min)
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -73,6 +73,11 @@ Recent decisions affecting current work:
 - [03-01]: Turn guards (PLAYER_RAISE/NPC_SEE etc) enforce valid action order in reducer
 - [03-01]: Silent fail pattern returns state unchanged on invalid actions (consistent with Phase 2)
 - [03-01]: CSS variables on document.body for global atmosphere theming
+- [03-02]: Multi-select dice with toggle behavior for raise/see actions
+- [03-02]: Internal monologues hand-written per escalation level (not generated)
+- [03-02]: 1.5 second delay before GUNPLAY escalation confirm enabled
+- [03-02]: NPC AI: random dice for raise, greedy algorithm for see
+- [03-02]: See types: Reversed the Blow (1 die), Blocked/Dodged (2 dice), Took the Blow (3+ dice)
 
 ### Pending Todos
 
@@ -85,7 +90,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 03-01-PLAN.md (Conflict Foundation)
+Stopped at: Completed 03-02-PLAN.md (Conflict UI)
 Resume file: None
 
 ## Phase 2 Completion Notes
@@ -116,3 +121,11 @@ Plan 03-01 complete. Conflict foundation in place:
 - useConflictAtmosphere hook for escalation theming
 
 Ready for Plan 03-02 (Conflict UI).
+
+Plan 03-02 complete. Conflict UI functional:
+- RaiseControls with multi-select dice validation
+- EscalationConfirm with hand-written internal monologues
+- EscalationIndicator showing player/NPC escalation levels
+- BiddingHistory with see type classification
+- ConflictView orchestrator with NPC AI
+- All data-testid attributes for E2E testing
