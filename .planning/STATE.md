@@ -5,22 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** The player must be able to arrive in a procedurally generated town, discover its moral rot through investigation and NPC interaction, and resolve conflicts using the escalating stakes system — experiencing the weight of judgment that defines Dogs in the Vineyard.
-**Current focus:** Phase 4 - Character System (E2E testing complete)
+**Current focus:** Phase 5 - Investigation System (types and state foundation complete)
 
 ## Current Position
 
-Phase: 4 of 7 (Character System)
-Plan: 5 of 5 in current phase
-Status: Phase complete (including E2E tests)
-Last activity: 2026-01-22 — Completed 04-05-PLAN.md (Character System E2E Tests)
+Phase: 5 of 7 (Investigation)
+Plan: 1 of 6 in current phase
+Status: In progress
+Last activity: 2026-01-22 — Completed 05-01-PLAN.md (Investigation Types and State)
 
-Progress: [██████████] 100%
+Progress: [██████████████░░░░░░] 70%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 19
-- Average duration: 5.0 min
+- Total plans completed: 20
+- Average duration: 4.9 min
 - Total execution time: 1.6 hours
 
 **By Phase:**
@@ -32,10 +32,11 @@ Progress: [██████████] 100%
 | 02.1-e2e-testing | 2 | 8 min | 4 min |
 | 03-conflict-system | 5 | 35 min | 7 min |
 | 04-character-system | 5 | 29 min | 5.8 min |
+| 05-investigation | 1 | 2 min | 2 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-01 (2min), 04-02 (2min), 04-03 (3min), 04-04 (5min), 04-05 (17min)
-- Trend: E2E test plans take longer due to wiring up missing app integration
+- Last 5 plans: 04-03 (3min), 04-04 (5min), 04-05 (17min), 05-01 (2min)
+- Trend: Pure type/state plans execute fastest; E2E plans take longest
 
 *Updated after each plan completion*
 
@@ -108,6 +109,11 @@ Recent decisions affecting current work:
 - [04-05]: CharacterCreation triggered by button click (not auto-shown) to avoid blocking existing tests
 - [04-05]: Dev-mode Add Test Trait button for deterministic trait invocation testing
 - [04-05]: CharacterSheet overlay accessible via "View Character Sheet" button in sidebar
+- [05-01]: Discovery type defined in investigation.ts, imported by dialogue.ts (single source of truth)
+- [05-01]: FatigueClock max=6 (one segment per conversation per cycle)
+- [05-01]: SIN_CHAIN_ORDER exported as constant for generation/resolution logic
+- [05-01]: InvestigationProvider not wired into App.tsx yet (deferred to 05-05)
+- [05-01]: Existing research dialogue.ts fully replaced with plan-specified interface
 
 ### Pending Todos
 
@@ -120,7 +126,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 04-05-PLAN.md (Character System E2E Tests) - Phase 4 fully complete with E2E coverage
+Stopped at: Completed 05-01-PLAN.md (Investigation Types and State) - Phase 5 plan 1 of 6 complete
 Resume file: None
 
 ## Phase 2 Completion Notes
