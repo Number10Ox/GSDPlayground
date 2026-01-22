@@ -78,6 +78,9 @@ Recent decisions affecting current work:
 - [03-02]: 1.5 second delay before GUNPLAY escalation confirm enabled
 - [03-02]: NPC AI: random dice for raise, greedy algorithm for see
 - [03-02]: See types: Reversed the Blow (1 die), Blocked/Dodged (2 dice), Took the Blow (3+ dice)
+- [03-03]: Four-phase fallout reveal sequence (GATHERING/ROLLING/CALCULATION/VERDICT)
+- [03-03]: Severity penalties: MINOR=-10, SERIOUS=-30, DEADLY=-50, DEATH=0
+- [03-03]: characterCondition (0-100) affects dice pool generation
 
 ### Pending Todos
 
@@ -90,7 +93,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 03-02-PLAN.md (Conflict UI)
+Stopped at: Completed 03-03-PLAN.md (Fallout Revelation)
 Resume file: None
 
 ## Phase 2 Completion Notes
@@ -129,3 +132,15 @@ Plan 03-02 complete. Conflict UI functional:
 - BiddingHistory with see type classification
 - ConflictView orchestrator with NPC AI
 - All data-testid attributes for E2E testing
+
+## Phase 3 Completion Notes
+
+Phase 3 complete. Full conflict system functional:
+- Conflict state machine with discriminated unions and turn guards
+- Raise/see bidding with DitV rules (reverse, block, take the blow)
+- Escalation system with dramatic internal monologues
+- Fallout reveal with four-phase animated sequence
+- Game state integration (characterCondition affects dice pool)
+- APPLY_FALLOUT action applies severity-based penalties
+
+Ready for Phase 4 (NPC AI and town generation integration).
