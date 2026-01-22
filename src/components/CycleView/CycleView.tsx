@@ -1,6 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { motion, LayoutGroup } from 'framer-motion';
 import { useGameState } from '@/hooks/useGameState';
+import { useCharacter } from '@/hooks/useCharacter';
+import { generateDicePool } from '@/utils/dice';
 import { DicePool } from '@/components/DicePool/DicePool';
 import { ActionList } from '@/components/Actions/ActionList';
 import { CycleSummary } from '@/components/CycleSummary/CycleSummary';
@@ -18,6 +20,7 @@ import type { AvailableAction, Die } from '@/types/game';
  */
 export function CycleView() {
   const { state, dispatch } = useGameState();
+  const { character } = useCharacter();
   const {
     cyclePhase,
     cycleNumber,
@@ -73,6 +76,12 @@ export function CycleView() {
   // Check if any dice are assigned (for Confirm button)
   const hasAssignedDice = dicePool.some((die) => die.assignedTo !== null);
 
+  // Start cycle with character-based dice pool
+  const startCycle = useCallback(() => {
+    const pool = generateDicePool(state.characterCondition, character);
+    dispatch({ type: 'START_CYCLE', dicePool: pool });
+  }, [state.characterCondition, character, dispatch]);
+
   // Handle dice selection
   const handleSelectDie = (dieId: string) => {
     dispatch({ type: 'SELECT_DIE', dieId });
@@ -111,7 +120,7 @@ export function CycleView() {
             <p className="text-gray-400 mb-6">The sun rises over Bridal Falls.</p>
             <button
               data-testid="start-day-button"
-              onClick={() => dispatch({ type: 'START_CYCLE' })}
+              onClick={startCycle}
               className="px-8 py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400"
             >
               Start Day
@@ -226,7 +235,7 @@ export function CycleView() {
             <p className="text-gray-400 mb-6">You rest and prepare for tomorrow.</p>
             <button
               data-testid="next-day-button"
-              onClick={() => dispatch({ type: 'START_CYCLE' })}
+              onClick={startCycle}
               className="px-8 py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400"
             >
               Next Day

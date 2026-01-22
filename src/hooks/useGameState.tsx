@@ -85,11 +85,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           cycleNumber: state.cycleNumber + 1,
         };
       }
-      // From WAKE: go to ALLOCATE and generate dice based on condition
+      // From WAKE: go to ALLOCATE with provided pool or condition-only fallback
       return {
         ...state,
         cyclePhase: 'ALLOCATE',
-        dicePool: generateDicePool(state.characterCondition),
+        dicePool: action.dicePool ?? generateDicePool(state.characterCondition),
         selectedDieId: null,
       };
     }

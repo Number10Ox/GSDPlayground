@@ -49,7 +49,7 @@ export type GameAction =
   | { type: 'OPEN_PANEL'; scene: Scene }
   | { type: 'CLOSE_PANEL' }
   // Cycle actions
-  | { type: 'START_CYCLE' }
+  | { type: 'START_CYCLE'; dicePool?: Die[] }
   | { type: 'SELECT_DIE'; dieId: string }
   | { type: 'ASSIGN_DIE'; actionId: string }
   | { type: 'UNASSIGN_DIE'; dieId: string }
