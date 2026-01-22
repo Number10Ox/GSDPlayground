@@ -106,14 +106,14 @@ Plans:
   2. Player can see and use inventory items (coat, gun, Book of Life, sacred earth)
   3. Conflict fallout can add new traits to the character
   4. Relationships with NPCs provide dice in relevant conflicts
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 04-01: Character stats and trait system
-- [ ] 04-02: Inventory system with usable items
-- [ ] 04-03: Fallout-to-trait conversion
-- [ ] 04-04: Relationship tracking and conflict dice bonuses
-- [ ] 04-05: Character system E2E tests
+- [ ] 04-01-PLAN.md — Character types, Immer reducer, and context provider (foundation for all character features)
+- [ ] 04-02-PLAN.md — Stat display with icons, character creation UI, stat-based dice pool generation
+- [ ] 04-03-PLAN.md — Inventory display, trait list, and mid-conflict trait/item invocation
+- [ ] 04-04-PLAN.md — Fallout-to-trait conversion and relationship dice in conflicts
+- [ ] 04-05-PLAN.md — Character system E2E tests (BDD feature file, step helpers, Playwright specs)
 
 ### Phase 5: Investigation
 **Goal**: Player can investigate NPCs to discover the town's sin progression and find resolution paths
@@ -191,5 +191,6 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7
 *Phase 1 planned: 2026-01-21*
 *Phase 2 planned: 2026-01-21*
 *Phase 3 planned: 2026-01-22*
+*Phase 4 planned: 2026-01-22*
 *Depth: comprehensive*
 *Coverage: 23/23 v1 requirements mapped*
