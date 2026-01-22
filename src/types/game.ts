@@ -27,3 +27,15 @@ export type GameAction =
   | { type: 'NAVIGATE'; locationId: LocationId }
   | { type: 'OPEN_PANEL'; scene: Scene }
   | { type: 'CLOSE_PANEL' };
+
+// Clock types for tracking threats, opportunities, and progress
+export type ClockType = 'danger' | 'progress' | 'opportunity';
+
+export interface Clock {
+  id: string;
+  label: string;
+  segments: 4 | 6 | 8;
+  filled: number;       // How many segments filled (0 to segments)
+  type: ClockType;
+  autoAdvance: boolean; // Whether it advances each cycle automatically
+}
