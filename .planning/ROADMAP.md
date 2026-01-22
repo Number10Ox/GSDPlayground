@@ -88,14 +88,14 @@ Each phase will include E2E tests as the final plan:
   3. Player can raise (make a move) and see (counter) using dice bidding
   4. Conflicts produce fallout proportional to highest escalation reached
   5. NPCs remember violent conflicts and this affects future interactions
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 03-01: Conflict state machine (escalation levels, transitions)
-- [ ] 03-02: Raise/see bidding mechanics
-- [ ] 03-03: Fallout calculation and application
-- [ ] 03-04: NPC witness/memory system
-- [ ] 03-05: Conflict system E2E tests
+- [ ] 03-01-PLAN.md — Conflict types and state machine (discriminated unions, reducer, fallout utils, theming hook)
+- [ ] 03-02-PLAN.md — Raise/see bidding UI (RaiseControls, EscalationConfirm, EscalationIndicator, BiddingHistory, ConflictView)
+- [ ] 03-03-PLAN.md — Fallout reveal and game state integration (FalloutReveal animation, ConflictResolution, condition tracking)
+- [ ] 03-04-PLAN.md — NPC witness/memory system (NPC types, memory context, ConflictMarker, RelationshipPanel)
+- [ ] 03-05-PLAN.md — Conflict system E2E tests (BDD feature file, step helpers, Playwright specs)
 
 ### Phase 4: Character System
 **Goal**: Player's Dog has meaningful stats, traits, and inventory that affect gameplay
@@ -178,7 +178,7 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7
 | 1. Foundation | 2/2 | Complete | 2026-01-21 |
 | 2. Cycle System | 4/4 | Complete | 2026-01-22 |
 | 2.1 E2E Testing | 2/2 | Complete | 2026-01-22 |
-| 3. Conflict System | 0/5 | Not started | - |
+| 3. Conflict System | 0/5 | Planned | - |
 | 4. Character System | 0/5 | Not started | - |
 | 5. Investigation | 0/5 | Not started | - |
 | 6. Town Generation | 0/5 | Not started | - |
@@ -190,5 +190,6 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7
 *Roadmap created: 2026-01-20*
 *Phase 1 planned: 2026-01-21*
 *Phase 2 planned: 2026-01-21*
+*Phase 3 planned: 2026-01-22*
 *Depth: comprehensive*
 *Coverage: 23/23 v1 requirements mapped*
