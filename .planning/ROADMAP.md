@@ -74,7 +74,7 @@ Plans:
 Each phase will include E2E tests as the final plan:
 - Phase 3: 03-05-PLAN.md — Conflict system E2E tests
 - Phase 4: 04-05-PLAN.md — Character system E2E tests
-- Phase 5: 05-05-PLAN.md — Investigation E2E tests
+- Phase 5: 05-07-PLAN.md — Investigation E2E tests
 - Phase 6: 06-05-PLAN.md — Town generation E2E tests
 - Phase 7: 07-04-PLAN.md — Persistence E2E tests
 
@@ -124,14 +124,16 @@ Plans:
   2. Player can piece together how the root Pride cascaded into current problems
   3. Player can observe NPC relationships and stakes in the town's problems
   4. Player can pursue multiple valid paths to resolve the town's situation
-**Plans**: TBD
+**Plans**: 7 plans
 
 Plans:
-- [ ] 05-01: NPC dialogue system with ink integration
-- [ ] 05-02: Information revelation mechanics (what NPCs know and share)
-- [ ] 05-03: Sin progression discovery tracking
-- [ ] 05-04: Resolution path branching
-- [ ] 05-05: Investigation E2E tests
+- [ ] 05-01-PLAN.md — Investigation types, reducer, and context provider (sin progression, discovery, fatigue state)
+- [ ] 05-02-PLAN.md — LLM integration layer (knowledge gating, prompt templates, serverless API, mock handler)
+- [ ] 05-03-PLAN.md — Dialogue reducer and UI components (conversation FSM, topic/approach chips, typewriter, inner voice)
+- [ ] 05-04-PLAN.md — Mental map visualization (React Flow graph with sin chain and NPC nodes)
+- [ ] 05-05-PLAN.md — Fatigue clock, conflict triggering, and town resolution (cycle economy, escalation, endings)
+- [ ] 05-06-PLAN.md — Full integration (providers, GameView wiring, test town data)
+- [ ] 05-07-PLAN.md — Investigation E2E tests (BDD feature, step helpers, Playwright specs with mocked LLM)
 
 ### Phase 6: Town Generation
 **Goal**: Towns are generated with coherent sin progressions and interconnected NPCs
@@ -180,11 +182,11 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7
 | 2.1 E2E Testing | 2/2 | Complete | 2026-01-22 |
 | 3. Conflict System | 5/5 | Complete | 2026-01-22 |
 | 4. Character System | 5/5 | Complete | 2026-01-22 |
-| 5. Investigation | 0/5 | Not started | - |
+| 5. Investigation | 0/7 | Planned | - |
 | 6. Town Generation | 0/5 | Not started | - |
 | 7. Persistence | 0/4 | Not started | - |
 
-**Total:** 18/32 plans complete
+**Total:** 18/34 plans complete
 
 ---
 *Roadmap created: 2026-01-20*
@@ -192,5 +194,6 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7
 *Phase 2 planned: 2026-01-21*
 *Phase 3 planned: 2026-01-22*
 *Phase 4 planned: 2026-01-22*
+*Phase 5 planned: 2026-01-22*
 *Depth: comprehensive*
 *Coverage: 23/23 v1 requirements mapped*
