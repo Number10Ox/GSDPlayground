@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { FalloutDice, FalloutResult, FalloutSeverity } from '@/types/conflict';
+import type { Trait } from '@/types/character';
 import { calculateFallout } from '@/utils/fallout';
+import { createTraitFromFallout } from '@/utils/falloutTraits';
+import { useCharacter } from '@/hooks/useCharacter';
 import { DieIcon } from '@/components/DicePool/DieIcon';
 
 interface FalloutRevealProps {
@@ -47,9 +50,11 @@ const PHASE_DURATIONS = {
  * 4. VERDICT: Severity revealed with appropriate gravity
  */
 export function FalloutReveal({ falloutDice, onComplete }: FalloutRevealProps) {
+  const { dispatch: charDispatch } = useCharacter();
   const [phase, setPhase] = useState<RevealPhase>('GATHERING');
   const [falloutResult, setFalloutResult] = useState<FalloutResult | null>(null);
   const [highlightIndices, setHighlightIndices] = useState<number[]>([]);
+  const [gainedTrait, setGainedTrait] = useState<Trait | null>(null);
 
   // Calculate fallout on mount (dice are rolled inside calculateFallout)
   useEffect(() => {
@@ -80,10 +85,27 @@ export function FalloutReveal({ falloutDice, onComplete }: FalloutRevealProps) {
       return () => clearTimeout(timer);
     }
     if (phase === 'VERDICT' && falloutResult) {
-      const timer = setTimeout(() => onComplete(falloutResult), PHASE_DURATIONS.VERDICT);
+      // Create trait from fallout if severity warrants it
+      if (
+        falloutResult.severity === 'MINOR' ||
+        falloutResult.severity === 'SERIOUS' ||
+        falloutResult.severity === 'DEADLY'
+      ) {
+        const newTrait = createTraitFromFallout(falloutResult.severity, falloutResult.falloutType);
+        if (newTrait) {
+          setGainedTrait(newTrait);
+          charDispatch({ type: 'ADD_TRAIT', trait: newTrait });
+        }
+      }
+
+      // Longer pause when trait is gained so player can read it
+      const delay = falloutResult.severity !== 'NONE' && falloutResult.severity !== 'DEATH'
+        ? 2500
+        : PHASE_DURATIONS.VERDICT;
+      const timer = setTimeout(() => onComplete(falloutResult), delay);
       return () => clearTimeout(timer);
     }
-  }, [phase, falloutResult, onComplete]);
+  }, [phase, falloutResult, onComplete, charDispatch]);
 
   // Handle no fallout dice case
   if (falloutDice.length === 0) {
@@ -219,6 +241,29 @@ export function FalloutReveal({ falloutDice, onComplete }: FalloutRevealProps) {
           >
             <p className={`text-2xl font-bold ${SEVERITY_MESSAGES[falloutResult.severity].tone}`}>
               {SEVERITY_MESSAGES[falloutResult.severity].text}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Trait gained from fallout */}
+      <AnimatePresence>
+        {phase === 'VERDICT' && gainedTrait && (
+          <motion.div
+            data-testid="fallout-trait-gained"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="text-center mt-4 p-3 bg-amber-900/20 border border-amber-700/50 rounded-lg"
+          >
+            <p className="text-sm text-amber-400 uppercase tracking-wider mb-1">
+              New Trait Gained
+            </p>
+            <p className="text-lg text-amber-200 font-semibold">
+              {gainedTrait.name}
+            </p>
+            <p className="text-sm text-gray-400 mt-1">
+              {gainedTrait.dice[0].type} die
             </p>
           </motion.div>
         )}
