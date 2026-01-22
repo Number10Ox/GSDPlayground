@@ -4,6 +4,7 @@ import { NodeMap } from '@/components/NodeMap/NodeMap';
 import { NarrativePanel } from '@/components/NarrativePanel/NarrativePanel';
 import { CharacterInfo } from '@/components/CharacterInfo/CharacterInfo';
 import { CharacterCreation } from '@/components/Character/CharacterCreation';
+import { CharacterSheet } from '@/components/Character/CharacterSheet';
 import { CycleView } from '@/components/CycleView/CycleView';
 import { ClockList } from '@/components/Clocks/ClockList';
 import { ConflictMarker, RelationshipPanel } from '@/components/NPCMemory';
@@ -17,7 +18,7 @@ import type { Die } from '@/types/game';
 
 export function GameView() {
   const { state, dispatch } = useGameState();
-  const { character } = useCharacter();
+  const { character, dispatch: charDispatch } = useCharacter();
   const { clocks, cycleNumber, cyclePhase, currentLocation, locations, activeConflict } = state;
   const { npcs } = useNPCMemory();
 
@@ -26,6 +27,9 @@ export function GameView() {
 
   // Character creation modal state
   const [showCreation, setShowCreation] = useState(false);
+
+  // Character sheet overlay state
+  const [showSheet, setShowSheet] = useState(false);
 
   // Conflict state for ConflictView (dev mode test conflicts)
   const [conflictState, setConflictState] = useState<ConflictState | null>(null);
@@ -105,7 +109,10 @@ export function GameView() {
 
       {/* Sidebar: character info, clocks, location */}
       <aside className="flex flex-col gap-4">
-        <CharacterInfo onCreateCharacter={() => setShowCreation(true)} />
+        <CharacterInfo
+          onCreateCharacter={() => setShowCreation(true)}
+          onViewSheet={() => setShowSheet(true)}
+        />
 
         {/* Cycle status */}
         <div className="bg-surface rounded-lg p-4">
@@ -172,15 +179,36 @@ export function GameView() {
           </p>
         </div>
 
-        {/* Dev mode: Test conflict button */}
+        {/* Dev mode: Test helpers */}
         {import.meta.env.DEV && !activeConflict && (
-          <button
-            data-testid="start-test-conflict"
-            onClick={handleStartTestConflict}
-            className="bg-red-900/50 hover:bg-red-800/50 text-red-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-          >
-            Start Test Conflict
-          </button>
+          <div className="space-y-2">
+            <button
+              data-testid="start-test-conflict"
+              onClick={handleStartTestConflict}
+              className="w-full bg-red-900/50 hover:bg-red-800/50 text-red-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              Start Test Conflict
+            </button>
+            {character && (
+              <button
+                data-testid="add-test-trait"
+                onClick={() => {
+                  charDispatch({
+                    type: 'ADD_TRAIT',
+                    trait: {
+                      id: 'test-trait-quick-draw',
+                      name: 'Quick Draw',
+                      dice: [{ id: 'test-trait-die-1', type: 'd6' }],
+                      source: 'creation',
+                    },
+                  });
+                }}
+                className="w-full bg-purple-900/50 hover:bg-purple-800/50 text-purple-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                Add Test Trait
+              </button>
+            )}
+          </div>
         )}
       </aside>
 
@@ -201,6 +229,22 @@ export function GameView() {
           npcName="Sheriff Jacob"
           onComplete={handleConflictComplete}
         />
+      )}
+
+      {/* Character sheet (overlay) - shows when user clicks View Character Sheet */}
+      {character && showSheet && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="relative max-h-[90vh] overflow-y-auto">
+            <CharacterSheet />
+            <button
+              data-testid="close-character-sheet"
+              onClick={() => setShowSheet(false)}
+              className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-gray-700 hover:bg-gray-600 text-gray-300 text-lg"
+            >
+              x
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Character creation (overlay) - shows when user clicks Create Character */}

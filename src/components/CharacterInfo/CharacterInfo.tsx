@@ -5,6 +5,7 @@ import type { StatName } from '@/types/character';
 
 interface CharacterInfoProps {
   onCreateCharacter?: () => void;
+  onViewSheet?: () => void;
 }
 
 /**
@@ -13,7 +14,7 @@ interface CharacterInfoProps {
  * When character exists: shows name, all four stats (compact mode), cycle number, condition.
  * When character is null: shows "Create Character" prompt.
  */
-export function CharacterInfo({ onCreateCharacter }: CharacterInfoProps) {
+export function CharacterInfo({ onCreateCharacter, onViewSheet }: CharacterInfoProps) {
   const { character } = useCharacter();
   const { state } = useGameState();
 
@@ -75,7 +76,11 @@ export function CharacterInfo({ onCreateCharacter }: CharacterInfoProps) {
       </div>
 
       {/* View full sheet link */}
-      <button className="w-full text-sm text-gray-400 hover:text-gray-200 transition-colors pt-2 border-t border-gray-700">
+      <button
+        data-testid="view-character-sheet"
+        onClick={onViewSheet}
+        className="w-full text-sm text-gray-400 hover:text-gray-200 transition-colors pt-2 border-t border-gray-700"
+      >
         View Character Sheet
       </button>
     </div>

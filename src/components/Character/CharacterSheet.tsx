@@ -1,5 +1,7 @@
 import { useCharacter } from '@/hooks/useCharacter';
 import { StatDisplay } from './StatDisplay';
+import { TraitList } from './TraitList';
+import { InventoryPanel } from './InventoryPanel';
 import type { StatName } from '@/types/character';
 import type { DieType } from '@/types/game';
 
@@ -49,43 +51,20 @@ export function CharacterSheet() {
       </div>
 
       {/* Traits */}
-      {character.traits.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-2">
-            Traits
-          </h3>
-          <div className="space-y-2">
-            {character.traits.map((trait) => (
-              <div key={trait.id} className="flex items-center justify-between">
-                <span className="text-gray-200 text-sm">{trait.name}</span>
-                <span className="text-gray-400 text-xs">{formatDice(trait.dice)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <div>
+        <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-2">
+          Traits
+        </h3>
+        <TraitList traits={character.traits} />
+      </div>
 
       {/* Inventory */}
-      {character.inventory.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-2">
-            Inventory
-          </h3>
-          <div className="space-y-2">
-            {character.inventory.map((item) => (
-              <div key={item.id} className="flex items-center justify-between">
-                <div>
-                  <span className="text-gray-200 text-sm">{item.name}</span>
-                  <span className="text-gray-500 text-xs ml-2 capitalize">
-                    ({item.category.replace(/-/g, ' ')})
-                  </span>
-                </div>
-                <span className="text-gray-400 text-xs">{formatDice(item.dice)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <div>
+        <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-2">
+          Inventory
+        </h3>
+        <InventoryPanel items={character.inventory} />
+      </div>
 
       {/* Relationships */}
       {character.relationships.length > 0 && (

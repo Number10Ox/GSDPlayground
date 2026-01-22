@@ -90,12 +90,13 @@ export async function verifyStatVisible(page: Page, statName: string) {
 
 /**
  * Verify the dice pool has dice present (after starting a cycle).
+ * DieComponent uses data-testid="die" with data-die-id for each die.
  */
 export async function verifyDicePoolHasDice(page: Page) {
   const dicePool = page.getByTestId('dice-pool');
   await expect(dicePool).toBeVisible({ timeout: 3000 });
-  // Pool should contain at least one die element
-  const diceCount = await dicePool.locator('[data-testid^="die-"]').count();
+  // Pool should contain at least one die element (data-testid="die")
+  const diceCount = await dicePool.locator('[data-testid="die"]').count();
   expect(diceCount).toBeGreaterThan(0);
 }
 
