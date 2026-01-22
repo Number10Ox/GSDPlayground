@@ -5,4 +5,11 @@
 /* Base styles for atmospheric dark theme */
 body {
   @apply bg-background text-gray-100 antialiased;
+  transition: background-color 0.5s ease;
+}
+
+/* CSS custom properties for conflict atmosphere theming */
+:root {
+  --conflict-bg: transparent;
+  --conflict-accent: rgba(148, 163, 184, 0.5);
 }
