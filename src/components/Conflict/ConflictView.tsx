@@ -14,6 +14,7 @@ import { BiddingHistory } from './BiddingHistory';
 import { ConflictResolution } from './ConflictResolution';
 import { DieIcon } from '@/components/DicePool/DieIcon';
 import { TraitAndItemInvocation } from '@/components/Character/TraitAndItemInvocation';
+import { RelationshipDice } from '@/components/Character/RelationshipDice';
 import { useCharacter } from '@/hooks/useCharacter';
 
 /**
@@ -461,6 +462,16 @@ export function ConflictView({
                 items={character.inventory}
                 usedTraitIds={state.usedTraits}
                 usedItemIds={state.usedItems}
+                dispatch={dispatch}
+              />
+            )}
+
+            {/* Relationship Dice - available during player's raise/see turns */}
+            {isPlayerTurn && character && character.relationships.length > 0 && state.phase === 'ACTIVE' && (
+              <RelationshipDice
+                relationships={character.relationships}
+                conflictNpcId={gameState.activeConflict?.npcId ?? state.npcId}
+                usedRelationships={state.usedRelationships}
                 dispatch={dispatch}
               />
             )}

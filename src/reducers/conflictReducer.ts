@@ -88,6 +88,7 @@ export function conflictReducer(
         falloutDice: [],
         usedTraits: [],
         usedItems: [],
+        usedRelationships: [],
       };
     }
 
@@ -460,6 +461,27 @@ export function conflictReducer(
       return {
         ...state,
         usedItems: [...state.usedItems, action.itemId],
+        playerPool: [...state.playerPool, ...action.dice],
+      };
+    }
+
+    case 'USE_RELATIONSHIP': {
+      // Phase guard: ACTIVE only
+      if (state.phase !== 'ACTIVE') {
+        return state;
+      }
+      // Turn guard: only during player's raise or see
+      if (state.currentTurn !== 'PLAYER_RAISE' && state.currentTurn !== 'PLAYER_SEE') {
+        return state;
+      }
+      // Guard: relationship must not already be used this conflict
+      if (state.usedRelationships.includes(action.relationshipId)) {
+        return state;
+      }
+
+      return {
+        ...state,
+        usedRelationships: [...state.usedRelationships, action.relationshipId],
         playerPool: [...state.playerPool, ...action.dice],
       };
     }
