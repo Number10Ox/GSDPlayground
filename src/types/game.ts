@@ -28,6 +28,19 @@ export type GameAction =
   | { type: 'OPEN_PANEL'; scene: Scene }
   | { type: 'CLOSE_PANEL' };
 
+// Dice types (DitV polyhedral)
+export type DieType = 'd4' | 'd6' | 'd8' | 'd10';
+
+export interface Die {
+  id: string;
+  type: DieType;
+  value: number;        // Rolled value (1-max based on type)
+  assignedTo: string | null;  // Action ID or null if in pool
+}
+
+// Cycle phases (Citizen Sleeper-inspired)
+export type CyclePhase = 'WAKE' | 'ALLOCATE' | 'RESOLVE' | 'SUMMARY' | 'REST';
+
 // Clock types for tracking threats, opportunities, and progress
 export type ClockType = 'danger' | 'progress' | 'opportunity';
 
