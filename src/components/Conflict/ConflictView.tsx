@@ -13,6 +13,8 @@ import { EscalationIndicator } from './EscalationIndicator';
 import { BiddingHistory } from './BiddingHistory';
 import { ConflictResolution } from './ConflictResolution';
 import { DieIcon } from '@/components/DicePool/DieIcon';
+import { TraitAndItemInvocation } from '@/components/Character/TraitAndItemInvocation';
+import { useCharacter } from '@/hooks/useCharacter';
 
 /**
  * NPC response descriptions for variety
@@ -88,6 +90,7 @@ export function ConflictView({
   onComplete,
 }: ConflictViewProps) {
   const { state: gameState, dispatch: gameDispatch } = useGameState();
+  const { character } = useCharacter();
   const { dispatch: npcDispatch, getWitnessesAtLocation } = useNPCMemory();
   const [state, dispatch] = useReducer(
     conflictReducer,
@@ -449,6 +452,17 @@ export function ConflictView({
                   ))}
                 </div>
               </div>
+            )}
+
+            {/* Trait & Item Invocation - available during player's raise/see turns */}
+            {isPlayerTurn && character && (character.traits.length > 0 || character.inventory.length > 0) && state.phase === 'ACTIVE' && (
+              <TraitAndItemInvocation
+                traits={character.traits}
+                items={character.inventory}
+                usedTraitIds={state.usedTraits}
+                usedItemIds={state.usedItems}
+                dispatch={dispatch}
+              />
             )}
           </div>
 
