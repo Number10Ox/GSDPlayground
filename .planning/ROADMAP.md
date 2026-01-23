@@ -147,12 +147,12 @@ Plans:
 **Plans**: 6 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Seeded RNG, sin templates, and sin chain generator (foundation for all generation)
-- [ ] 06-02-PLAN.md — NPC archetypes, relationship patterns, and NPC generator
-- [ ] 06-03-PLAN.md — Location templates, topic rule generator, and town assembler
-- [ ] 06-04-PLAN.md — Validation pipeline and generate-validate-retry loop
-- [ ] 06-05-PLAN.md — Multi-town integration (pre-generated towns, selection UI, App wiring)
-- [ ] 06-06-PLAN.md — Town generation E2E tests (selection, playability, variety)
+- [x] 06-01-PLAN.md — Seeded RNG, sin templates, and sin chain generator (foundation for all generation)
+- [x] 06-02-PLAN.md — NPC archetypes, relationship patterns, and NPC generator
+- [x] 06-03-PLAN.md — Location templates, topic rule generator, and town assembler
+- [x] 06-04-PLAN.md — Validation pipeline and generate-validate-retry loop
+- [x] 06-05-PLAN.md — Multi-town integration (pre-generated towns, selection UI, App wiring)
+- [x] 06-06-PLAN.md — Town generation E2E tests (selection, playability, variety)
 
 ### Phase 7: Persistence
 **Goal**: Player can save progress and resume later
@@ -184,10 +184,10 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7
 | 3. Conflict System | 5/5 | Complete | 2026-01-22 |
 | 4. Character System | 5/5 | Complete | 2026-01-22 |
 | 5. Investigation | 7/7 | Complete | 2026-01-22 |
-| 6. Town Generation | 0/6 | Not started | - |
+| 6. Town Generation | 6/6 | Complete | 2026-01-22 |
 | 7. Persistence | 0/4 | Not started | - |
 
-**Total:** 25/35 plans complete
+**Total:** 31/35 plans complete
 
 ---
 *Roadmap created: 2026-01-20*

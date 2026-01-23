@@ -42,8 +42,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Procedural Generation
 
-- [ ] **PROC-01**: Towns generated from DitV sin progression templates
-- [ ] **PROC-02**: NPCs generated with relationships and stakes
+- [x] **PROC-01**: Towns generated from DitV sin progression templates
+- [x] **PROC-02**: NPCs generated with relationships and stakes
 
 ### UI/Presentation
 
@@ -109,8 +109,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CHAR-04 | Phase 4 | Pending |
 | SAVE-01 | Phase 7 | Pending |
 | SAVE-02 | Phase 7 | Pending |
-| PROC-01 | Phase 6 | Pending |
-| PROC-02 | Phase 6 | Pending |
+| PROC-01 | Phase 6 | Complete |
+| PROC-02 | Phase 6 | Complete |
 | UI-01 | Phase 1 | Complete |
 | UI-02 | Phase 1 | Complete |
 | UI-03 | Phase 2 | Complete |
