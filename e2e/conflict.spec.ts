@@ -17,6 +17,8 @@ import {
 test.describe('Conflict System', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
+    // Select Bridal Falls from town selection
+    await page.getByTestId('select-town-bridal-falls').click();
     // Start day to get into game (allocate phase)
     await page.getByTestId('start-day-button').click();
   });

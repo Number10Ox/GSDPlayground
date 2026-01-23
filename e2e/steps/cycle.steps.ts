@@ -9,6 +9,11 @@ import { Page, expect } from '@playwright/test';
 
 export async function navigateToGame(page: Page) {
   await page.goto('/');
+  // Select first town (Bridal Falls) from town selection screen
+  const selectButton = page.getByTestId('select-town-bridal-falls');
+  if (await selectButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await selectButton.click();
+  }
 }
 
 export async function startDay(page: Page) {

@@ -28,6 +28,8 @@ import {
 test.describe('Character System', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
+    // Select Bridal Falls from town selection
+    await page.getByTestId('select-town-bridal-falls').click();
   });
 
   test('Scenario: Character creation with point-buy', async ({ page }) => {
@@ -40,14 +42,14 @@ test.describe('Character System', () => {
     // Enter name
     await enterCharacterName(page, 'Brother Ezekiel');
 
-    // Select well-rounded background (17 stat dice)
+    // Select well-rounded background (10 stat points)
     await selectBackground(page, 'well-rounded');
 
-    // Allocate stats: 5 Acuity, 4 Body, 4 Heart, 4 Will = 17 total
-    await allocateStatDice(page, 'acuity', 5);
-    await allocateStatDice(page, 'body', 4);
-    await allocateStatDice(page, 'heart', 4);
-    await allocateStatDice(page, 'will', 4);
+    // Allocate stats: 3 Acuity, 3 Body, 2 Heart, 2 Will = 10 total
+    await allocateStatDice(page, 'acuity', 3);
+    await allocateStatDice(page, 'body', 3);
+    await allocateStatDice(page, 'heart', 2);
+    await allocateStatDice(page, 'will', 2);
 
     // Confirm creation
     await confirmCreation(page);

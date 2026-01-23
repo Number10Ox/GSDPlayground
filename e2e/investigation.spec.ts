@@ -87,6 +87,8 @@ test.describe('Investigation System', () => {
 
     // Navigate to app
     await page.goto('/');
+    // Select Bridal Falls from town selection
+    await page.getByTestId('select-town-bridal-falls').click();
     await page.waitForLoadState('networkidle');
 
     // Create character (needed for approach chips to render)
