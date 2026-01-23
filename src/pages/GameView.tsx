@@ -132,6 +132,20 @@ export function GameView() {
     handleConflictFromDialogue('sheriff-jacob', 'who controls the law in this town');
   }, [handleConflictFromDialogue]);
 
+  // Listen for dialogue-conflict events (from ConflictTrigger in DialogueView)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.npcId && detail?.stakes) {
+        setShowDialogue(false);
+        setDialogueNpcId(null);
+        handleConflictFromDialogue(detail.npcId, detail.stakes);
+      }
+    };
+    window.addEventListener('dialogue-conflict', handler);
+    return () => window.removeEventListener('dialogue-conflict', handler);
+  }, [handleConflictFromDialogue]);
+
   // Handle conflict completion
   const handleConflictComplete = useCallback(() => {
     // Check if the conflict NPC is linked to a sin - if so, confront it
@@ -325,7 +339,7 @@ export function GameView() {
       {/* Fatigue toast */}
       <AnimatePresence>
         {fatigueToast && (
-          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-red-900/90 text-red-200 px-4 py-2 rounded-lg text-sm font-medium shadow-lg animate-fade-in">
+          <div data-testid="fatigue-warning" className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-red-900/90 text-red-200 px-4 py-2 rounded-lg text-sm font-medium shadow-lg animate-fade-in">
             Too tired to talk. Rest to recover.
           </div>
         )}

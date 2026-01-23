@@ -9,6 +9,7 @@ import { ApproachChips } from '@/components/Dialogue/ApproachChips';
 import { TypewriterText } from '@/components/Dialogue/TypewriterText';
 import { InnerVoice } from '@/components/Dialogue/InnerVoice';
 import { DiscoverySummary } from '@/components/Dialogue/DiscoverySummary';
+import { ConflictTrigger } from '@/components/Dialogue/ConflictTrigger';
 import type { StatName } from '@/types/character';
 
 /**
@@ -49,15 +50,15 @@ export function DialogueView() {
 
   const npc = state.currentNPC ? getNPCById(state.currentNPC) : null;
 
-  // Don't render if not in a conversation
-  if (state.phase === 'IDLE') return null;
-
   // Auto-scroll to bottom during streaming
   useEffect(() => {
     if (scrollRef.current && state.phase === 'STREAMING_RESPONSE') {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [state.streamingText, state.phase]);
+
+  // Don't render if not in a conversation (after all hooks to satisfy rules of hooks)
+  if (state.phase === 'IDLE') return null;
 
   // Build full display text from conversation history + current streaming
   const historyText = state.conversationHistory
@@ -166,6 +167,27 @@ export function DialogueView() {
               Listening...
             </p>
           )}
+
+          {/* Conflict trigger - only for body/will approaches after response */}
+          {state.phase === 'SELECTING_TOPIC' && state.currentNPC && npc?.conflictThresholds && (() => {
+            const lastTurnApproach = state.conversationHistory[state.conversationHistory.length - 1]?.approach;
+            if (lastTurnApproach === 'body' || lastTurnApproach === 'will') {
+              return (
+                <ConflictTrigger
+                  npcId={state.currentNPC}
+                  approach={lastTurnApproach}
+                  conflictThresholds={npc.conflictThresholds}
+                  onConflictStart={(npcId, stakes) => {
+                    endConversation();
+                    // Conflict will be handled by GameView via conflict start
+                    window.dispatchEvent(new CustomEvent('dialogue-conflict', { detail: { npcId, stakes } }));
+                  }}
+                  forceTriggered={import.meta.env.DEV}
+                />
+              );
+            }
+            return null;
+          })()}
         </div>
 
         {/* Discovery overlay */}

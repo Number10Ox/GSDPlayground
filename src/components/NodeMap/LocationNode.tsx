@@ -14,6 +14,7 @@ export function LocationNode({ location, isCurrentLocation, onClick }: LocationN
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
+      data-testid={`map-node-${location.id}`}
     >
       <circle
         cx={location.x}

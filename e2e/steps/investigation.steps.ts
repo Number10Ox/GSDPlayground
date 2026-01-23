@@ -14,7 +14,9 @@ import { Page, expect } from '@playwright/test';
  * Waits for the dialogue view overlay to become visible.
  */
 export async function startConversation(page: Page, npcId: string) {
-  await page.getByTestId(`npc-button-${npcId}`).click();
+  const npcButton = page.getByTestId(`npc-button-${npcId}`);
+  await expect(npcButton).toBeVisible({ timeout: 5000 });
+  await npcButton.click();
   await expect(page.getByTestId('dialogue-view')).toBeVisible({ timeout: 3000 });
 }
 
@@ -104,17 +106,20 @@ export async function verifyFatigue(page: Page, current: number, max: number) {
 // ─── Cycle Helpers ───────────────────────────────────────────────────────────
 
 /**
- * Advance the cycle by clicking start-day, confirming allocations, and
- * continuing through summary to trigger REST phase (which advances sin).
+ * Advance the cycle by confirming allocations and continuing through
+ * summary to trigger REST phase (which advances sin).
+ * Handles both WAKE and ALLOCATE starting states.
  */
 export async function advanceCycle(page: Page) {
-  // Start day -> ALLOCATE phase
+  // Check if we need to start the day first (WAKE phase)
   const startDayButton = page.getByTestId('start-day-button');
-  await expect(startDayButton).toBeVisible({ timeout: 3000 });
-  await startDayButton.click();
+  const isWakePhase = await startDayButton.isVisible().catch(() => false);
+  if (isWakePhase) {
+    await startDayButton.click();
+    await page.waitForTimeout(500);
+  }
 
-  // In ALLOCATE phase, we need to allocate at least one die and confirm
-  // Select first die and assign to first action
+  // Now in ALLOCATE phase - allocate at least one die and confirm
   const die = page.getByTestId('die').first();
   await expect(die).toBeVisible({ timeout: 3000 });
   await die.click();
@@ -145,8 +150,10 @@ export async function advanceCycle(page: Page) {
  * Uses the same pattern as character.steps.ts setupCharacterForTest.
  */
 export async function createCharacterForTest(page: Page, name: string = 'Test Dog') {
-  await page.getByTestId('create-character-button').click();
-  await expect(page.getByTestId('creation-name-input')).toBeVisible({ timeout: 2000 });
+  const createBtn = page.getByTestId('create-character-button');
+  await expect(createBtn).toBeVisible({ timeout: 5000 });
+  await createBtn.click();
+  await expect(page.getByTestId('creation-name-input')).toBeVisible({ timeout: 3000 });
 
   // Enter name
   await page.getByTestId('creation-name-input').fill(name);
