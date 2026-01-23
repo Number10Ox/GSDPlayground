@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** The player must be able to arrive in a procedurally generated town, discover its moral rot through investigation and NPC interaction, and resolve conflicts using the escalating stakes system — experiencing the weight of judgment that defines Dogs in the Vineyard.
-**Current focus:** Phase 5 - Investigation System (Integration complete, E2E tests next)
+**Current focus:** Phase 5 complete - Investigation System with full E2E coverage
 
 ## Current Position
 
 Phase: 5 of 7 (Investigation)
-Plan: 6 of 7 in current phase
-Status: In progress
-Last activity: 2026-01-23 — Completed 05-06-PLAN.md (Investigation Integration)
+Plan: 7 of 7 in current phase
+Status: Phase complete
+Last activity: 2026-01-23 - Completed 05-07-PLAN.md (Investigation E2E Tests)
 
-Progress: [████████████████░░░░] 83%
+Progress: [█████████████████░░░] 87%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 25
-- Average duration: 4.6 min
-- Total execution time: 1.95 hours
+- Total plans completed: 26
+- Average duration: 5.4 min
+- Total execution time: 2.78 hours
 
 **By Phase:**
 
@@ -32,11 +32,11 @@ Progress: [████████████████░░░░] 83%
 | 02.1-e2e-testing | 2 | 8 min | 4 min |
 | 03-conflict-system | 5 | 35 min | 7 min |
 | 04-character-system | 5 | 29 min | 5.8 min |
-| 05-investigation | 6 | 21 min | 3.5 min |
+| 05-investigation | 7 | 71 min | 10.1 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-03 (3min), 05-04 (4min), 05-05 (2min), 05-06 (4min)
-- Trend: Integration plan fast due to well-defined component interfaces from prior plans
+- Last 5 plans: 05-04 (4min), 05-05 (2min), 05-06 (4min), 05-07 (50min)
+- Trend: E2E test plan took longer due to fixing hooks violation, SVG interaction issues, and cycle overlay conflicts
 
 *Updated after each plan completion*
 
@@ -137,6 +137,9 @@ Recent decisions affecting current work:
 - [05-06]: CycleView dispatches END_CYCLE internally; GameView watches phase transition to REST
 - [05-06]: ResolutionSummary self-gates rendering (unconditional mount, internal condition check)
 - [05-06]: Conflict completion auto-confronts discovered linked sins for streamlined gameplay
+- [05-07]: Route interception (page.route) for E2E dialogue mocking over component-level mocks
+- [05-07]: dispatchEvent('click') for SVG g elements in Playwright (click({force:true}) unreliable with overlays)
+- [05-07]: Custom window event (dialogue-conflict) bridges DialogueView context to GameView conflict state
 
 ### Pending Todos
 
@@ -149,7 +152,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-23
-Stopped at: Completed 05-06-PLAN.md (Investigation Integration) - Phase 5 plans 1-6 of 7 complete
+Stopped at: Completed 05-07-PLAN.md (Investigation E2E Tests) - Phase 5 complete (all 7 plans)
 Resume file: None
 
 ## Phase 2 Completion Notes
@@ -221,3 +224,23 @@ Phase 4 complete with full E2E test coverage. Character system with gameplay loo
 - CharacterCreation and CharacterSheet overlays wired into GameView
 
 Ready for Phase 5 (NPC & Town Generation).
+
+## Phase 5 Completion Notes
+
+Phase 5 complete with full E2E test coverage. Investigation system functional:
+- Investigation types (SinNode, Discovery, FatigueClock) with investigationReducer
+- LLM dialogue integration via Vercel AI SDK with streaming responses
+- Mock dialogue handler for dev mode (no API key required)
+- DialogueView with topic/approach selection, streaming text, discovery markers
+- Inner voice system with stat-based personality interjections
+- Mental map (React Flow) visualizing sin chain with NPC connections
+- FatigueClock SVG component with 6-segment cycle economy
+- ConflictTrigger for approach-driven escalation from dialogue
+- ResolutionSummary for terminal investigation states
+- Test town "Bridal Falls" with 5 NPCs, 4-level sin chain, knowledge gating
+- Full GameView integration: navigation, NPC interaction, cycle flow
+- E2E tests: 7 BDD scenarios, 15 step helpers, 7 Playwright tests
+- Total E2E suite: 30 tests (9 cycle + 7 conflict + 7 character + 7 investigation)
+- VCR-style dialogue fixtures for deterministic E2E testing
+
+Ready for Phase 6 (Judgment - resolution mechanics and final confrontation).
