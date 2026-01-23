@@ -23,10 +23,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Investigation
 
-- [ ] **INV-01**: Player can talk to NPCs to learn information
-- [ ] **INV-02**: Player discovers how Pride cascaded through sin progression
-- [ ] **INV-03**: NPCs have relationships and stakes with each other
-- [ ] **INV-04**: Towns have multiple valid resolution paths
+- [x] **INV-01**: Player can talk to NPCs to learn information
+- [x] **INV-02**: Player discovers how Pride cascaded through sin progression
+- [x] **INV-03**: NPCs have relationships and stakes with each other
+- [x] **INV-04**: Towns have multiple valid resolution paths
 
 ### Character
 
@@ -99,10 +99,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CONF-02 | Phase 3 | Complete |
 | CONF-03 | Phase 3 | Complete |
 | CONF-04 | Phase 3 | Complete |
-| INV-01 | Phase 5 | Pending |
-| INV-02 | Phase 5 | Pending |
-| INV-03 | Phase 5 | Pending |
-| INV-04 | Phase 5 | Pending |
+| INV-01 | Phase 5 | Complete |
+| INV-02 | Phase 5 | Complete |
+| INV-03 | Phase 5 | Complete |
+| INV-04 | Phase 5 | Complete |
 | CHAR-01 | Phase 4 | Pending |
 | CHAR-02 | Phase 4 | Pending |
 | CHAR-03 | Phase 4 | Pending |

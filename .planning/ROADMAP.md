@@ -15,7 +15,7 @@ This roadmap delivers a browser-based CRPG adapting Dogs in the Vineyard. The jo
 - [x] **Phase 2.1: E2E Testing Infrastructure** - Playwright + BDD setup with cycle system tests (INSERTED)
 - [x] **Phase 3: Conflict System** - DitV escalation, raise/see mechanics, and fallout
 - [x] **Phase 4: Character System** - Stats, traits, inventory, and relationships affecting gameplay
-- [ ] **Phase 5: Investigation** - NPC dialogue, sin progression discovery, and resolution paths
+- [x] **Phase 5: Investigation** - NPC dialogue, sin progression discovery, and resolution paths
 - [ ] **Phase 6: Town Generation** - Sin progression templates and NPC relationship generation
 - [ ] **Phase 7: Persistence** - Save/load system with manual and automatic saves
 
@@ -127,13 +127,13 @@ Plans:
 **Plans**: 7 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Investigation types, reducer, and context provider (sin progression, discovery, fatigue state)
-- [ ] 05-02-PLAN.md — LLM integration layer (knowledge gating, prompt templates, serverless API, mock handler)
-- [ ] 05-03-PLAN.md — Dialogue reducer and UI components (conversation FSM, topic/approach chips, typewriter, inner voice)
-- [ ] 05-04-PLAN.md — Mental map visualization (React Flow graph with sin chain and NPC nodes)
-- [ ] 05-05-PLAN.md — Fatigue clock, conflict triggering, and town resolution (cycle economy, escalation, endings)
-- [ ] 05-06-PLAN.md — Full integration (providers, GameView wiring, test town data)
-- [ ] 05-07-PLAN.md — Investigation E2E tests (BDD feature, step helpers, Playwright specs with mocked LLM)
+- [x] 05-01-PLAN.md — Investigation types, reducer, and context provider (sin progression, discovery, fatigue state)
+- [x] 05-02-PLAN.md — LLM integration layer (knowledge gating, prompt templates, serverless API, mock handler)
+- [x] 05-03-PLAN.md — Dialogue reducer and UI components (conversation FSM, topic/approach chips, typewriter, inner voice)
+- [x] 05-04-PLAN.md — Mental map visualization (React Flow graph with sin chain and NPC nodes)
+- [x] 05-05-PLAN.md — Fatigue clock, conflict triggering, and town resolution (cycle economy, escalation, endings)
+- [x] 05-06-PLAN.md — Full integration (providers, GameView wiring, test town data)
+- [x] 05-07-PLAN.md — Investigation E2E tests (BDD feature, step helpers, Playwright specs with mocked LLM)
 
 ### Phase 6: Town Generation
 **Goal**: Towns are generated with coherent sin progressions and interconnected NPCs
@@ -182,11 +182,11 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7
 | 2.1 E2E Testing | 2/2 | Complete | 2026-01-22 |
 | 3. Conflict System | 5/5 | Complete | 2026-01-22 |
 | 4. Character System | 5/5 | Complete | 2026-01-22 |
-| 5. Investigation | 0/7 | Planned | - |
+| 5. Investigation | 7/7 | Complete | 2026-01-22 |
 | 6. Town Generation | 0/5 | Not started | - |
 | 7. Persistence | 0/4 | Not started | - |
 
-**Total:** 18/34 plans complete
+**Total:** 25/34 plans complete
 
 ---
 *Roadmap created: 2026-01-20*
