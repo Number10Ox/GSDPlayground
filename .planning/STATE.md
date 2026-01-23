@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** The player must be able to arrive in a procedurally generated town, discover its moral rot through investigation and NPC interaction, and resolve conflicts using the escalating stakes system — experiencing the weight of judgment that defines Dogs in the Vineyard.
-**Current focus:** Phase 5 - Investigation System (Dialogue UI complete)
+**Current focus:** Phase 5 - Investigation System (Fatigue/Conflict/Resolution complete)
 
 ## Current Position
 
 Phase: 5 of 7 (Investigation)
-Plan: 4 of 6 in current phase
+Plan: 5 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-23 — Completed 05-03-PLAN.md (Dialogue UI Components)
+Last activity: 2026-01-23 — Completed 05-05-PLAN.md (Fatigue Clock, Conflict Trigger & Resolution)
 
-Progress: [███████████████░░░░░] 77%
+Progress: [████████████████░░░░] 80%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 23
-- Average duration: 4.8 min
-- Total execution time: 1.85 hours
+- Total plans completed: 24
+- Average duration: 4.7 min
+- Total execution time: 1.88 hours
 
 **By Phase:**
 
@@ -32,11 +32,11 @@ Progress: [███████████████░░░░░] 77%
 | 02.1-e2e-testing | 2 | 8 min | 4 min |
 | 03-conflict-system | 5 | 35 min | 7 min |
 | 04-character-system | 5 | 29 min | 5.8 min |
-| 05-investigation | 4 | 15 min | 3.75 min |
+| 05-investigation | 5 | 17 min | 3.4 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-01 (2min), 05-02 (6min), 05-03 (3min), 05-04 (4min)
-- Trend: Dialogue components leverage existing patterns (FSM + phase guards + framer-motion)
+- Last 5 plans: 05-02 (6min), 05-03 (3min), 05-04 (4min), 05-05 (2min)
+- Trend: Investigation mechanics reuse established reducer+component patterns
 
 *Updated after each plan completion*
 
@@ -129,6 +129,10 @@ Recent decisions affecting current work:
 - [05-04]: getStraightPath for edges (cleaner for vertical chain + horizontal NPC links)
 - [05-04]: Severity color gradient: amber->orange->red->dark-red+glow for sin escalation
 - [05-04]: NPC nodes only render when linked sin discovered (no DOM spoilers)
+- [05-05]: Inline CSS keyframe for fatigue pulse (avoids Tailwind config extension)
+- [05-05]: ConflictTrigger uses forceTriggered prop for dev-mode deterministic testing
+- [05-05]: CONFRONT_SIN marks sin resolved directly (DitV: confrontation IS resolution)
+- [05-05]: ResolutionSummary renders only when terminal state reached (townResolved or sinEscalatedToMurder)
 
 ### Pending Todos
 
@@ -141,7 +145,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-23
-Stopped at: Completed 05-03-PLAN.md (Dialogue UI Components) - Phase 5 plans 1-4 of 6 complete
+Stopped at: Completed 05-05-PLAN.md (Fatigue Clock, Conflict Trigger & Resolution) - Phase 5 plans 1-5 of 6 complete
 Resume file: None
 
 ## Phase 2 Completion Notes
