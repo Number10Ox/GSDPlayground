@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-20)
 ## Current Position
 
 Phase: 6 of 7 (Town Generation)
-Plan: 1 of 6 in current phase
+Plan: 2 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-23 - Completed 06-01-PLAN.md (Sin Chain Generator)
+Last activity: 2026-01-23 - Completed 06-02-PLAN.md (NPC Generator)
 
-Progress: [██████████████████░░] 90%
+Progress: [██████████████████░░] 91%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 27
-- Average duration: 5.5 min
-- Total execution time: 2.93 hours
+- Total plans completed: 28
+- Average duration: 5.7 min
+- Total execution time: 3.25 hours
 
 **By Phase:**
 
@@ -34,11 +34,11 @@ Progress: [██████████████████░░] 90%
 | 04-character-system | 5 | 29 min | 5.8 min |
 | 05-investigation | 7 | 71 min | 10.1 min |
 
-| 06-town-generation | 1 | 9 min | 9 min |
+| 06-town-generation | 2 | 28 min | 14 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-05 (2min), 05-06 (4min), 05-07 (50min), 06-01 (9min)
-- Trend: Back to normal cadence after E2E complexity spike
+- Last 5 plans: 05-06 (4min), 05-07 (50min), 06-01 (9min), 06-02 (19min)
+- Trend: Moderate complexity for procedural generation logic
 
 *Updated after each plan completion*
 
@@ -146,6 +146,10 @@ Recent decisions affecting current work:
 - [06-01]: Slot-based templates with {town}/{authority}/{victim}/{sinner} placeholders
 - [06-01]: Chain always starts from pride, takes first N levels from SIN_CHAIN_ORDER
 - [06-01]: Town names derived from seed via RNG pick from curated prefix/suffix lists
+- [06-02]: 9 archetypes (not 8): added widow role for victim/grief-driven narrative tension
+- [06-02]: Global fallback in relationship building when local sin-pair not found
+- [06-02]: Separate RNG seeds for NPC generation vs slot filling (independence)
+- [06-02]: ROLE_SLOT_TO_ARCHETYPE mapping for flexible sin template role resolution
 
 ### Pending Todos
 
@@ -158,7 +162,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-23
-Stopped at: Completed 06-01-PLAN.md (Sin Chain Generator) - Phase 6 plan 1 of 6
+Stopped at: Completed 06-02-PLAN.md (NPC Generator) - Phase 6 plan 2 of 6
 Resume file: None
 
 ## Phase 2 Completion Notes
