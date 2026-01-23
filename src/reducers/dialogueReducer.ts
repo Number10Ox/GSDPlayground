@@ -21,7 +21,8 @@ export const initialDialogueState: DialogueState = {
  *   IDLE -> SELECTING_TOPIC (START_CONVERSATION)
  *   SELECTING_TOPIC -> SELECTING_APPROACH (SELECT_TOPIC)
  *   SELECTING_APPROACH -> STREAMING_RESPONSE (SELECT_APPROACH)
- *   STREAMING_RESPONSE -> SHOWING_DISCOVERY | SELECTING_TOPIC (FINISH_RESPONSE)
+ *   STREAMING_RESPONSE -> RESPONSE_COMPLETE (FINISH_RESPONSE)
+ *   RESPONSE_COMPLETE -> SHOWING_DISCOVERY | SELECTING_TOPIC (ACKNOWLEDGE_RESPONSE)
  *   SHOWING_DISCOVERY -> SELECTING_TOPIC | IDLE (CLOSE_DISCOVERY)
  *   Any -> IDLE (END_CONVERSATION)
  *
@@ -84,15 +85,25 @@ export function dialogueReducer(
       if (state.phase !== 'STREAMING_RESPONSE') return state;
 
       const newHistory = [...state.conversationHistory, action.turn];
-      const hasDiscoveries = action.discoveries.length > 0;
+
+      return {
+        ...state,
+        phase: 'RESPONSE_COMPLETE',
+        conversationHistory: newHistory,
+        newDiscoveries: action.discoveries,
+        streamingText: '',
+      };
+    }
+
+    case 'ACKNOWLEDGE_RESPONSE': {
+      // Guard: only from RESPONSE_COMPLETE
+      if (state.phase !== 'RESPONSE_COMPLETE') return state;
+
+      const hasDiscoveries = state.newDiscoveries.length > 0;
 
       return {
         ...state,
         phase: hasDiscoveries ? 'SHOWING_DISCOVERY' : 'SELECTING_TOPIC',
-        conversationHistory: newHistory,
-        newDiscoveries: action.discoveries,
-        streamingText: '',
-        // Reset selections for next exchange
         selectedTopic: hasDiscoveries ? state.selectedTopic : null,
         selectedApproach: hasDiscoveries ? state.selectedApproach : null,
       };

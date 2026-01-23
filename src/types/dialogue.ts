@@ -62,6 +62,7 @@ export type DialoguePhase =
   | 'SELECTING_TOPIC'
   | 'SELECTING_APPROACH'
   | 'STREAMING_RESPONSE'
+  | 'RESPONSE_COMPLETE'
   | 'SHOWING_DISCOVERY';
 
 /**
@@ -87,5 +88,6 @@ export type DialogueAction =
   | { type: 'SELECT_APPROACH'; approach: ApproachType }
   | { type: 'APPEND_RESPONSE'; text: string }
   | { type: 'FINISH_RESPONSE'; turn: ConversationTurn; discoveries: Discovery[] }
+  | { type: 'ACKNOWLEDGE_RESPONSE' }
   | { type: 'CLOSE_DISCOVERY' }
   | { type: 'END_CONVERSATION' };

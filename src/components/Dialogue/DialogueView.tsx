@@ -173,6 +173,16 @@ export function DialogueView() {
             </p>
           )}
 
+          {state.phase === 'RESPONSE_COMPLETE' && (
+            <button
+              data-testid="dialogue-continue"
+              onClick={() => dispatch({ type: 'ACKNOWLEDGE_RESPONSE' })}
+              className="w-full text-center text-gray-300 hover:text-white text-sm py-2 rounded border border-gray-600 hover:border-gray-400 transition-colors cursor-pointer"
+            >
+              Continue...
+            </button>
+          )}
+
           {/* Conflict trigger - only for body/will approaches after response */}
           {state.phase === 'SELECTING_TOPIC' && state.currentNPC && npc?.conflictThresholds && (() => {
             const lastTurnApproach = state.conversationHistory[state.conversationHistory.length - 1]?.approach;

@@ -41,17 +41,21 @@ export async function selectApproach(page: Page, approach: string) {
 }
 
 /**
- * Wait for dialogue response text to have content.
+ * Wait for dialogue response text to have content, then acknowledge it.
  * The streaming response fills the TypewriterText component.
  */
 export async function waitForResponse(page: Page) {
   // Wait for streaming to complete - the phase transitions from STREAMING_RESPONSE
-  // to either SHOWING_DISCOVERY or SELECTING_TOPIC. We wait for approach chips
-  // or discovery summary to reappear (indicating streaming finished).
+  // to RESPONSE_COMPLETE. We wait for the continue button to appear.
   await page.waitForTimeout(2000); // Allow stream to complete
   // Verify text appeared in the dialogue view
   const dialogueView = page.getByTestId('dialogue-view');
   await expect(dialogueView).toBeVisible();
+  // Click through the RESPONSE_COMPLETE phase
+  const continueBtn = page.getByTestId('dialogue-continue');
+  if (await continueBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await continueBtn.click();
+  }
 }
 
 /**
