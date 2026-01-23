@@ -49,11 +49,12 @@ export function resolveAction(
   die: Die,
   actionId: string,
   actionName: string,
-  actionType: 'investigate' | 'observe' | 'pray' | 'authority' | 'talk',
+  actionType: 'investigate' | 'observe' | 'pray' | 'authority' | 'talk' | 'duty',
   context: {
     availableClues?: LocationClue[];
     npcIds?: string[];
     clockId?: string;
+    dutyNarrative?: string;
   }
 ): ActionResult {
   const maxVal = DIE_MAX[die.type] ?? 6;
@@ -95,8 +96,15 @@ export function resolveAction(
         break;
       }
       case 'authority': {
-        // Authority actions handled separately by authorityActions.ts
-        narrativeText = 'You exercise your authority as a Dog of the Vineyard.';
+        // Broad trust gain — the service raises standing with all NPCs present
+        if (context.npcIds && context.npcIds.length > 0) {
+          for (const npcId of context.npcIds) {
+            effects.push({ type: 'TRUST_CHANGE', npcId, delta: 8 });
+          }
+        }
+        effects.push({ type: 'ADVANCE_CLOCK', clockId: 'trust-earned', amount: 1 });
+        effects.push({ type: 'RESTORE_CONDITION', amount: 5 });
+        narrativeText = 'You gather the faithful and speak with the King\'s authority. Your words settle into hearts like rain on dry earth.';
         break;
       }
       case 'talk': {
@@ -105,6 +113,13 @@ export function resolveAction(
           effects.push({ type: 'TRUST_CHANGE', npcId, delta: 3 });
         }
         narrativeText = 'Your words carry weight. The conversation moves things forward.';
+        break;
+      }
+      case 'duty': {
+        // Duties always succeed on any roll (the act of performing them is what matters)
+        effects.push({ type: 'RESTORE_CONDITION', amount: 5 });
+        effects.push({ type: 'ADVANCE_CLOCK', clockId: 'duties-fulfilled', amount: 1 });
+        narrativeText = context.dutyNarrative || 'You perform your sacred duty as a Dog of the Vineyard.';
         break;
       }
     }
@@ -125,6 +140,11 @@ export function resolveAction(
         break;
       case 'talk':
         narrativeText = 'The conversation goes nowhere. They aren\'t ready to hear you.';
+        break;
+      case 'duty':
+        // Duties still succeed on failure rolls (the faith is what matters)
+        effects.push({ type: 'ADVANCE_CLOCK', clockId: 'duties-fulfilled', amount: 1 });
+        narrativeText = context.dutyNarrative || 'The ritual feels hollow, but the duty is done. The King of Life accepts your effort.';
         break;
     }
   }

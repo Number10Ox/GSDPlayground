@@ -6,8 +6,9 @@ import { useInvestigation } from '@/hooks/useInvestigation';
 import { useNPCMemory } from '@/hooks/useNPCMemory';
 import { useTown } from '@/hooks/useTown';
 import { generateDicePool } from '@/utils/dice';
-import { generateAllActions, parseActionType } from '@/utils/actionGenerator';
+import { generateAllActions, parseActionType, type DutyContext } from '@/utils/actionGenerator';
 import { resolveAction, type ActionResult } from '@/utils/actionResolver';
+import { BRIDAL_FALLS_DUTIES } from '@/data/duties';
 import { DicePool } from '@/components/DicePool/DicePool';
 import { ActionList } from '@/components/Actions/ActionList';
 import { CycleSummary } from '@/components/CycleSummary/CycleSummary';
@@ -27,7 +28,7 @@ export function CycleView() {
   const { state, dispatch } = useGameState();
   const { character } = useCharacter();
   const { state: investigationState, dispatch: investigationDispatch } = useInvestigation();
-  const { npcs, dispatch: npcDispatch } = useNPCMemory();
+  const { npcs, memories: npcMemories, dispatch: npcDispatch } = useNPCMemory();
   const town = useTown();
   const {
     cyclePhase,
@@ -75,11 +76,22 @@ export function CycleView() {
       );
       const npcsHere = npcs.filter(n => n.locationId === currentLocation);
 
+      // For duty actions, find the duty definition for narrative
+      const dutyDef = actionType === 'duty'
+        ? BRIDAL_FALLS_DUTIES.find(d => d.id === actionId)
+        : undefined;
+
       const result = resolveAction(die, actionId, action.name, actionType, {
         availableClues: locationClues,
         npcIds: npcsHere.map(n => n.id),
+        dutyNarrative: dutyDef?.successNarrative,
       });
       results.push(result);
+
+      // Mark duty as fulfilled
+      if (actionType === 'duty' && action.dutyId) {
+        dispatch({ type: 'FULFILL_DUTY', dutyId: action.dutyId });
+      }
 
       // Apply effects
       for (const effect of result.effects) {
@@ -111,17 +123,26 @@ export function CycleView() {
       const discoveredSinIds = investigationState.sinProgression
         .filter(s => s.discovered)
         .map(s => s.id);
+      const dutyContext: DutyContext = {
+        duties: BRIDAL_FALLS_DUTIES,
+        fulfilledDutyIds: state.fulfilledDutyIds,
+        cycleNumber,
+        npcMemories,
+        foundClueIds: investigationState.clues.filter(c => c.found).map(c => c.id),
+      };
       const actions = generateAllActions(
         town.locations,
         investigationState.clues,
         npcs,
         discoveredSinIds,
         currentLocation,
-        !!character
+        !!character,
+        dutyContext
       );
       dispatch({ type: 'UPDATE_ACTIONS', actions });
     }
-  }, [cyclePhase, currentLocation, investigationState.clues, investigationState.sinProgression, npcs, character, town.locations, dispatch]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cyclePhase, currentLocation, investigationState.clues, investigationState.sinProgression, npcs, character, town.locations, dispatch, state.fulfilledDutyIds, cycleNumber, npcMemories]);
 
   // Compute actions completed for summary
   const actionsCompleted = useMemo(() => {

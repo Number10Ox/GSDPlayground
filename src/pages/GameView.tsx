@@ -20,6 +20,7 @@ import { useCharacter } from '@/hooks/useCharacter';
 import { useNPCMemory } from '@/hooks/useNPCMemory';
 import { useInvestigation } from '@/hooks/useInvestigation';
 import { useDialogue } from '@/hooks/useDialogue';
+import { RELATIONSHIP_SEEDS } from '@/data/relationshipSeeds';
 import { initialConflictState, conflictReducer } from '@/reducers/conflictReducer';
 import { useTown } from '@/hooks/useTown';
 import { resolveTopicsForNPC } from '@/utils/topicResolver';
@@ -33,7 +34,7 @@ export function GameView() {
   const { state, dispatch } = useGameState();
   const { character, dispatch: charDispatch } = useCharacter();
   const { clocks, cycleNumber, cyclePhase, currentLocation, locations, activeConflict } = state;
-  const { npcs } = useNPCMemory();
+  const { npcs, dispatch: npcMemoryDispatch } = useNPCMemory();
   const { state: investigationState, dispatch: investigationDispatch } = useInvestigation();
   const { dispatch: dialogueDispatch } = useDialogue();
 
@@ -79,6 +80,28 @@ export function GameView() {
       setShowArrival(true);
     }
   }, [character, arrivalDone, town.arrival]);
+
+  // Seed background-driven relationships when character first exists
+  const [relationshipsSeeded, setRelationshipsSeeded] = useState(false);
+  useEffect(() => {
+    if (character && !relationshipsSeeded && npcs.length > 0) {
+      const seeds = RELATIONSHIP_SEEDS[character.background];
+      if (seeds && seeds.length > 0) {
+        const resolvedSeeds = seeds
+          .map(seed => {
+            const matchedNpc = npcs.find(n => n.role === seed.targetRole);
+            if (!matchedNpc) return null;
+            return { npcId: matchedNpc.id, initialTrust: seed.initialTrust };
+          })
+          .filter((s): s is { npcId: string; initialTrust: number } => s !== null);
+
+        if (resolvedSeeds.length > 0) {
+          npcMemoryDispatch({ type: 'SEED_RELATIONSHIPS', seeds: resolvedSeeds });
+        }
+      }
+      setRelationshipsSeeded(true);
+    }
+  }, [character, relationshipsSeeded, npcs, npcMemoryDispatch]);
 
   // Handle NPC click - open dialogue if not fatigued
   const handleNpcClick = useCallback((npcId: string) => {

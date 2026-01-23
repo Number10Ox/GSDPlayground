@@ -72,6 +72,8 @@ export interface TownData {
   topicRules: TopicRule[];
   arrival?: ArrivalData;
   events?: TownEvent[];
+  /** Whether the town has formal law enforcement (enables Sheriff NPC) */
+  hasLaw?: boolean;
 }
 
 /**

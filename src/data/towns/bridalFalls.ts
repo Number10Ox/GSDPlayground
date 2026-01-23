@@ -575,4 +575,5 @@ export const bridalFalls: TownData = {
   topicRules,
   arrival,
   events,
+  hasLaw: true,
 };

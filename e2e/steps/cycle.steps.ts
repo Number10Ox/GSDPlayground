@@ -18,7 +18,6 @@ export async function completeCharacterCreation(page: Page) {
     await firstBackground.click();
 
     // Allocate all remaining stat points (each stat starts at 1, need to fill to total)
-    // Click acuity+ until max or points exhausted, then body+, etc.
     const stats = ['acuity', 'body', 'heart', 'will'];
     for (const stat of stats) {
       const plusButton = page.getByTestId(`creation-stat-${stat}-plus`);
@@ -28,6 +27,22 @@ export async function completeCharacterCreation(page: Page) {
       }
     }
 
+    // Continue to belongings step
+    await page.getByTestId('creation-allocate-next').click();
+
+    // Select first 2 belongings
+    const belongings = page.locator('[data-testid^="creation-belonging-"]');
+    await belongings.first().click();
+    await belongings.nth(1).click();
+
+    // Continue to initiation step
+    await page.getByTestId('creation-belongings-next').click();
+
+    // Choose first approach in initiation scene
+    const firstApproach = page.locator('[data-testid^="creation-approach-"]').first();
+    await firstApproach.click();
+
+    // Confirm character creation
     await page.getByTestId('creation-confirm').click();
   }
 }

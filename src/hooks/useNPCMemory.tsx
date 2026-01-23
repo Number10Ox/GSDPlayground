@@ -147,6 +147,26 @@ function npcMemoryReducer(
       };
     }
 
+    case 'SEED_RELATIONSHIPS': {
+      const newMemories = [...state.memories];
+      for (const seed of action.seeds) {
+        const existing = newMemories.findIndex(m => m.npcId === seed.npcId);
+        if (existing === -1) {
+          newMemories.push({
+            npcId: seed.npcId,
+            events: [],
+            relationshipLevel: clamp(seed.initialTrust, -100, 100),
+          });
+        } else {
+          newMemories[existing] = {
+            ...newMemories[existing],
+            relationshipLevel: clamp(seed.initialTrust, -100, 100),
+          };
+        }
+      }
+      return { ...state, memories: newMemories };
+    }
+
     case 'CLEAR_MEMORY': {
       return {
         ...state,

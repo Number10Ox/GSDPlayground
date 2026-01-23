@@ -130,14 +130,36 @@ function determineNPCCount(chainLength: number, rng: SeededRNG): number {
 /**
  * Selects archetypes for the sin chain, ensuring diversity and coverage.
  * Returns an array of archetype assignments: which archetype fills which sin role.
+ *
+ * Mandatory archetypes (e.g., steward) are always included.
+ * Conditional archetypes (e.g., sheriff) are only included when town conditions are met.
  */
 function selectArchetypes(
   sinChain: SinNode[],
   npcCount: number,
-  rng: SeededRNG
+  rng: SeededRNG,
+  townConditions: { hasLaw?: boolean } = {}
 ): { archetype: NPCArchetype; sinIndices: number[]; roleInSin: string }[] {
   const assignments: { archetype: NPCArchetype; sinIndices: number[]; roleInSin: string }[] = [];
   const usedArchetypeRoles = new Set<string>();
+
+  // Filter archetypes based on conditions
+  const availableArchetypes = NPC_ARCHETYPES.filter(a => {
+    if (a.requiresCondition === 'hasLaw' && !townConditions.hasLaw) return false;
+    return true;
+  });
+
+  // Zero pass: ensure mandatory archetypes are included first
+  const mandatoryArchetypes = availableArchetypes.filter(a => a.mandatory);
+  for (const archetype of mandatoryArchetypes) {
+    const sinIdx = rng.nextInt(0, sinChain.length - 1);
+    assignments.push({
+      archetype,
+      sinIndices: [sinIdx],
+      roleInSin: archetype.role,
+    });
+    usedArchetypeRoles.add(archetype.role);
+  }
 
   // First pass: assign at least one NPC per sin node using template roles
   for (let sinIdx = 0; sinIdx < sinChain.length; sinIdx++) {
@@ -154,7 +176,7 @@ function selectArchetypes(
       // Prefer unused archetypes
       for (const candidateRole of candidateRoles) {
         if (!usedArchetypeRoles.has(candidateRole)) {
-          selectedArchetype = NPC_ARCHETYPES.find(a => a.role === candidateRole);
+          selectedArchetype = availableArchetypes.find(a => a.role === candidateRole);
           if (selectedArchetype) {
             usedArchetypeRoles.add(candidateRole);
             break;
@@ -165,7 +187,7 @@ function selectArchetypes(
       // Fall back to any matching archetype if all preferred are used
       if (!selectedArchetype) {
         const candidateRole = rng.pick(candidateRoles);
-        selectedArchetype = NPC_ARCHETYPES.find(a => a.role === candidateRole) || rng.pick(NPC_ARCHETYPES);
+        selectedArchetype = availableArchetypes.find(a => a.role === candidateRole) || rng.pick(availableArchetypes);
       }
 
       // Check if this archetype is already assigned
@@ -187,7 +209,7 @@ function selectArchetypes(
 
   // Second pass: ensure we have at least MIN_NPCS unique NPCs
   while (assignments.length < npcCount) {
-    const available = NPC_ARCHETYPES.filter(
+    const available = availableArchetypes.filter(
       a => !assignments.some(existing => existing.archetype.role === a.role)
     );
     if (available.length === 0) break; // All archetypes used
@@ -454,7 +476,11 @@ function ensureConnectivity(
  * @param seed - Seed string for deterministic generation
  * @returns NPCGenerationResult with NPCs, relationships, and updated sin chain
  */
-export function generateNPCs(sinChain: SinNode[], seed: string): NPCGenerationResult {
+export function generateNPCs(
+  sinChain: SinNode[],
+  seed: string,
+  townConditions: { hasLaw?: boolean } = {}
+): NPCGenerationResult {
   const rng = createRNG(`${seed}-npcs`);
 
   // Deep clone sin chain to avoid mutation
@@ -467,7 +493,7 @@ export function generateNPCs(sinChain: SinNode[], seed: string): NPCGenerationRe
   const npcCount = determineNPCCount(updatedSinChain.length, rng);
 
   // Select archetypes and assign to sins
-  const assignments = selectArchetypes(updatedSinChain, npcCount, rng);
+  const assignments = selectArchetypes(updatedSinChain, npcCount, rng, townConditions);
 
   // Ensure every sin has minimum coverage
   ensureSinCoverage(updatedSinChain, assignments);

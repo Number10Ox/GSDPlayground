@@ -1,11 +1,13 @@
 import type { AvailableAction, LocationId } from '@/types/game';
 import type { LocationClue } from '@/types/investigation';
 import type { NPC } from '@/types/npc';
+import type { DutyDefinition } from '@/data/duties';
+import type { NPCMemory } from '@/types/npc';
 
 /**
  * ActionType - Category tag stored in action ID prefix for resolution.
  */
-export type ActionType = 'investigate' | 'observe' | 'pray' | 'talk' | 'authority';
+export type ActionType = 'investigate' | 'observe' | 'pray' | 'talk' | 'authority' | 'duty';
 
 /**
  * parseActionType - Extract the action type from an action ID.
@@ -17,6 +19,7 @@ export function parseActionType(actionId: string): ActionType {
   if (actionId.startsWith('pray')) return 'pray';
   if (actionId.startsWith('authority-')) return 'authority';
   if (actionId.startsWith('talk-')) return 'talk';
+  if (actionId.startsWith('duty-')) return 'duty';
   return 'investigate'; // fallback
 }
 
@@ -115,7 +118,61 @@ export function generateGlobalActions(hasAuthority: boolean): AvailableAction[] 
 }
 
 /**
- * generateAllActions - Combine location-specific and global actions.
+ * DutyContext - Information needed to check duty triggers.
+ */
+export interface DutyContext {
+  duties: DutyDefinition[];
+  fulfilledDutyIds: string[];
+  cycleNumber: number;
+  npcMemories: NPCMemory[];
+  foundClueIds: string[];
+}
+
+/**
+ * generateDutyActions - Check which duties have their triggers met and return as actions.
+ */
+export function generateDutyActions(context: DutyContext): AvailableAction[] {
+  const actions: AvailableAction[] = [];
+
+  for (const duty of context.duties) {
+    // Skip already fulfilled duties
+    if (context.fulfilledDutyIds.includes(duty.id)) continue;
+
+    // Check trigger condition
+    let triggered = false;
+    switch (duty.trigger.type) {
+      case 'CYCLE_REACHED':
+        triggered = context.cycleNumber >= duty.trigger.min;
+        break;
+      case 'TRUST_THRESHOLD': {
+        const memory = context.npcMemories.find(m => m.npcId === duty.trigger.npcId);
+        triggered = (memory?.relationshipLevel ?? 0) >= duty.trigger.min;
+        break;
+      }
+      case 'CLUE_FOUND':
+        triggered = context.foundClueIds.includes(duty.trigger.clueId);
+        break;
+    }
+
+    if (triggered) {
+      actions.push({
+        id: duty.id,
+        name: duty.name,
+        description: duty.description,
+        locationId: duty.locationId,
+        diceCost: duty.diceCost,
+        available: true,
+        isDuty: true,
+        dutyId: duty.id,
+      });
+    }
+  }
+
+  return actions;
+}
+
+/**
+ * generateAllActions - Combine location-specific, global, and duty actions.
  */
 export function generateAllActions(
   locations: { id: LocationId }[],
@@ -123,7 +180,8 @@ export function generateAllActions(
   allNpcs: NPC[],
   discoveredSinIds: string[],
   currentLocation: LocationId,
-  hasAuthority: boolean
+  hasAuthority: boolean,
+  dutyContext?: DutyContext
 ): AvailableAction[] {
   const locationActions: AvailableAction[] = [];
 
@@ -140,7 +198,10 @@ export function generateAllActions(
 
   const globalActions = generateGlobalActions(hasAuthority);
 
-  return [...locationActions, ...globalActions];
+  // Generate duty actions if context provided
+  const dutyActions = dutyContext ? generateDutyActions(dutyContext) : [];
+
+  return [...dutyActions, ...locationActions, ...globalActions];
 }
 
 function getLocationShortName(locationId: string): string {

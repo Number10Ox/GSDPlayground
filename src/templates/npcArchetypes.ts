@@ -36,6 +36,10 @@ export interface NPCArchetype {
   defaultLocationType: string;
   resistProfile: { body: number; will: number; heart: number; acuity: number };
   factTemplates: FactTemplate[];
+  /** If true, this archetype is always included in town generation */
+  mandatory?: boolean;
+  /** If set, archetype is only included when this condition is met */
+  requiresCondition?: 'hasLaw';
 }
 
 /**
@@ -43,9 +47,10 @@ export interface NPCArchetype {
  * Each archetype has rich personality, speech, and fact templates.
  */
 export const NPC_ARCHETYPES: NPCArchetype[] = [
-  // 1. Steward (authority, high will resist, pride-linked)
+  // 1. Steward (authority, high will resist, pride-linked) - MANDATORY in every town
   {
     role: 'steward',
+    mandatory: true,
     nameTemplates: {
       prefix: 'Steward',
       names: ['Ezra', 'Josiah', 'Elkanah', 'Hiram', 'Zachariah', 'Mordecai'],
@@ -111,9 +116,10 @@ export const NPC_ARCHETYPES: NPCArchetype[] = [
     ],
   },
 
-  // 2. Sheriff (enforcer, high body resist, pride/injustice-linked)
+  // 2. Sheriff (enforcer, high body resist, pride/injustice-linked) - only in towns with law
   {
     role: 'sheriff',
+    requiresCondition: 'hasLaw',
     nameTemplates: {
       prefix: 'Sheriff',
       names: ['Harmon', 'Colt', 'Silas', 'Virgil', 'Boone', 'Wyatt'],

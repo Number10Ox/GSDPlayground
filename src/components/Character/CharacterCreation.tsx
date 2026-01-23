@@ -1,10 +1,12 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Lightbulb, Hand, Heart, Cross } from 'lucide-react';
 import { useCharacter } from '@/hooks/useCharacter';
 import { createCharacter, BACKGROUND_DICE, STAT_POINT_TO_DIE_TYPE } from '@/types/character';
-import type { Background, StatName } from '@/types/character';
+import type { Background, StatName, Item, Trait } from '@/types/character';
+import { drawBelongings, type BelongingTemplate } from '@/data/belongingsTable';
+import { INITIATION_SCENES, type InitiationScene, type InitiationApproach } from '@/data/initiationScenes';
 
-type CreationStep = 'name' | 'background' | 'allocate' | 'confirm';
+type CreationStep = 'name' | 'background' | 'allocate' | 'belongings' | 'initiation';
 
 const STAT_ICONS: Record<StatName, typeof Lightbulb> = {
   acuity: Lightbulb,
@@ -81,6 +83,14 @@ export function CharacterCreation({ onComplete }: { onComplete?: () => void }) {
     will: MIN_PER_STAT,
   });
 
+  // Belongings state
+  const [drawnBelongings, setDrawnBelongings] = useState<BelongingTemplate[]>([]);
+  const [selectedBelongingIds, setSelectedBelongingIds] = useState<Set<string>>(new Set());
+
+  // Initiation state
+  const [initiationScene, setInitiationScene] = useState<InitiationScene | null>(null);
+  const [chosenApproach, setChosenApproach] = useState<InitiationApproach | null>(null);
+
   // Total available stat points for the selected background
   const totalDice = background ? BACKGROUND_DICE[background].statPoints : 0;
   const allocated = allocation.acuity + allocation.body + allocation.heart + allocation.will;
@@ -112,13 +122,44 @@ export function CharacterCreation({ onComplete }: { onComplete?: () => void }) {
     });
   }, []);
 
+  // Convert selected belongings to Item objects
+  const selectedItems: Item[] = useMemo(() => {
+    return drawnBelongings
+      .filter(b => selectedBelongingIds.has(b.id))
+      .map(b => ({
+        id: crypto.randomUUID(),
+        name: b.name,
+        category: b.category,
+        dice: b.dice.map(d => ({ id: crypto.randomUUID(), type: d })),
+        isGun: b.isGun,
+      }));
+  }, [drawnBelongings, selectedBelongingIds]);
+
+  // Convert chosen approach to Trait
+  const initiationTrait: Trait | null = useMemo(() => {
+    if (!chosenApproach) return null;
+    return {
+      id: crypto.randomUUID(),
+      name: chosenApproach.traitName,
+      dice: chosenApproach.traitDice.map(d => ({ id: crypto.randomUUID(), type: d })),
+      source: 'creation' as const,
+      description: chosenApproach.traitDescription,
+    };
+  }, [chosenApproach]);
+
   const handleConfirm = useCallback(() => {
     if (!background || remaining !== 0) return;
+    if (selectedBelongingIds.size !== 2) return;
+    if (!initiationTrait) return;
 
     const character = createCharacter(name.trim(), background, allocation);
+    // Add unusual belongings to inventory
+    character.inventory.push(...selectedItems);
+    // Add initiation trait
+    character.traits.push(initiationTrait);
     dispatch({ type: 'SET_CHARACTER', character });
     onComplete?.();
-  }, [name, background, allocation, remaining, dispatch, onComplete]);
+  }, [name, background, allocation, remaining, selectedBelongingIds, selectedItems, initiationTrait, dispatch, onComplete]);
 
   const statOrder: StatName[] = ['acuity', 'body', 'heart', 'will'];
 
@@ -263,8 +304,15 @@ export function CharacterCreation({ onComplete }: { onComplete?: () => void }) {
                 Back
               </button>
               <button
-                data-testid="creation-confirm"
-                onClick={handleConfirm}
+                data-testid="creation-allocate-next"
+                onClick={() => {
+                  if (remaining === 0) {
+                    const drawn = drawBelongings(4);
+                    setDrawnBelongings(drawn);
+                    setSelectedBelongingIds(new Set());
+                    setStep('belongings');
+                  }
+                }}
                 disabled={remaining !== 0}
                 className={`flex-1 py-2 rounded-lg font-semibold transition-colors ${
                   remaining === 0
@@ -272,7 +320,162 @@ export function CharacterCreation({ onComplete }: { onComplete?: () => void }) {
                     : 'bg-gray-700 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                Confirm
+                Continue
+              </button>
+            </div>
+          </div>
+        )}
+        {/* Step 4: Belongings Selection */}
+        {step === 'belongings' && (
+          <div className="space-y-4">
+            <div className="text-center">
+              <p className="text-gray-300 text-sm font-medium">Unusual Belongings</p>
+              <p className="text-gray-500 text-xs mt-1">
+                Every Dog carries strange things. Pick 2 from what fate has dealt you.
+              </p>
+              <p className={`text-sm font-bold mt-2 ${selectedBelongingIds.size === 2 ? 'text-green-400' : 'text-amber-400'}`}>
+                {2 - selectedBelongingIds.size} remaining
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              {drawnBelongings.map((belonging) => {
+                const isSelected = selectedBelongingIds.has(belonging.id);
+                const canSelect = selectedBelongingIds.size < 2 || isSelected;
+
+                return (
+                  <button
+                    key={belonging.id}
+                    data-testid={`creation-belonging-${belonging.id}`}
+                    onClick={() => {
+                      setSelectedBelongingIds(prev => {
+                        const next = new Set(prev);
+                        if (next.has(belonging.id)) {
+                          next.delete(belonging.id);
+                        } else if (next.size < 2) {
+                          next.add(belonging.id);
+                        }
+                        return next;
+                      });
+                    }}
+                    disabled={!canSelect}
+                    className={`w-full text-left rounded-lg p-3 transition-colors border ${
+                      isSelected
+                        ? 'bg-amber-900/30 border-amber-500 text-gray-100'
+                        : canSelect
+                          ? 'bg-gray-800 border-gray-600 hover:border-amber-500 text-gray-300'
+                          : 'bg-gray-800/50 border-gray-700 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-sm">{belonging.name}</span>
+                      <span className="text-xs text-gray-500">
+                        {belonging.dice.join('+')} · {belonging.category}
+                        {belonging.isGun && ' · gun'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">{belonging.description}</p>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={() => setStep('allocate')}
+                className="flex-1 py-2 text-gray-400 hover:text-gray-200 text-sm transition-colors border border-gray-700 rounded-lg"
+              >
+                Back
+              </button>
+              <button
+                data-testid="creation-belongings-next"
+                onClick={() => {
+                  if (selectedBelongingIds.size === 2) {
+                    // Pick a random initiation scene
+                    const scene = INITIATION_SCENES[Math.floor(Math.random() * INITIATION_SCENES.length)];
+                    setInitiationScene(scene);
+                    setChosenApproach(null);
+                    setStep('initiation');
+                  }
+                }}
+                disabled={selectedBelongingIds.size !== 2}
+                className={`flex-1 py-2 rounded-lg font-semibold transition-colors ${
+                  selectedBelongingIds.size === 2
+                    ? 'bg-amber-600 hover:bg-amber-500 text-white'
+                    : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 5: Initiation Scene */}
+        {step === 'initiation' && initiationScene && (
+          <div className="space-y-4">
+            <div className="text-center">
+              <p className="text-gray-300 text-sm font-medium">Initiation</p>
+              <p className="text-gray-500 text-xs mt-1">
+                Before you ride, you must prove yourself. What happened at your initiation?
+              </p>
+            </div>
+
+            <div className="bg-gray-800 rounded-lg p-4 border border-gray-600">
+              <p className="text-gray-200 text-sm italic">{initiationScene.scenario}</p>
+            </div>
+
+            <div className="space-y-2">
+              {initiationScene.approaches.map((approach) => {
+                const isChosen = chosenApproach?.id === approach.id;
+
+                return (
+                  <button
+                    key={approach.id}
+                    data-testid={`creation-approach-${approach.id}`}
+                    onClick={() => setChosenApproach(approach)}
+                    className={`w-full text-left rounded-lg p-3 transition-colors border ${
+                      isChosen
+                        ? 'bg-amber-900/30 border-amber-500'
+                        : 'bg-gray-800 border-gray-600 hover:border-amber-500'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-sm text-gray-100">{approach.label}</span>
+                      <span className="text-xs text-gray-500">
+                        +{approach.traitName} ({approach.traitDice.join('+')})
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">{approach.description}</p>
+                  </button>
+                );
+              })}
+            </div>
+
+            {chosenApproach && (
+              <div className="bg-green-900/20 border border-green-800/30 rounded-lg p-3">
+                <p className="text-xs text-green-300 italic">{chosenApproach.resolution}</p>
+              </div>
+            )}
+
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={() => setStep('belongings')}
+                className="flex-1 py-2 text-gray-400 hover:text-gray-200 text-sm transition-colors border border-gray-700 rounded-lg"
+              >
+                Back
+              </button>
+              <button
+                data-testid="creation-confirm"
+                onClick={handleConfirm}
+                disabled={!chosenApproach}
+                className={`flex-1 py-2 rounded-lg font-semibold transition-colors ${
+                  chosenApproach
+                    ? 'bg-amber-600 hover:bg-amber-500 text-white'
+                    : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                Begin Your Journey
               </button>
             </div>
           </div>

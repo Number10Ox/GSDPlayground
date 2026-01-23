@@ -95,4 +95,8 @@ export type NPCMemoryAction =
       npcId: string;
       delta: number;
     }
+  | {
+      type: 'SEED_RELATIONSHIPS';
+      seeds: { npcId: string; initialTrust: number }[];
+    }
   | { type: 'CLEAR_MEMORY' }; // For testing/reset

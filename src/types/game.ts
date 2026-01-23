@@ -41,6 +41,9 @@ export interface GameState {
     npcId: string;
     stakes: string;
   } | null;
+
+  // Duties that have been fulfilled (one-shot)
+  fulfilledDutyIds: string[];
 }
 
 export type GameAction =
@@ -65,7 +68,9 @@ export type GameAction =
   // Conflict actions
   | { type: 'APPLY_FALLOUT'; severity: FalloutSeverity }
   | { type: 'START_GAME_CONFLICT'; npcId: string; stakes: string }
-  | { type: 'END_GAME_CONFLICT' };
+  | { type: 'END_GAME_CONFLICT' }
+  // Duty actions
+  | { type: 'FULFILL_DUTY'; dutyId: string };
 
 // Dice types (DitV polyhedral)
 export type DieType = 'd4' | 'd6' | 'd8' | 'd10';
@@ -101,4 +106,6 @@ export interface AvailableAction {
   diceCost: number;               // 0 = free action (movement, observation)
   available: boolean;             // Requirements met?
   requirementHint?: string;       // "Requires: Talk to Sheriff first"
+  isDuty?: boolean;               // Sacred duty (gold highlight in UI)
+  dutyId?: string;                // Reference to DutyDefinition.id
 }

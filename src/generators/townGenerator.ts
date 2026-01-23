@@ -28,6 +28,8 @@ export interface TownGenerationConfig {
   chainLength?: number;
   /** Override town name (if not provided, one is generated) */
   name?: string;
+  /** Whether the town has formal law enforcement (enables Sheriff) */
+  hasLaw?: boolean;
 }
 
 /**
@@ -211,7 +213,7 @@ function isLocationOfType(location: Location, slotType: string): boolean {
  * @returns A complete, self-consistent TownData object
  */
 export function generateTown(config: TownGenerationConfig): TownData {
-  const { seed, chainLength = 4, name: providedName } = config;
+  const { seed, chainLength = 4, name: providedName, hasLaw } = config;
   const rng = createRNG(seed);
 
   // 1. Generate town name
@@ -225,7 +227,7 @@ export function generateTown(config: TownGenerationConfig): TownData {
   const rawSinChain = generateSinChain(seed, chainLength);
 
   // 4. Generate NPCs (updates sin chain with linkedNpcs)
-  const { npcs, updatedSinChain } = generateNPCs(rawSinChain, seed);
+  const { npcs, updatedSinChain } = generateNPCs(rawSinChain, seed, { hasLaw });
 
   // 5. Generate locations
   const locations = generateLocations(npcs.length, `${seed}-loc`);
@@ -245,6 +247,7 @@ export function generateTown(config: TownGenerationConfig): TownData {
     npcs,
     sinChain: updatedSinChain,
     topicRules,
+    hasLaw,
   };
 }
 

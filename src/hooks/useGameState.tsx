@@ -25,6 +25,7 @@ function createInitialState(locations: Location[]): GameState {
 
     characterCondition: 100,
     activeConflict: null,
+    fulfilledDutyIds: [],
   };
 }
 
@@ -282,6 +283,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         activeConflict: null,
+      };
+    }
+
+    case 'FULFILL_DUTY': {
+      if (state.fulfilledDutyIds.includes(action.dutyId)) return state;
+      return {
+        ...state,
+        fulfilledDutyIds: [...state.fulfilledDutyIds, action.dutyId],
       };
     }
 
