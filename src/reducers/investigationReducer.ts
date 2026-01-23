@@ -28,6 +28,7 @@ export const initialInvestigationState: InvestigationState = {
   sinProgression: [],
   fatigueClock: { current: 0, max: 6 },
   townResolved: false,
+  sinEscalatedToMurder: false,
 };
 
 /**
@@ -119,6 +120,76 @@ export function investigationReducer(
       return {
         ...state,
         townResolved: true,
+      };
+    }
+
+    case 'ADVANCE_SIN_PROGRESSION': {
+      // Called at end of each cycle: time pressure mechanic.
+      // Finds the highest-severity unresolved sin, advances to next level.
+      if (state.sinProgression.length === 0) return state;
+
+      // Find highest-severity unresolved sin node
+      let highestUnresolved: { node: typeof state.sinProgression[0]; index: number } | null = null;
+      for (const node of state.sinProgression) {
+        if (node.resolved) continue;
+        const levelIndex = SIN_CHAIN_ORDER.indexOf(node.level);
+        if (!highestUnresolved || levelIndex > SIN_CHAIN_ORDER.indexOf(highestUnresolved.node.level)) {
+          highestUnresolved = { node, index: levelIndex };
+        }
+      }
+
+      // Silent fail: no unresolved sins or already at max
+      if (!highestUnresolved) return state;
+      if (highestUnresolved.node.level === 'hate-and-murder') {
+        // Already at maximum, set murder flag if not set
+        return state.sinEscalatedToMurder ? state : {
+          ...state,
+          sinEscalatedToMurder: true,
+        };
+      }
+
+      // Advance to next level
+      const currentLevelIndex = SIN_CHAIN_ORDER.indexOf(highestUnresolved.node.level);
+      const nextLevel = SIN_CHAIN_ORDER[currentLevelIndex + 1];
+      const reachedMurder = nextLevel === 'hate-and-murder';
+
+      // Create new sin node at the escalated level
+      const newSinNode = {
+        id: `sin-${nextLevel}-${Date.now()}`,
+        level: nextLevel,
+        name: `Escalated ${nextLevel.replace(/-/g, ' ')}`,
+        description: `The town's rot has deepened to ${nextLevel.replace(/-/g, ' ')}.`,
+        discovered: false,
+        resolved: false,
+        linkedNpcs: [],
+      };
+
+      return {
+        ...state,
+        sinProgression: [...state.sinProgression, newSinNode],
+        sinEscalatedToMurder: reachedMurder || state.sinEscalatedToMurder,
+      };
+    }
+
+    case 'CONFRONT_SIN': {
+      const { sinId } = action;
+      const confrontedNode = state.sinProgression.find((node) => node.id === sinId);
+
+      // Silent fail: sin not found
+      if (!confrontedNode) return state;
+
+      // Mark as confronted (resolved = true, since confrontation counts in DitV)
+      const updatedProgression = state.sinProgression.map((node) =>
+        node.id === sinId ? { ...node, resolved: true } : node
+      );
+
+      // If the confronted sin is at the 'pride' level (root), resolve the town
+      const isRootSin = confrontedNode.level === 'pride';
+
+      return {
+        ...state,
+        sinProgression: updatedProgression,
+        townResolved: isRootSin || state.townResolved,
       };
     }
 

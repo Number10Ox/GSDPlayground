@@ -67,6 +67,7 @@ export interface InvestigationState {
   sinProgression: SinNode[];
   fatigueClock: FatigueClock;
   townResolved: boolean;
+  sinEscalatedToMurder: boolean;
 }
 
 /**
@@ -78,4 +79,6 @@ export type InvestigationAction =
   | { type: 'ADVANCE_FATIGUE' }
   | { type: 'RESET_FATIGUE' }
   | { type: 'MARK_SIN_RESOLVED'; sinId: string }
-  | { type: 'MARK_TOWN_RESOLVED' };
+  | { type: 'MARK_TOWN_RESOLVED' }
+  | { type: 'ADVANCE_SIN_PROGRESSION' }
+  | { type: 'CONFRONT_SIN'; sinId: string };
