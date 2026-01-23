@@ -16,6 +16,7 @@ import { generateSinChain } from '@/generators/sinChainGenerator';
 import { generateNPCs } from '@/generators/npcGenerator';
 import { generateLocations } from '@/generators/locationGenerator';
 import { generateTopicRules } from '@/generators/topicRuleGenerator';
+import { validateTown } from '@/generators/validators/playabilityValidator';
 
 /**
  * Configuration for town generation.
@@ -245,4 +246,49 @@ export function generateTown(config: TownGenerationConfig): TownData {
     sinChain: updatedSinChain,
     topicRules,
   };
+}
+
+/**
+ * Generates a validated town, retrying on validation failure.
+ * Guarantees the returned town passes all validators (sin chain,
+ * NPC stakes, and playability), or throws if all attempts fail.
+ *
+ * Each retry uses a different seed suffix to produce a different town.
+ *
+ * @param config - Generation configuration
+ * @param maxAttempts - Maximum number of generation attempts (default 10)
+ * @returns A validated, playable TownData object
+ * @throws Error if all attempts produce invalid towns
+ */
+export function generateValidTown(
+  config: TownGenerationConfig,
+  maxAttempts = 10
+): TownData {
+  let lastErrors: string[] = [];
+
+  for (let i = 0; i < maxAttempts; i++) {
+    const seed = i > 0 ? `${config.seed}-retry-${i}` : config.seed;
+    const candidate = generateTown({ ...config, seed });
+    const result = validateTown(candidate);
+
+    if (result.valid) {
+      if (result.warnings.length > 0) {
+        console.warn(
+          `[generateValidTown] Town "${candidate.name}" passed validation with ${result.warnings.length} warning(s):`,
+          result.warnings.map(w => w.message)
+        );
+      }
+      return candidate;
+    }
+
+    lastErrors = result.errors.map(e => e.message);
+    console.warn(
+      `[generateValidTown] Attempt ${i + 1}/${maxAttempts} failed with ${result.errors.length} error(s):`,
+      lastErrors
+    );
+  }
+
+  throw new Error(
+    `[generateValidTown] All ${maxAttempts} attempts failed. Last errors:\n${lastErrors.map(e => `  - ${e}`).join('\n')}`
+  );
 }
