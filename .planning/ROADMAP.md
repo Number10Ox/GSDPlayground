@@ -75,7 +75,7 @@ Each phase will include E2E tests as the final plan:
 - Phase 3: 03-05-PLAN.md — Conflict system E2E tests
 - Phase 4: 04-05-PLAN.md — Character system E2E tests
 - Phase 5: 05-07-PLAN.md — Investigation E2E tests
-- Phase 6: 06-05-PLAN.md — Town generation E2E tests
+- Phase 6: 06-06-PLAN.md — Town generation E2E tests
 - Phase 7: 07-04-PLAN.md — Persistence E2E tests
 
 ### Phase 3: Conflict System
@@ -144,14 +144,15 @@ Plans:
   2. NPCs are generated with relationships to each other
   3. Every NPC has stakes in the town's problems
   4. Generated towns are playable from arrival to resolution
-**Plans**: TBD
+**Plans**: 6 plans
 
 Plans:
-- [ ] 06-01: Hand-crafted reference town (proof of concept)
-- [ ] 06-02: Sin progression template system
-- [ ] 06-03: NPC generation with relationship graphs
-- [ ] 06-04: Town assembly and validation
-- [ ] 06-05: Town generation E2E tests
+- [ ] 06-01-PLAN.md — Seeded RNG, sin templates, and sin chain generator (foundation for all generation)
+- [ ] 06-02-PLAN.md — NPC archetypes, relationship patterns, and NPC generator
+- [ ] 06-03-PLAN.md — Location templates, topic rule generator, and town assembler
+- [ ] 06-04-PLAN.md — Validation pipeline and generate-validate-retry loop
+- [ ] 06-05-PLAN.md — Multi-town integration (pre-generated towns, selection UI, App wiring)
+- [ ] 06-06-PLAN.md — Town generation E2E tests (selection, playability, variety)
 
 ### Phase 7: Persistence
 **Goal**: Player can save progress and resume later
@@ -183,10 +184,10 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7
 | 3. Conflict System | 5/5 | Complete | 2026-01-22 |
 | 4. Character System | 5/5 | Complete | 2026-01-22 |
 | 5. Investigation | 7/7 | Complete | 2026-01-22 |
-| 6. Town Generation | 0/5 | Not started | - |
+| 6. Town Generation | 0/6 | Not started | - |
 | 7. Persistence | 0/4 | Not started | - |
 
-**Total:** 25/34 plans complete
+**Total:** 25/35 plans complete
 
 ---
 *Roadmap created: 2026-01-20*
@@ -195,5 +196,6 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7
 *Phase 3 planned: 2026-01-22*
 *Phase 4 planned: 2026-01-22*
 *Phase 5 planned: 2026-01-22*
+*Phase 6 planned: 2026-01-22*
 *Depth: comprehensive*
 *Coverage: 23/23 v1 requirements mapped*
