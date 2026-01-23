@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** The player must be able to arrive in a procedurally generated town, discover its moral rot through investigation and NPC interaction, and resolve conflicts using the escalating stakes system — experiencing the weight of judgment that defines Dogs in the Vineyard.
-**Current focus:** Phase 6 in progress - Town Generation (sin chains, NPCs, procedural towns)
+**Current focus:** Phase 6 complete - Town Generation (sin chains, NPCs, procedural towns, E2E tests)
 
 ## Current Position
 
 Phase: 6 of 7 (Town Generation)
-Plan: 5 of 6 in current phase
-Status: In progress
-Last activity: 2026-01-23 - Completed 06-05-PLAN.md (Town Selection Integration)
+Plan: 6 of 6 in current phase
+Status: Phase complete
+Last activity: 2026-01-23 - Completed 06-06-PLAN.md (Town Generation E2E Tests)
 
-Progress: [████████████████████] 97%
+Progress: [████████████████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 31
+- Total plans completed: 32
 - Average duration: 5.7 min
-- Total execution time: 3.55 hours
+- Total execution time: 3.68 hours
 
 **By Phase:**
 
@@ -34,11 +34,11 @@ Progress: [████████████████████] 97%
 | 04-character-system | 5 | 29 min | 5.8 min |
 | 05-investigation | 7 | 71 min | 10.1 min |
 
-| 06-town-generation | 5 | 47 min | 9.4 min |
+| 06-town-generation | 6 | 55 min | 9.2 min |
 
 **Recent Trend:**
-- Last 5 plans: 06-01 (9min), 06-02 (19min), 06-03 (7min), 06-04 (7min), 06-05 (5min)
-- Trend: Fast execution for town generation pipeline and integration
+- Last 5 plans: 06-02 (19min), 06-03 (7min), 06-04 (7min), 06-05 (5min), 06-06 (8min)
+- Trend: Consistent execution for town generation pipeline
 
 *Updated after each plan completion*
 
@@ -157,6 +157,10 @@ Recent decisions affecting current work:
 - [06-05]: Fixed seeds at module load for deterministic, debuggable town generation
 - [06-05]: Chain lengths 5 and 6 for generated towns (varied difficulty vs bridalFalls's 4)
 - [06-05]: E2E tests select Bridal Falls by default to preserve existing test behavior
+- [06-06]: safeGenerateValidTown wraps generation with try/catch fallback to shorter chains
+- [06-06]: Both generated towns use chainLength 5 (6-level too complex for validator)
+- [06-06]: Discovery tests use route interception with inline [DISCOVERY:] markers
+- [06-06]: navigateToNPCLocation iterates map nodes to find one with visible NPCs
 
 ### Pending Todos
 
@@ -169,7 +173,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-23
-Stopped at: Completed 06-05-PLAN.md (Town Selection Integration) - Phase 6 plan 5 of 6
+Stopped at: Completed 06-06-PLAN.md (Town Generation E2E Tests) - Phase 6 complete (6/6)
 Resume file: None
 
 ## Phase 2 Completion Notes
@@ -261,3 +265,20 @@ Phase 5 complete with full E2E test coverage. Investigation system functional:
 - VCR-style dialogue fixtures for deterministic E2E testing
 
 Ready for Phase 6 (Judgment - resolution mechanics and final confrontation).
+
+## Phase 6 Completion Notes
+
+Phase 6 complete with full E2E test coverage. Town generation pipeline functional:
+- Sin chain generator with seeded PRNG, slot-based templates, configurable depth
+- NPC generator with 9 archetypes, knowledge facts, conflict thresholds, relationships
+- Location generator with 7 slot types, connected graph structure
+- Topic rule generator producing default/discovery/location-gated topics
+- Three validators: sin chain discoverability, NPC stakes coverage, playability
+- Town orchestrator with retry logic and safeGenerateValidTown fallback
+- TownSelection UI with corruption indicators, NPC counts, town cards
+- App.tsx conditional render: TownSelection or game with selected town
+- 2 generated towns (Hollow Creek, Shepherd's Ridge) + 1 hand-crafted (Bridal Falls)
+- E2E tests: 6 BDD scenarios, 11 step helpers, 6 Playwright tests
+- Total E2E suite: 36 tests (9 cycle + 7 conflict + 7 character + 7 investigation + 6 town generation)
+
+Ready for Phase 7 (if applicable).
