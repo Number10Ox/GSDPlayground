@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-20)
 ## Current Position
 
 Phase: 6 of 7 (Town Generation)
-Plan: 2 of 6 in current phase
+Plan: 4 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-23 - Completed 06-02-PLAN.md (NPC Generator)
+Last activity: 2026-01-23 - Completed 06-04-PLAN.md (Validation Pipeline)
 
-Progress: [██████████████████░░] 91%
+Progress: [███████████████████░] 94%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 28
-- Average duration: 5.7 min
-- Total execution time: 3.25 hours
+- Total plans completed: 30
+- Average duration: 5.8 min
+- Total execution time: 3.47 hours
 
 **By Phase:**
 
@@ -34,11 +34,11 @@ Progress: [██████████████████░░] 91%
 | 04-character-system | 5 | 29 min | 5.8 min |
 | 05-investigation | 7 | 71 min | 10.1 min |
 
-| 06-town-generation | 2 | 28 min | 14 min |
+| 06-town-generation | 4 | 42 min | 10.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-06 (4min), 05-07 (50min), 06-01 (9min), 06-02 (19min)
-- Trend: Moderate complexity for procedural generation logic
+- Last 5 plans: 05-07 (50min), 06-01 (9min), 06-02 (19min), 06-03 (7min), 06-04 (7min)
+- Trend: Fast execution for procedural generation validators
 
 *Updated after each plan completion*
 
@@ -150,6 +150,10 @@ Recent decisions affecting current work:
 - [06-02]: Global fallback in relationship building when local sin-pair not found
 - [06-02]: Separate RNG seeds for NPC generation vs slot filling (independence)
 - [06-02]: ROLE_SLOT_TO_ARCHETYPE mapping for flexible sin template role resolution
+- [06-04]: Cycle detection only flags genuine prerequisite dependencies, not NPC knowledge breadth
+- [06-04]: Sins with trust-0 facts are independently discoverable (no incoming dependency edges)
+- [06-04]: Retry uses seed suffix pattern (seed-retry-N) for deterministic but varied attempts
+- [06-04]: NPC connectivity checked via shared sin assignments (implicit, no explicit relationship edges)
 
 ### Pending Todos
 
@@ -162,7 +166,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-23
-Stopped at: Completed 06-02-PLAN.md (NPC Generator) - Phase 6 plan 2 of 6
+Stopped at: Completed 06-04-PLAN.md (Validation Pipeline) - Phase 6 plan 4 of 6
 Resume file: None
 
 ## Phase 2 Completion Notes
