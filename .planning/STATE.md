@@ -164,7 +164,7 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-None yet.
+1. **Dialogue quality overhaul** (api) — Richer prompt context, NPC motivations/relationships, remove 60-word limit, Citizen Sleeper-style narrative depth
 
 ### Blockers/Concerns
 
