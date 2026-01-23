@@ -55,6 +55,7 @@ export type GameAction =
   | { type: 'UNASSIGN_DIE'; dieId: string }
   | { type: 'CONFIRM_ALLOCATIONS' }
   | { type: 'RESOLVE_NEXT' }
+  | { type: 'CONTINUE_FROM_RESOLVE' }
   | { type: 'ADVANCE_CLOCK'; clockId: string; amount: number }
   | { type: 'VIEW_SUMMARY' }
   | { type: 'END_CYCLE' }

@@ -47,8 +47,9 @@ export function CycleView() {
   // Resolve actions when entering RESOLVE phase
   useEffect(() => {
     if (cyclePhase !== 'RESOLVE') {
-      // Reset guard when leaving RESOLVE phase
+      // Reset guard and results when leaving RESOLVE phase
       resolveGuardRef.current = false;
+      setResolvedResults([]);
       return;
     }
     if (resolveGuardRef.current) return;
@@ -313,10 +314,10 @@ export function CycleView() {
             </div>
             <button
               data-testid="resolve-continue-button"
-              onClick={() => dispatch({ type: 'VIEW_SUMMARY' })}
+              onClick={() => dispatch({ type: 'CONTINUE_FROM_RESOLVE' })}
               className="mt-4 w-full py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold transition-colors cursor-pointer"
             >
-              Continue
+              {unassignedDice.length > 0 ? 'Continue (dice remaining)' : 'End Day'}
             </button>
           </motion.div>
         </div>

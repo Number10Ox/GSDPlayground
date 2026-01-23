@@ -69,7 +69,7 @@ test.describe('Cycle System', () => {
     await expect(confirmButton).toBeEnabled();
   });
 
-  test('confirming allocations shows resolve screen then summary', async ({ page }) => {
+  test('confirming allocations shows resolve screen then returns to allocate', async ({ page }) => {
     await startDay(page);
     await selectFirstAvailableDie(page);
     await assignDieToAction(page, 'Pray for Guidance');
@@ -79,11 +79,12 @@ test.describe('Cycle System', () => {
     await expectResolveScreenVisible(page);
     await continuePastResolve(page);
 
-    // Then SUMMARY
-    await expectCycleSummaryVisible(page);
+    // Returns to ALLOCATE since dice remain
+    await expectDicePoolVisible(page);
+    await expectActionPanelVisible(page);
   });
 
-  test('full cycle: Day 1 -> allocate -> resolve -> summary -> rest -> Day 2', async ({ page }) => {
+  test('full cycle: Day 1 -> allocate -> resolve -> allocate -> rest early -> summary -> rest -> Day 2', async ({ page }) => {
     // Day 1 wake
     await expectDayNumber(page, 1);
     await startDay(page);
@@ -96,6 +97,12 @@ test.describe('Cycle System', () => {
     // Resolve phase - must click Continue
     await expectResolveScreenVisible(page);
     await continuePastResolve(page);
+
+    // Returns to ALLOCATE (dice remaining)
+    await expectDicePoolVisible(page);
+
+    // Rest early to end the day
+    await restEarly(page);
 
     // Summary
     await expectCycleSummaryVisible(page);

@@ -1,6 +1,6 @@
 # Codebase Intelligence Summary
 
-Last updated: 2026-01-23T16:41:59.998Z
+Last updated: 2026-01-23T16:58:44.945Z
 Indexed files: 119
 
 ## Key Directories

@@ -161,6 +161,30 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'CONTINUE_FROM_RESOLVE': {
+      // Valid in: RESOLVE
+      if (state.cyclePhase !== 'RESOLVE') {
+        return state;
+      }
+      // Remove spent (assigned) dice from pool, keep unassigned
+      const remainingDice = state.dicePool.filter(d => d.assignedTo === null);
+      if (remainingDice.length > 0) {
+        // Still have dice — return to ALLOCATE for more actions
+        return {
+          ...state,
+          cyclePhase: 'ALLOCATE',
+          dicePool: remainingDice,
+          selectedDieId: null,
+        };
+      }
+      // No dice left — proceed to SUMMARY (end of day)
+      return {
+        ...state,
+        cyclePhase: 'SUMMARY',
+        dicePool: [],
+      };
+    }
+
     case 'VIEW_SUMMARY': {
       // Valid in: RESOLVE
       if (state.cyclePhase !== 'RESOLVE') {

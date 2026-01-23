@@ -7,6 +7,7 @@ import {
   confirmAllocations,
   continuePastResolve,
   continuePastSummary,
+  restEarly,
   expectResolveScreenVisible,
   expectCycleSummaryVisible,
   expectRestOverlayVisible,
@@ -104,6 +105,13 @@ test.describe('Cycle Resolve Phase - No Auto-Dismiss', () => {
     // Then: Must click through RESOLVE
     await expectResolveScreenVisible(page);
     await continuePastResolve(page);
+
+    // Then: Returns to ALLOCATE (dice remaining)
+    await expectDicePoolVisible(page);
+    await expectActionPanelVisible(page);
+
+    // When: Rest early to end the day
+    await restEarly(page);
 
     // Then: Must click through SUMMARY
     await expectCycleSummaryVisible(page);
