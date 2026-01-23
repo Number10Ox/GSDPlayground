@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** The player must be able to arrive in a procedurally generated town, discover its moral rot through investigation and NPC interaction, and resolve conflicts using the escalating stakes system — experiencing the weight of judgment that defines Dogs in the Vineyard.
-**Current focus:** Phase 5 - Investigation System (LLM integration layer complete)
+**Current focus:** Phase 5 - Investigation System (Mental map visualization complete)
 
 ## Current Position
 
 Phase: 5 of 7 (Investigation)
-Plan: 2 of 6 in current phase
+Plan: 4 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-22 — Completed 05-02-PLAN.md (LLM Integration Layer)
+Last activity: 2026-01-22 — Completed 05-04-PLAN.md (Mental Map Visualization)
 
-Progress: [██████████████░░░░░░] 73%
+Progress: [███████████████░░░░░] 77%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 21
+- Total plans completed: 22
 - Average duration: 4.9 min
-- Total execution time: 1.7 hours
+- Total execution time: 1.8 hours
 
 **By Phase:**
 
@@ -32,11 +32,11 @@ Progress: [██████████████░░░░░░] 73%
 | 02.1-e2e-testing | 2 | 8 min | 4 min |
 | 03-conflict-system | 5 | 35 min | 7 min |
 | 04-character-system | 5 | 29 min | 5.8 min |
-| 05-investigation | 2 | 8 min | 4 min |
+| 05-investigation | 3 | 12 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-04 (5min), 04-05 (17min), 05-01 (2min), 05-02 (6min)
-- Trend: LLM integration plans require SDK version research but execute cleanly
+- Last 5 plans: 04-05 (17min), 05-01 (2min), 05-02 (6min), 05-04 (4min)
+- Trend: React Flow visualization straightforward - manual layout avoids complexity
 
 *Updated after each plan completion*
 
@@ -119,6 +119,10 @@ Recent decisions affecting current work:
 - [05-02]: Template-based inner voice (not LLM-generated) for speed and determinism
 - [05-02]: 30% trigger probability for inner voice interjections
 - [05-02]: Mock streaming handler for dev mode (no API key required)
+- [05-04]: Manual layout positioning for mental map nodes (avoids dagre/force layout for MVP)
+- [05-04]: getStraightPath for edges (cleaner for vertical chain + horizontal NPC links)
+- [05-04]: Severity color gradient: amber->orange->red->dark-red+glow for sin escalation
+- [05-04]: NPC nodes only render when linked sin discovered (no DOM spoilers)
 
 ### Pending Todos
 
@@ -131,7 +135,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 05-02-PLAN.md (LLM Integration Layer) - Phase 5 plan 2 of 6 complete
+Stopped at: Completed 05-04-PLAN.md (Mental Map Visualization) - Phase 5 plan 4 of 6 complete
 Resume file: None
 
 ## Phase 2 Completion Notes
