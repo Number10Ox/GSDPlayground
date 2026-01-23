@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { NodeMap } from '@/components/NodeMap/NodeMap';
 import { NarrativePanel } from '@/components/NarrativePanel/NarrativePanel';
@@ -9,10 +9,18 @@ import { CycleView } from '@/components/CycleView/CycleView';
 import { ClockList } from '@/components/Clocks/ClockList';
 import { ConflictMarker, RelationshipPanel } from '@/components/NPCMemory';
 import { ConflictView } from '@/components/Conflict/ConflictView';
+import { DialogueView } from '@/components/Dialogue/DialogueView';
+import { MentalMap } from '@/components/MentalMap/MentalMap';
+import { FatigueClock } from '@/components/FatigueClock/FatigueClock';
+import { ResolutionSummary } from '@/components/Resolution/ResolutionSummary';
 import { useGameState } from '@/hooks/useGameState';
 import { useCharacter } from '@/hooks/useCharacter';
 import { useNPCMemory } from '@/hooks/useNPCMemory';
+import { useInvestigation } from '@/hooks/useInvestigation';
+import { useDialogue } from '@/hooks/useDialogue';
 import { initialConflictState, conflictReducer } from '@/reducers/conflictReducer';
+import { TEST_SIN_CHAIN } from '@/data/testTown';
+import { getTopicsForNPC } from '@/data/testTown';
 import type { ConflictState } from '@/types/conflict';
 import type { Die } from '@/types/game';
 
@@ -21,6 +29,8 @@ export function GameView() {
   const { character, dispatch: charDispatch } = useCharacter();
   const { clocks, cycleNumber, cyclePhase, currentLocation, locations, activeConflict } = state;
   const { npcs } = useNPCMemory();
+  const { state: investigationState, dispatch: investigationDispatch } = useInvestigation();
+  const { dispatch: dialogueDispatch } = useDialogue();
 
   // Track selected NPC for relationship panel
   const [selectedNpcId, setSelectedNpcId] = useState<string | null>(null);
@@ -31,13 +41,62 @@ export function GameView() {
   // Character sheet overlay state
   const [showSheet, setShowSheet] = useState(false);
 
+  // Mental map overlay state
+  const [showMentalMap, setShowMentalMap] = useState(false);
+
+  // Dialogue state
+  const [showDialogue, setShowDialogue] = useState(false);
+  const [dialogueNpcId, setDialogueNpcId] = useState<string | null>(null);
+
+  // Fatigue toast message
+  const [fatigueToast, setFatigueToast] = useState(false);
+
   // Conflict state for ConflictView (dev mode test conflicts)
   const [conflictState, setConflictState] = useState<ConflictState | null>(null);
 
-  // Start a test conflict (dev mode)
-  const handleStartTestConflict = useCallback(() => {
-    // Create deterministic dice pools for predictable E2E tests
-    // Player: 6 dice with good values (total ~30)
+  // Initialize investigation on mount with test town sin chain
+  useEffect(() => {
+    if (investigationState.sinProgression.length === 0) {
+      investigationDispatch({ type: 'START_INVESTIGATION', sinNodes: TEST_SIN_CHAIN });
+    }
+  }, [investigationState.sinProgression.length, investigationDispatch]);
+
+  // Handle NPC click - open dialogue if not fatigued
+  const handleNpcClick = useCallback((npcId: string) => {
+    const { fatigueClock } = investigationState;
+    if (fatigueClock.current >= fatigueClock.max) {
+      // Show fatigue toast
+      setFatigueToast(true);
+      setTimeout(() => setFatigueToast(false), 2000);
+      return;
+    }
+
+    // Get discovered sin IDs for topic generation
+    const discoveredSinIds = investigationState.sinProgression
+      .filter(s => s.discovered)
+      .map(s => s.id);
+
+    // Generate topics for this NPC
+    const topics = getTopicsForNPC(npcId, discoveredSinIds, currentLocation);
+
+    // Open dialogue
+    setDialogueNpcId(npcId);
+    setShowDialogue(true);
+    dialogueDispatch({ type: 'START_CONVERSATION', npcId, topics });
+  }, [investigationState, currentLocation, dialogueDispatch]);
+
+  // Handle dialogue close
+  const handleDialogueClose = useCallback(() => {
+    setShowDialogue(false);
+    setDialogueNpcId(null);
+  }, []);
+
+  // Handle conflict start from dialogue
+  const handleConflictFromDialogue = useCallback((npcId: string, stakes: string) => {
+    // Close dialogue
+    handleDialogueClose();
+
+    // Create dice pools
     const playerDice: Die[] = [
       { id: 'player-d1', type: 'd8', value: 6, assignedTo: null },
       { id: 'player-d2', type: 'd8', value: 5, assignedTo: null },
@@ -47,7 +106,6 @@ export function GameView() {
       { id: 'player-d6', type: 'd4', value: 2, assignedTo: null },
     ];
 
-    // NPC: 6 dice with similar values (total ~30)
     const npcDice: Die[] = [
       { id: 'npc-d1', type: 'd8', value: 6, assignedTo: null },
       { id: 'npc-d2', type: 'd8', value: 5, assignedTo: null },
@@ -57,29 +115,48 @@ export function GameView() {
       { id: 'npc-d6', type: 'd4', value: 2, assignedTo: null },
     ];
 
-    // Create initial conflict state
     const initialState = conflictReducer(initialConflictState, {
       type: 'START_CONFLICT',
-      npcId: 'sheriff-jacob',
-      stakes: 'who controls the law in this town',
+      npcId,
+      stakes,
       playerDice,
       npcDice,
     });
 
-    // Track in game state and local conflict state
-    dispatch({
-      type: 'START_GAME_CONFLICT',
-      npcId: 'sheriff-jacob',
-      stakes: 'who controls the law in this town',
-    });
-
+    dispatch({ type: 'START_GAME_CONFLICT', npcId, stakes });
     setConflictState(initialState);
-  }, [dispatch]);
+  }, [dispatch, handleDialogueClose]);
+
+  // Start a test conflict (dev mode)
+  const handleStartTestConflict = useCallback(() => {
+    handleConflictFromDialogue('sheriff-jacob', 'who controls the law in this town');
+  }, [handleConflictFromDialogue]);
 
   // Handle conflict completion
   const handleConflictComplete = useCallback(() => {
+    // Check if the conflict NPC is linked to a sin - if so, confront it
+    if (activeConflict) {
+      const linkedSin = investigationState.sinProgression.find(
+        sin => sin.linkedNpcs.includes(activeConflict.npcId) && sin.discovered && !sin.resolved
+      );
+      if (linkedSin) {
+        investigationDispatch({ type: 'CONFRONT_SIN', sinId: linkedSin.id });
+      }
+    }
+
     setConflictState(null);
-  }, []);
+    dispatch({ type: 'END_GAME_CONFLICT' });
+  }, [activeConflict, investigationState.sinProgression, investigationDispatch, dispatch]);
+
+  // Watch for cycle end (REST phase) - reset fatigue and advance sin progression
+  const [prevCyclePhase, setPrevCyclePhase] = useState(cyclePhase);
+  useEffect(() => {
+    if (prevCyclePhase !== 'REST' && cyclePhase === 'REST') {
+      investigationDispatch({ type: 'RESET_FATIGUE' });
+      investigationDispatch({ type: 'ADVANCE_SIN_PROGRESSION' });
+    }
+    setPrevCyclePhase(cyclePhase);
+  }, [cyclePhase, prevCyclePhase, investigationDispatch]);
 
   // Get current location info
   const currentLocationInfo = useMemo(() => {
@@ -122,7 +199,24 @@ export function GameView() {
           <p className="text-xs text-gray-500 capitalize">
             Phase: {cyclePhase.toLowerCase()}
           </p>
+
+          {/* Fatigue Clock */}
+          <div className="mt-3 flex items-center justify-center">
+            <FatigueClock
+              current={investigationState.fatigueClock.current}
+              max={investigationState.fatigueClock.max}
+            />
+          </div>
         </div>
+
+        {/* Mental Map button */}
+        <button
+          data-testid="open-mental-map"
+          onClick={() => setShowMentalMap(true)}
+          className="w-full bg-indigo-900/50 hover:bg-indigo-800/50 text-indigo-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer"
+        >
+          View Mental Map
+        </button>
 
         {/* Active clocks */}
         {clocks.length > 0 && (
@@ -144,7 +238,7 @@ export function GameView() {
               {npcsAtLocation.map((npc) => (
                 <button
                   key={npc.id}
-                  onClick={() => setSelectedNpcId(npc.id)}
+                  onClick={() => handleNpcClick(npc.id)}
                   className="w-full text-left p-2 rounded-lg bg-surface-light hover:bg-gray-700 transition-colors flex items-center gap-3"
                   data-testid={`npc-button-${npc.id}`}
                 >
@@ -189,6 +283,22 @@ export function GameView() {
             >
               Start Test Conflict
             </button>
+            {investigationState.sinProgression.length === 0 && (
+              <button
+                data-testid="start-investigation"
+                onClick={() => investigationDispatch({ type: 'START_INVESTIGATION', sinNodes: TEST_SIN_CHAIN })}
+                className="w-full bg-green-900/50 hover:bg-green-800/50 text-green-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                Start Investigation
+              </button>
+            )}
+            <button
+              data-testid="advance-sin"
+              onClick={() => investigationDispatch({ type: 'ADVANCE_SIN_PROGRESSION' })}
+              className="w-full bg-orange-900/50 hover:bg-orange-800/50 text-orange-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              Advance Sin
+            </button>
             {character && (
               <button
                 data-testid="add-test-trait"
@@ -212,6 +322,15 @@ export function GameView() {
         )}
       </aside>
 
+      {/* Fatigue toast */}
+      <AnimatePresence>
+        {fatigueToast && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-red-900/90 text-red-200 px-4 py-2 rounded-lg text-sm font-medium shadow-lg animate-fade-in">
+            Too tired to talk. Rest to recover.
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Relationship panel (overlay) */}
       <AnimatePresence>
         {selectedNpcId && (
@@ -222,11 +341,35 @@ export function GameView() {
         )}
       </AnimatePresence>
 
+      {/* Dialogue view (overlay) */}
+      {showDialogue && dialogueNpcId && (
+        <DialogueView />
+      )}
+
+      {/* Mental Map (overlay) */}
+      {showMentalMap && (
+        <div className="fixed inset-0 z-40 bg-black/80 flex flex-col items-center justify-center p-8">
+          <div className="w-full max-w-4xl flex-1 relative">
+            <button
+              data-testid="close-mental-map"
+              onClick={() => setShowMentalMap(false)}
+              className="absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-gray-700 hover:bg-gray-600 text-gray-300 text-lg cursor-pointer"
+            >
+              x
+            </button>
+            <MentalMap />
+          </div>
+        </div>
+      )}
+
+      {/* Resolution summary (overlay - highest z-index) */}
+      <ResolutionSummary />
+
       {/* Conflict view (overlay) */}
       {conflictState && conflictState.phase !== 'INACTIVE' && (
         <ConflictView
           initialState={conflictState}
-          npcName="Sheriff Jacob"
+          npcName={npcs.find(n => n.id === activeConflict?.npcId)?.name ?? 'Unknown'}
           onComplete={handleConflictComplete}
         />
       )}
