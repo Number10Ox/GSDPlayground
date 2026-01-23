@@ -13,6 +13,8 @@ import { DialogueView } from '@/components/Dialogue/DialogueView';
 import { MentalMap } from '@/components/MentalMap/MentalMap';
 import { FatigueClock } from '@/components/FatigueClock/FatigueClock';
 import { ResolutionSummary } from '@/components/Resolution/ResolutionSummary';
+import { TownArrival } from '@/components/TownArrival/TownArrival';
+import { JudgmentPanel } from '@/components/Judgment/JudgmentPanel';
 import { useGameState } from '@/hooks/useGameState';
 import { useCharacter } from '@/hooks/useCharacter';
 import { useNPCMemory } from '@/hooks/useNPCMemory';
@@ -21,7 +23,9 @@ import { useDialogue } from '@/hooks/useDialogue';
 import { initialConflictState, conflictReducer } from '@/reducers/conflictReducer';
 import { useTown } from '@/hooks/useTown';
 import { resolveTopicsForNPC } from '@/utils/topicResolver';
+import { buildPlayerDicePool, buildNPCDicePool } from '@/utils/conflictDice';
 import type { ConflictState } from '@/types/conflict';
+import type { ApproachType } from '@/types/dialogue';
 import type { Die } from '@/types/game';
 
 export function GameView() {
@@ -36,8 +40,8 @@ export function GameView() {
   // Track selected NPC for relationship panel
   const [selectedNpcId, setSelectedNpcId] = useState<string | null>(null);
 
-  // Character creation modal state
-  const [showCreation, setShowCreation] = useState(false);
+  // Character creation modal state — auto-show when no character exists
+  const [showCreation, setShowCreation] = useState(!character);
 
   // Character sheet overlay state
   const [showSheet, setShowSheet] = useState(false);
@@ -49,18 +53,32 @@ export function GameView() {
   const [showDialogue, setShowDialogue] = useState(false);
   const [dialogueNpcId, setDialogueNpcId] = useState<string | null>(null);
 
+  // Track last dialogue approach for conflict dice pool
+  const [lastApproach, setLastApproach] = useState<ApproachType>('will');
+
   // Fatigue toast message
   const [fatigueToast, setFatigueToast] = useState(false);
+
+  // Town arrival sequence state — deferred until character exists
+  const [showArrival, setShowArrival] = useState(false);
+  const [arrivalDone, setArrivalDone] = useState(!town.arrival);
 
   // Conflict state for ConflictView (dev mode test conflicts)
   const [conflictState, setConflictState] = useState<ConflictState | null>(null);
 
-  // Initialize investigation on mount with town sin chain
+  // Initialize investigation on mount with town sin chain and clues
   useEffect(() => {
     if (investigationState.sinProgression.length === 0) {
-      investigationDispatch({ type: 'START_INVESTIGATION', sinNodes: town.sinChain });
+      investigationDispatch({ type: 'START_INVESTIGATION', sinNodes: town.sinChain, clues: town.clues });
     }
-  }, [investigationState.sinProgression.length, investigationDispatch, town.sinChain]);
+  }, [investigationState.sinProgression.length, investigationDispatch, town.sinChain, town.clues]);
+
+  // Show arrival sequence once character is created (not before)
+  useEffect(() => {
+    if (character && !arrivalDone && town.arrival) {
+      setShowArrival(true);
+    }
+  }, [character, arrivalDone, town.arrival]);
 
   // Handle NPC click - open dialogue if not fatigued
   const handleNpcClick = useCallback((npcId: string) => {
@@ -72,13 +90,16 @@ export function GameView() {
       return;
     }
 
-    // Get discovered sin IDs for topic generation
+    // Get discovered sin IDs and found clue IDs for topic generation
     const discoveredSinIds = investigationState.sinProgression
       .filter(s => s.discovered)
       .map(s => s.id);
+    const foundClueIds = investigationState.clues
+      .filter(c => c.found)
+      .map(c => c.id);
 
     // Generate topics for this NPC
-    const topics = resolveTopicsForNPC(npcId, town.topicRules, discoveredSinIds, currentLocation);
+    const topics = resolveTopicsForNPC(npcId, town.topicRules, discoveredSinIds, currentLocation, foundClueIds);
 
     // Open dialogue
     setDialogueNpcId(npcId);
@@ -97,24 +118,30 @@ export function GameView() {
     // Close dialogue
     handleDialogueClose();
 
-    // Create dice pools
-    const playerDice: Die[] = [
-      { id: 'player-d1', type: 'd8', value: 6, assignedTo: null },
-      { id: 'player-d2', type: 'd8', value: 5, assignedTo: null },
-      { id: 'player-d3', type: 'd6', value: 4, assignedTo: null },
-      { id: 'player-d4', type: 'd6', value: 4, assignedTo: null },
-      { id: 'player-d5', type: 'd6', value: 3, assignedTo: null },
-      { id: 'player-d6', type: 'd4', value: 2, assignedTo: null },
-    ];
+    // Build dice pools from character stats and NPC role
+    const approach = lastApproach;
+    const npc = town.npcs.find(n => n.id === npcId);
 
-    const npcDice: Die[] = [
-      { id: 'npc-d1', type: 'd8', value: 6, assignedTo: null },
-      { id: 'npc-d2', type: 'd8', value: 5, assignedTo: null },
-      { id: 'npc-d3', type: 'd6', value: 4, assignedTo: null },
-      { id: 'npc-d4', type: 'd6', value: 4, assignedTo: null },
-      { id: 'npc-d5', type: 'd6', value: 3, assignedTo: null },
-      { id: 'npc-d6', type: 'd4', value: 2, assignedTo: null },
-    ];
+    let playerDice: Die[];
+    if (character) {
+      playerDice = buildPlayerDicePool(character, approach);
+    } else {
+      // Fallback if no character created: basic pool
+      playerDice = [
+        { id: 'player-0', type: 'd6', value: Math.floor(Math.random() * 6) + 1, assignedTo: null },
+        { id: 'player-1', type: 'd6', value: Math.floor(Math.random() * 6) + 1, assignedTo: null },
+        { id: 'player-2', type: 'd6', value: Math.floor(Math.random() * 6) + 1, assignedTo: null },
+        { id: 'player-3', type: 'd4', value: Math.floor(Math.random() * 4) + 1, assignedTo: null },
+      ];
+    }
+
+    const npcDice: Die[] = npc
+      ? buildNPCDicePool(npc, approach)
+      : [
+          { id: 'npc-0', type: 'd6', value: Math.floor(Math.random() * 6) + 1, assignedTo: null },
+          { id: 'npc-1', type: 'd6', value: Math.floor(Math.random() * 6) + 1, assignedTo: null },
+          { id: 'npc-2', type: 'd4', value: Math.floor(Math.random() * 4) + 1, assignedTo: null },
+        ];
 
     const initialState = conflictReducer(initialConflictState, {
       type: 'START_CONFLICT',
@@ -126,7 +153,7 @@ export function GameView() {
 
     dispatch({ type: 'START_GAME_CONFLICT', npcId, stakes });
     setConflictState(initialState);
-  }, [dispatch, handleDialogueClose]);
+  }, [dispatch, handleDialogueClose, lastApproach, character, town.npcs]);
 
   // Start a test conflict (dev mode)
   const handleStartTestConflict = useCallback(() => {
@@ -138,6 +165,10 @@ export function GameView() {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       if (detail?.npcId && detail?.stakes) {
+        // Capture the approach that triggered the conflict
+        if (detail.approach) {
+          setLastApproach(detail.approach);
+        }
         setShowDialogue(false);
         setDialogueNpcId(null);
         handleConflictFromDialogue(detail.npcId, detail.stakes);
@@ -381,13 +412,22 @@ export function GameView() {
       <ResolutionSummary />
 
       {/* Conflict view (overlay) */}
-      {conflictState && conflictState.phase !== 'INACTIVE' && (
-        <ConflictView
-          initialState={conflictState}
-          npcName={npcs.find(n => n.id === activeConflict?.npcId)?.name ?? 'Unknown'}
-          onComplete={handleConflictComplete}
-        />
-      )}
+      {conflictState && conflictState.phase !== 'INACTIVE' && (() => {
+        const conflictNpc = town.npcs.find(n => n.id === activeConflict?.npcId);
+        // Derive aggression from average resistChance across approaches
+        const thresholds = conflictNpc?.conflictThresholds ?? [];
+        const avgResist = thresholds.length > 0
+          ? thresholds.reduce((sum, t) => sum + t.resistChance, 0) / thresholds.length
+          : 0.4;
+        return (
+          <ConflictView
+            initialState={conflictState}
+            npcName={conflictNpc?.name ?? 'Unknown'}
+            npcAggression={avgResist}
+            onComplete={handleConflictComplete}
+          />
+        );
+      })()}
 
       {/* Character sheet (overlay) - shows when user clicks View Character Sheet */}
       {character && showSheet && (
@@ -408,6 +448,24 @@ export function GameView() {
       {/* Character creation (overlay) - shows when user clicks Create Character */}
       {!character && showCreation && (
         <CharacterCreation onComplete={() => setShowCreation(false)} />
+      )}
+
+      {/* Town arrival sequence (overlay - highest z-index, blocks all interaction) */}
+      {showArrival && town.arrival && (
+        <TownArrival
+          townName={town.name}
+          arrival={town.arrival}
+          greeterName={town.arrival.greeterNpcId
+            ? npcs.find(n => n.id === town.arrival!.greeterNpcId)?.name
+            : undefined
+          }
+          onComplete={() => { setShowArrival(false); setArrivalDone(true); }}
+          onGreet={(npcId) => {
+            setShowArrival(false);
+            setArrivalDone(true);
+            handleNpcClick(npcId);
+          }}
+        />
       )}
     </div>
   );

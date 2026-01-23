@@ -60,11 +60,25 @@ export interface FatigueClock {
 }
 
 /**
+ * LocationClue - Environmental evidence discoverable at a location.
+ * Found through investigation actions during the cycle system.
+ */
+export interface LocationClue {
+  id: string;
+  locationId: string;
+  description: string;
+  discoveryId: string;
+  requiredApproach?: import('@/types/dialogue').ApproachType;
+  found: boolean;
+}
+
+/**
  * InvestigationState - Central state for the investigation system.
  */
 export interface InvestigationState {
   discoveries: Discovery[];
   sinProgression: SinNode[];
+  clues: LocationClue[];
   fatigueClock: FatigueClock;
   townResolved: boolean;
   sinEscalatedToMurder: boolean;
@@ -74,8 +88,9 @@ export interface InvestigationState {
  * InvestigationAction - All actions the investigation reducer handles.
  */
 export type InvestigationAction =
-  | { type: 'START_INVESTIGATION'; sinNodes: SinNode[] }
+  | { type: 'START_INVESTIGATION'; sinNodes: SinNode[]; clues?: LocationClue[] }
   | { type: 'RECORD_DISCOVERY'; discovery: Discovery }
+  | { type: 'FIND_CLUE'; clueId: string }
   | { type: 'ADVANCE_FATIGUE' }
   | { type: 'RESET_FATIGUE' }
   | { type: 'MARK_SIN_RESOLVED'; sinId: string }

@@ -18,6 +18,11 @@ interface DialogueRequestBody {
   npcRole: string;
   npcPersonality: string;
   npcFacts: KnowledgeFact[];
+  npcMotivation?: string;
+  npcDesire?: string;
+  npcFear?: string;
+  npcRelationships?: string[];
+  townSituation?: string;
   topic: string;
   approach: ApproachType;
   trustLevel: number;
@@ -80,12 +85,17 @@ export async function POST(request: Request): Promise<Response> {
     );
 
     // Build prompts with only the safe (trust-gated) knowledge
-    const systemPrompt = buildSystemPrompt(
-      body.npcName,
-      body.npcRole,
-      body.npcPersonality || '',
-      safeFacts
-    );
+    const systemPrompt = buildSystemPrompt({
+      npcName: body.npcName,
+      npcRole: body.npcRole,
+      personality: body.npcPersonality || '',
+      filteredFacts: safeFacts,
+      motivation: body.npcMotivation,
+      desire: body.npcDesire,
+      fear: body.npcFear,
+      relationships: body.npcRelationships,
+      townSituation: body.townSituation,
+    });
 
     const userPrompt = buildUserPrompt(
       body.topic,
@@ -99,7 +109,7 @@ export async function POST(request: Request): Promise<Response> {
       system: systemPrompt,
       prompt: userPrompt,
       temperature: 0.7,
-      maxOutputTokens: 300,
+      maxOutputTokens: 800,
     });
 
     return result.toTextStreamResponse();

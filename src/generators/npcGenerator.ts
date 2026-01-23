@@ -280,11 +280,19 @@ function generateKnowledge(
     return fact;
   });
 
+  // Generate motivation, desire, fear from archetype templates
+  const motivation = fillTemplate(rng.pick(archetype.motivationTemplates), slots);
+  const desire = fillTemplate(rng.pick(archetype.desireTemplates), slots);
+  const fear = fillTemplate(rng.pick(archetype.fearTemplates), slots);
+
   return {
     npcId: '', // Will be set after ID generation
     facts,
     personality,
     speechPattern,
+    motivation,
+    desire,
+    fear,
   };
 }
 

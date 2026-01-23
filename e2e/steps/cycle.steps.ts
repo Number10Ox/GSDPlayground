@@ -7,6 +7,50 @@ import { Page, expect } from '@playwright/test';
  * that encapsulate common test operations for the cycle system.
  */
 
+export async function completeCharacterCreation(page: Page) {
+  const creationInput = page.getByTestId('creation-name-input');
+  if (await creationInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await creationInput.fill('Brother Test');
+    await creationInput.press('Enter');
+
+    // Pick first background
+    const firstBackground = page.locator('[data-testid^="creation-background-"]').first();
+    await firstBackground.click();
+
+    // Allocate all remaining stat points (each stat starts at 1, need to fill to total)
+    // Click acuity+ until max or points exhausted, then body+, etc.
+    const stats = ['acuity', 'body', 'heart', 'will'];
+    for (const stat of stats) {
+      const plusButton = page.getByTestId(`creation-stat-${stat}-plus`);
+      while (await plusButton.isEnabled({ timeout: 500 }).catch(() => false)) {
+        await plusButton.click();
+        await page.waitForTimeout(50);
+      }
+    }
+
+    await page.getByTestId('creation-confirm').click();
+  }
+}
+
+export async function dismissTownArrival(page: Page) {
+  // Click through all TownArrival phases (NARRATIVE, OBSERVATION, RUMORS)
+  // Each click re-renders the component, so we re-query each iteration
+  for (let i = 0; i < 5; i++) {
+    const continueBtn = page.getByText('Continue...');
+    if (await continueBtn.isVisible({ timeout: 1500 }).catch(() => false)) {
+      await continueBtn.click({ timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(500);
+    } else {
+      break;
+    }
+  }
+  // Handle GREET phase — "Look around first" skips the greeting dialogue
+  const lookAround = page.getByText('Look around first');
+  if (await lookAround.isVisible({ timeout: 1000 }).catch(() => false)) {
+    await lookAround.click();
+  }
+}
+
 export async function navigateToGame(page: Page) {
   await page.goto('/');
   // Select first town (Bridal Falls) from town selection screen
@@ -14,6 +58,10 @@ export async function navigateToGame(page: Page) {
   if (await selectButton.isVisible({ timeout: 2000 }).catch(() => false)) {
     await selectButton.click();
   }
+  // Handle character creation if it appears
+  await completeCharacterCreation(page);
+  // Handle town arrival sequence if it appears
+  await dismissTownArrival(page);
 }
 
 export async function startDay(page: Page) {
@@ -84,4 +132,21 @@ export async function getDiceCount(page: Page): Promise<number> {
 
 export async function getActionCardByName(page: Page, actionName: string) {
   return page.locator('[data-testid="action-card"]', { hasText: actionName });
+}
+
+export async function navigateToLocation(page: Page, locationId: string) {
+  await page.getByTestId(`map-node-${locationId}`).click();
+}
+
+export async function expectResolveScreenVisible(page: Page) {
+  await expect(page.getByTestId('resolve-continue-button')).toBeVisible();
+}
+
+export async function continuePastResolve(page: Page) {
+  await page.getByTestId('resolve-continue-button').click();
+}
+
+export async function assignDieToFirstAvailableAction(page: Page) {
+  const actionCard = page.locator('[data-testid="action-card"]').first();
+  await actionCard.click();
 }

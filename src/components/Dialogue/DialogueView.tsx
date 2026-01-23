@@ -184,10 +184,9 @@ export function DialogueView() {
                   conflictThresholds={npc.conflictThresholds}
                   onConflictStart={(npcId, stakes) => {
                     endConversation();
-                    // Conflict will be handled by GameView via conflict start
-                    window.dispatchEvent(new CustomEvent('dialogue-conflict', { detail: { npcId, stakes } }));
+                    // Pass approach so conflict uses correct stat for dice pool
+                    window.dispatchEvent(new CustomEvent('dialogue-conflict', { detail: { npcId, stakes, approach: lastTurnApproach } }));
                   }}
-                  forceTriggered={import.meta.env.DEV}
                 />
               );
             }

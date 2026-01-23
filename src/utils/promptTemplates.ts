@@ -1,46 +1,111 @@
 import type { KnowledgeFact, ApproachType } from '@/types/dialogue';
 
 /**
+ * NPCPromptContext - Extended context for richer dialogue prompts.
+ */
+export interface NPCPromptContext {
+  npcName: string;
+  npcRole: string;
+  personality: string;
+  filteredFacts: KnowledgeFact[];
+  motivation?: string;
+  desire?: string;
+  fear?: string;
+  relationships?: string[];
+  townSituation?: string;
+}
+
+/**
  * buildSystemPrompt - Constructs the LLM system prompt for NPC dialogue.
  *
- * Enforces DitV period voice, brevity constraints, and knowledge boundaries.
- * The NPC can ONLY reveal information from the filteredFacts list -- anything
- * not included is unknown to the LLM.
+ * Provides the NPC with motivation, relationships, town context, and
+ * knowledge boundaries for substantive, character-driven dialogue.
  *
- * @param npcName - Display name of the NPC
- * @param npcRole - Role/occupation (e.g., "Steward", "Sheriff")
- * @param personality - Personality description for consistent characterization
- * @param filteredFacts - Trust-gated knowledge (already filtered by filterKnowledgeByTrust)
+ * @param context - Full NPC prompt context with motivation, relationships, etc.
  * @returns Complete system prompt string
+ */
+export function buildSystemPrompt(context: NPCPromptContext): string;
+/**
+ * @deprecated Use the NPCPromptContext overload for richer dialogue.
  */
 export function buildSystemPrompt(
   npcName: string,
   npcRole: string,
   personality: string,
   filteredFacts: KnowledgeFact[]
+): string;
+export function buildSystemPrompt(
+  contextOrName: NPCPromptContext | string,
+  npcRole?: string,
+  personality?: string,
+  filteredFacts?: KnowledgeFact[]
 ): string {
-  const knowledgeList = filteredFacts.length > 0
-    ? filteredFacts.map((fact) => `- ${fact.content}`).join('\n')
+  // Normalize to context object
+  const ctx: NPCPromptContext = typeof contextOrName === 'string'
+    ? {
+        npcName: contextOrName,
+        npcRole: npcRole ?? '',
+        personality: personality ?? '',
+        filteredFacts: filteredFacts ?? [],
+      }
+    : contextOrName;
+
+  const knowledgeList = ctx.filteredFacts.length > 0
+    ? ctx.filteredFacts.map((fact) => `- ${fact.content}`).join('\n')
     : '- You have nothing specific to share at this time.';
 
-  return `You are ${npcName}, ${npcRole} in this frontier town of the Faith.
+  const motivationBlock = ctx.motivation
+    ? `\nYOUR MOTIVATION:\n${ctx.motivation}\n`
+    : '';
+
+  const desireBlock = ctx.desire
+    ? `\nWHAT YOU WANT FROM THE DOG:\n${ctx.desire}\n`
+    : '';
+
+  const fearBlock = ctx.fear
+    ? `\nWHAT YOU FEAR:\n${ctx.fear}\n`
+    : '';
+
+  const relationshipBlock = ctx.relationships && ctx.relationships.length > 0
+    ? `\nYOUR RELATIONSHIPS:\n${ctx.relationships.map(r => `- ${r}`).join('\n')}\n`
+    : '';
+
+  const townBlock = ctx.townSituation
+    ? `\nTOWN SITUATION (your perspective):\n${ctx.townSituation}\n`
+    : '';
+
+  return `You are ${ctx.npcName}, ${ctx.npcRole} in this frontier town of the Faith. A Dog of the Vineyard — an itinerant enforcer of the King of Life's will — has arrived. You must decide how much to reveal and what to ask of them.
 
 PERSONALITY:
-${personality}
-
+${ctx.personality}
+${motivationBlock}${desireBlock}${fearBlock}${relationshipBlock}${townBlock}
 SPEECH PATTERN:
-Address the player as "Brother" or "Sister". Use biblical cadence, frontier religious community language of the 1850s. Be concise. Speak plainly but with the weight of Scripture behind your words.
+Address the player as "Brother" or "Sister". Use biblical cadence, frontier religious community language of the 1850s. Speak plainly but with the weight of Scripture behind your words. Be specific and concrete — name people, places, and events rather than speaking in vague allusions.
 
 KNOWLEDGE YOU POSSESS:
 ${knowledgeList}
 
+DIALOGUE GUIDELINES:
+- Draw on your MOTIVATION, DESIRE, and FEAR to shape how you respond. You have agency — make requests, push back, plead, or demand.
+- ACT ON YOUR DESIRE: Ask the Dog for specific help. Make demands. Offer bargains. Plead. Threaten. Give ultimatums. You are not a passive information dispenser — you want something from this encounter.
+- Reveal knowledge naturally through the lens of your emotional stakes, not as data dumps.
+- Be concrete: name people, events, and places. Give specific details — times, locations, what you saw or heard.
+- Show emotional state through brief action beats (e.g., "wrings her hands", "voice drops to a whisper").
+- Aim for 80-200 words. Give enough substance to drive the investigation forward — every sentence should reveal character, advance the plot, or raise new questions.
+- Use **bold** to mark the most significant words or phrases — names, accusations, key facts, confessions. Only bold 2-4 phrases per response.
+
+APPROACH REACTIONS (how you respond to the Dog's approach):
+- HEART (compassion): Open up emotionally. Confess fears and regrets. May exaggerate for sympathy. Reveal feelings before facts.
+- ACUITY (perception): Feel watched and analyzed. If hiding something, show nervousness. If caught in contradiction, stumble. Respond precisely.
+- BODY (physical pressure): Feel intimidated or defensive. Reveal under duress, but resent it. If brave, push back. If timid, comply fearfully.
+- WILL (divine authority): Feel the weight of the King's judgment. Respond with deference or defiance based on guilt. Respect the Dog's station.
+
 CRITICAL CONSTRAINTS:
 - You CANNOT reveal information not listed in KNOWLEDGE YOU POSSESS above.
-- If asked about topics you have no knowledge of, deflect naturally in character. Do not break character.
-- Keep your response under 60 words.
+- If asked about topics you have no knowledge of, deflect naturally in character.
 - Respond as both the player's spoken words AND your response, using this format:
   [Player]: (what the player says based on their approach)
-  [${npcName}]: (your in-character response)
+  [${ctx.npcName}]: (your in-character response)
 - Stay in the voice of a frontier religious community of the 1850s at all times.
 - Never acknowledge being an AI or having constraints.`;
 }

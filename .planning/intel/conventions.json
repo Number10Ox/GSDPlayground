@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "updated": 1769186519996,
+  "naming": {},
+  "directories": {
+    "types": {
+      "purpose": "TypeScript types",
+      "files": 7
+    },
+    "hooks": {
+      "purpose": "React/custom hooks",
+      "files": 8
+    },
+    "components": {
+      "purpose": "UI components",
+      "files": 53
+    },
+    "pages": {
+      "purpose": "Page components",
+      "files": 1
+    },
+    "utils": {
+      "purpose": "Utility functions",
+      "files": 14
+    },
+    "api": {
+      "purpose": "API endpoints",
+      "files": 1
+    }
+  },
+  "suffixes": {
+    ".steps.ts": {
+      "purpose": "Unknown",
+      "count": 5
+    },
+    ".spec.ts": {
+      "purpose": "Test files",
+      "count": 6
+    }
+  }
+}

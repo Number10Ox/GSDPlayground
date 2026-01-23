@@ -7,6 +7,7 @@ import { conflictReducer, initialConflictState } from '@/reducers/conflictReduce
 import { useConflictAtmosphere } from '@/hooks/useConflictAtmosphere';
 import { useGameState } from '@/hooks/useGameState';
 import { useNPCMemory } from '@/hooks/useNPCMemory';
+import { getConflictOpening, getEscalationNarration } from '@/utils/conflictNarration';
 import { RaiseControls } from './RaiseControls';
 import { EscalationConfirm } from './EscalationConfirm';
 import { EscalationIndicator } from './EscalationIndicator';
@@ -74,6 +75,8 @@ interface ConflictViewProps {
   npcName?: string;
   // Witnesses to violence
   witnesses?: string[];
+  // NPC aggression level (0-1): how likely they are to escalate. Derived from resistChance.
+  npcAggression?: number;
   // Callback when conflict completes
   onComplete?: () => void;
 }
@@ -88,6 +91,7 @@ export function ConflictView({
   initialState,
   npcName: npcNameProp,
   witnesses: witnessesProp = [],
+  npcAggression = 0.5,
   onComplete,
 }: ConflictViewProps) {
   const { state: gameState, dispatch: gameDispatch } = useGameState();
@@ -227,9 +231,9 @@ export function ConflictView({
           });
         } else {
           // Can't see - consider escalating or give
-          // Simple AI: escalate if possible and above 50% chance
+          // Personality-driven: aggressive NPCs escalate readily, timid ones give up
           const nextLevel = getNextEscalationLevel(state.npcEscalation);
-          if (nextLevel && Math.random() > 0.5) {
+          if (nextLevel && Math.random() < npcAggression) {
             dispatch({
               type: 'NPC_ESCALATE',
               newLevel: nextLevel,
@@ -354,14 +358,22 @@ export function ConflictView({
             backgroundColor: 'var(--conflict-bg, transparent)',
           }}
         />
-        {/* Header: Stakes */}
+        {/* Header: Stakes + Opening Narration */}
         <div className="p-4 bg-black/50">
+          <p className="text-xs text-gray-500 text-center mb-1 italic">
+            {getConflictOpening(state.stakes, npcName)}
+          </p>
           <h2
             data-testid="conflict-stakes"
             className="text-xl font-bold text-center text-gray-100"
           >
             Stakes: {state.stakes}
           </h2>
+          {state.npcEscalation !== 'JUST_TALKING' && (
+            <p className="text-xs text-red-400/80 text-center mt-1">
+              {getEscalationNarration(state.npcEscalation)}
+            </p>
+          )}
         </div>
 
         {/* Escalation indicator */}

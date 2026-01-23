@@ -1,21 +1,12 @@
 import { createContext, useContext, useReducer, type ReactNode, type Dispatch } from 'react';
-import type { GameState, GameAction, Location, Clock, AvailableAction } from '@/types/game';
+import type { GameState, GameAction, Location, Clock } from '@/types/game';
 import { generateDicePool } from '@/utils/dice';
 import { useTown } from '@/hooks/useTown';
 
-// Sample clocks for testing the cycle system
-const SAMPLE_CLOCKS: Clock[] = [
-  { id: 'murder-plot', label: 'Murder Plot', segments: 6, filled: 2, type: 'danger', autoAdvance: true },
-  { id: 'trust-earned', label: 'Trust Earned', segments: 4, filled: 1, type: 'progress', autoAdvance: false },
-];
-
-// Sample actions for testing the cycle system
-const SAMPLE_ACTIONS: AvailableAction[] = [
-  { id: 'investigate-chapel', name: 'Investigate the Chapel', description: 'Look for signs of what troubles this place', locationId: 'church', diceCost: 1, available: true },
-  { id: 'talk-sheriff', name: 'Talk to the Sheriff', description: 'The law might know something', locationId: 'sheriffs-office', diceCost: 1, available: true },
-  { id: 'search-store', name: 'Search the Store', description: 'Ezekiel seems nervous', locationId: 'general-store', diceCost: 2, available: true },
-  { id: 'pray', name: 'Pray for Guidance', description: 'Seek wisdom from the King of Life', locationId: null, diceCost: 1, available: true },
-  { id: 'rest-early', name: 'Rest Early', description: 'End the day and recover', locationId: null, diceCost: 0, available: true },
+// Clocks representing ongoing threats and progress
+const INITIAL_CLOCKS: Clock[] = [
+  { id: 'sin-escalation', label: 'Sin Escalation', segments: 6, filled: 1, type: 'danger', autoAdvance: true },
+  { id: 'trust-earned', label: 'Trust Earned', segments: 8, filled: 0, type: 'progress', autoAdvance: false },
 ];
 
 function createInitialState(locations: Location[]): GameState {
@@ -29,8 +20,8 @@ function createInitialState(locations: Location[]): GameState {
     cycleNumber: 1,
     dicePool: [],
     selectedDieId: null,
-    clocks: SAMPLE_CLOCKS,
-    availableActions: SAMPLE_ACTIONS,
+    clocks: INITIAL_CLOCKS,
+    availableActions: [],
 
     characterCondition: 100,
     activeConflict: null,
@@ -267,6 +258,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         activeConflict: null,
+      };
+    }
+
+    case 'UPDATE_ACTIONS': {
+      return {
+        ...state,
+        availableActions: action.actions,
+      };
+    }
+
+    case 'UPDATE_CONDITION': {
+      return {
+        ...state,
+        characterCondition: Math.max(0, Math.min(100, state.characterCondition + action.delta)),
       };
     }
 

@@ -5,12 +5,14 @@ import {
   selectFirstAvailableDie,
   assignDieToAction,
   confirmAllocations,
+  continuePastResolve,
   continuePastSummary,
   goToNextDay,
   restEarly,
   expectDayNumber,
   expectDicePoolVisible,
   expectActionPanelVisible,
+  expectResolveScreenVisible,
   expectCycleSummaryVisible,
   expectRestOverlayVisible,
   getDiceCount,
@@ -67,16 +69,21 @@ test.describe('Cycle System', () => {
     await expect(confirmButton).toBeEnabled();
   });
 
-  test('confirming allocations shows cycle summary', async ({ page }) => {
+  test('confirming allocations shows resolve screen then summary', async ({ page }) => {
     await startDay(page);
     await selectFirstAvailableDie(page);
     await assignDieToAction(page, 'Pray for Guidance');
     await confirmAllocations(page);
 
+    // RESOLVE phase shows first with results
+    await expectResolveScreenVisible(page);
+    await continuePastResolve(page);
+
+    // Then SUMMARY
     await expectCycleSummaryVisible(page);
   });
 
-  test('full cycle: Day 1 -> allocate -> summary -> rest -> Day 2', async ({ page }) => {
+  test('full cycle: Day 1 -> allocate -> resolve -> summary -> rest -> Day 2', async ({ page }) => {
     // Day 1 wake
     await expectDayNumber(page, 1);
     await startDay(page);
@@ -85,6 +92,10 @@ test.describe('Cycle System', () => {
     await selectFirstAvailableDie(page);
     await assignDieToAction(page, 'Pray for Guidance');
     await confirmAllocations(page);
+
+    // Resolve phase - must click Continue
+    await expectResolveScreenVisible(page);
+    await continuePastResolve(page);
 
     // Summary
     await expectCycleSummaryVisible(page);

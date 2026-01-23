@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Edit(*)",
+      "Write(*)",
+      "NotebookEdit(*)",
+      "Skill(*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(node --version:*)",
+      "Bash(source ~/.nvm/nvm.sh)",
+      "Bash(nvm list:*)",
+      "Bash(nvm alias:*)",
+      "Bash(nvm use:*)"
+    ]
+  }
+}

@@ -25,7 +25,7 @@ const STAT_BORDER_COLORS: Record<StatName, string> = {
 
 /**
  * InnerVoice - Stat-based inner voice interjection overlay.
- * Slides in from bottom-left, fades out after 4 seconds.
+ * Slides in from bottom-left, remains visible until parent sets visible=false.
  * Uses template system (no API calls) via getInnerVoiceInterjection.
  */
 export function InnerVoice({ stat, situation, visible }: InnerVoiceProps) {
@@ -43,13 +43,6 @@ export function InnerVoice({ stat, situation, visible }: InnerVoiceProps) {
     if (text) {
       setInterjection(text);
       setShow(true);
-
-      // Auto-hide after 4 seconds
-      const timer = setTimeout(() => {
-        setShow(false);
-      }, 4000);
-
-      return () => clearTimeout(timer);
     }
   }, [stat, situation, visible]);
 

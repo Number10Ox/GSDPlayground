@@ -26,6 +26,7 @@ export const SIN_CHAIN_ORDER: SinLevel[] = [
 export const initialInvestigationState: InvestigationState = {
   discoveries: [],
   sinProgression: [],
+  clues: [],
   fatigueClock: { current: 0, max: 6 },
   townResolved: false,
   sinEscalatedToMurder: false,
@@ -42,10 +43,52 @@ export function investigationReducer(
 ): InvestigationState {
   switch (action.type) {
     case 'START_INVESTIGATION': {
-      // Initialize the sin progression chain for this town
+      // Initialize the sin progression chain and clues for this town
       return {
         ...state,
         sinProgression: action.sinNodes,
+        clues: action.clues ?? [],
+      };
+    }
+
+    case 'FIND_CLUE': {
+      const { clueId } = action;
+      const clueIndex = state.clues.findIndex(c => c.id === clueId);
+      if (clueIndex === -1 || state.clues[clueIndex].found) return state;
+
+      const clue = state.clues[clueIndex];
+      const updatedClues = state.clues.map((c, i) =>
+        i === clueIndex ? { ...c, found: true } : c
+      );
+
+      // Auto-create a discovery from this clue
+      const discovery = {
+        id: `clue-discovery-${clueId}`,
+        factId: clueId,
+        sinId: null as string | null,
+        npcId: '',
+        content: clue.description,
+        timestamp: Date.now(),
+        newConnections: [clue.discoveryId],
+      };
+
+      // Check if the clue's discoveryId links to a sin node
+      const linkedSin = state.sinProgression.find(s => s.id === clue.discoveryId);
+      if (linkedSin) {
+        discovery.sinId = linkedSin.id;
+      }
+
+      const newSinProgression = linkedSin
+        ? state.sinProgression.map(node =>
+            node.id === linkedSin.id ? { ...node, discovered: true } : node
+          )
+        : state.sinProgression;
+
+      return {
+        ...state,
+        clues: updatedClues,
+        discoveries: [...state.discoveries, discovery],
+        sinProgression: newSinProgression,
       };
     }
 
@@ -125,48 +168,46 @@ export function investigationReducer(
 
     case 'ADVANCE_SIN_PROGRESSION': {
       // Called at end of each cycle: time pressure mechanic.
-      // Finds the highest-severity unresolved sin, advances to next level.
+      // Escalates the highest-severity unresolved sin in-place (keeps NPC links).
       if (state.sinProgression.length === 0) return state;
 
       // Find highest-severity unresolved sin node
-      let highestUnresolved: { node: typeof state.sinProgression[0]; index: number } | null = null;
-      for (const node of state.sinProgression) {
+      let highestUnresolved: { node: typeof state.sinProgression[0]; arrayIndex: number } | null = null;
+      for (let i = 0; i < state.sinProgression.length; i++) {
+        const node = state.sinProgression[i];
         if (node.resolved) continue;
         const levelIndex = SIN_CHAIN_ORDER.indexOf(node.level);
         if (!highestUnresolved || levelIndex > SIN_CHAIN_ORDER.indexOf(highestUnresolved.node.level)) {
-          highestUnresolved = { node, index: levelIndex };
+          highestUnresolved = { node, arrayIndex: i };
         }
       }
 
       // Silent fail: no unresolved sins or already at max
       if (!highestUnresolved) return state;
       if (highestUnresolved.node.level === 'hate-and-murder') {
-        // Already at maximum, set murder flag if not set
         return state.sinEscalatedToMurder ? state : {
           ...state,
           sinEscalatedToMurder: true,
         };
       }
 
-      // Advance to next level
+      // Advance the sin in-place: upgrade its level, keep linked NPCs
       const currentLevelIndex = SIN_CHAIN_ORDER.indexOf(highestUnresolved.node.level);
       const nextLevel = SIN_CHAIN_ORDER[currentLevelIndex + 1];
       const reachedMurder = nextLevel === 'hate-and-murder';
 
-      // Create new sin node at the escalated level
-      const newSinNode = {
-        id: `sin-${nextLevel}-${Date.now()}`,
-        level: nextLevel,
-        name: `Escalated ${nextLevel.replace(/-/g, ' ')}`,
-        description: `The town's rot has deepened to ${nextLevel.replace(/-/g, ' ')}.`,
-        discovered: false,
-        resolved: false,
-        linkedNpcs: [],
-      };
+      const updatedProgression = state.sinProgression.map((node, i) => {
+        if (i !== highestUnresolved!.arrayIndex) return node;
+        return {
+          ...node,
+          level: nextLevel,
+          description: `${node.description} The situation has worsened.`,
+        };
+      });
 
       return {
         ...state,
-        sinProgression: [...state.sinProgression, newSinNode],
+        sinProgression: updatedProgression,
         sinEscalatedToMurder: reachedMurder || state.sinEscalatedToMurder,
       };
     }

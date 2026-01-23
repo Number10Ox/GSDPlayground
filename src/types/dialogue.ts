@@ -21,6 +21,7 @@ export interface Topic {
   label: string;
   available: boolean;
   requiresDiscovery?: string;
+  requiresClue?: string;
   locationOnly?: string;
 }
 

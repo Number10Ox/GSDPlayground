@@ -14,6 +14,9 @@ export interface NPCKnowledge {
   facts: KnowledgeFact[];
   personality: string;
   speechPattern: string;
+  motivation?: string;
+  desire?: string;
+  fear?: string;
 }
 
 /**
@@ -33,6 +36,12 @@ export interface NPC {
   role: string; // e.g., "Sheriff", "Storekeeper"
   knowledge?: NPCKnowledge;
   conflictThresholds?: ConflictThreshold[];
+  personalSin?: {
+    description: string;
+    justification: string;
+    sinId: string;
+    revealTrust: number;
+  };
 }
 
 /**

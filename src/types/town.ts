@@ -5,13 +5,13 @@
 
 import type { Location } from '@/types/game';
 import type { NPC } from '@/types/npc';
-import type { SinNode } from '@/types/investigation';
+import type { SinNode, LocationClue } from '@/types/investigation';
 
 /**
  * TopicRule - Declarative rule for which topics are available to NPCs.
  * Replaces hardcoded getTopicsForNPC functions with data.
  */
-export type TopicRule = DefaultTopicRule | DiscoveryTopicRule | LocationTopicRule;
+export type TopicRule = DefaultTopicRule | DiscoveryTopicRule | LocationTopicRule | ClueTopicRule;
 
 export interface DefaultTopicRule {
   kind: 'default';
@@ -34,6 +34,29 @@ export interface LocationTopicRule {
   topicId?: string;
 }
 
+export interface ClueTopicRule {
+  kind: 'clue';
+  label: string;
+  /** Clue ID that must be found to unlock this topic */
+  requiredClueId: string;
+  /** Optional: only for specific NPC */
+  npcId?: string;
+}
+
+/**
+ * ArrivalData - What the Dog knows/sees upon arriving at a town.
+ */
+export interface ArrivalData {
+  /** Narrative text describing the Dog's arrival */
+  narrative: string;
+  /** NPC who approaches the Dog first (by ID) */
+  greeterNpcId?: string;
+  /** What the Dog has heard on the road (seeds initial investigation context) */
+  rumors: string[];
+  /** Initial observation the Dog makes (something feels wrong) */
+  observation: string;
+}
+
 /**
  * TownData - Complete definition of a town.
  * Each town file in src/data/towns/ exports one of these.
@@ -45,5 +68,32 @@ export interface TownData {
   locations: Location[];
   npcs: NPC[];
   sinChain: SinNode[];
+  clues: LocationClue[];
   topicRules: TopicRule[];
+  arrival?: ArrivalData;
+  events?: TownEvent[];
 }
+
+/**
+ * TownEvent - Something that happens between cycles, driven by NPCs or sin progression.
+ */
+export interface TownEvent {
+  id: string;
+  description: string;
+  trigger: EventTrigger;
+  effects: EventEffect[];
+  fired: boolean;
+}
+
+export type EventTrigger =
+  | { type: 'CYCLE_COUNT'; min: number }
+  | { type: 'SIN_LEVEL'; sinId: string; level: string }
+  | { type: 'DISCOVERY_MADE'; discoveryId: string }
+  | { type: 'NPC_TRUST'; npcId: string; threshold: number }
+  | { type: 'CLUE_FOUND'; clueId: string };
+
+export type EventEffect =
+  | { type: 'ADVANCE_SIN' }
+  | { type: 'TRUST_CHANGE'; npcId: string; delta: number }
+  | { type: 'UNLOCK_CLUE'; clueId: string }
+  | { type: 'NARRATIVE'; text: string };

@@ -13,6 +13,7 @@ import type { StatName } from '@/types/character';
 import { useInvestigation } from '@/hooks/useInvestigation';
 import { useCharacter } from '@/hooks/useCharacter';
 import { useNPCMemory } from '@/hooks/useNPCMemory';
+import { useTown } from '@/hooks/useTown';
 import { mockDialogueEndpoint } from '@/utils/mockDialogue';
 import { getInnerVoiceInterjection } from '@/utils/innerVoiceTemplates';
 
@@ -84,11 +85,49 @@ function getHighestStat(stats: Record<StatName, { dice: { id: string }[] }>): St
  * Manages the dialogue FSM, streaming from /api/dialogue endpoint,
  * discovery extraction, inner voice interjections, and fatigue tracking.
  */
+/**
+ * buildRelationshipStrings - Derives human-readable relationship descriptions
+ * for an NPC from the town's NPC list and sin chain context.
+ */
+function buildRelationshipStrings(npcId: string, npcs: import('@/types/npc').NPC[], sinChain: import('@/types/investigation').SinNode[]): string[] {
+  const relationships: string[] = [];
+  const thisNpc = npcs.find(n => n.id === npcId);
+  if (!thisNpc) return relationships;
+
+  // Find other NPCs linked to the same sins
+  for (const sin of sinChain) {
+    if (!sin.linkedNpcs.includes(npcId)) continue;
+    const otherNpcs = sin.linkedNpcs
+      .filter(id => id !== npcId)
+      .map(id => npcs.find(n => n.id === id))
+      .filter(Boolean);
+    for (const other of otherNpcs) {
+      relationships.push(`You are connected to ${other!.name} (${other!.role}) through the matter of "${sin.name}".`);
+    }
+  }
+
+  return relationships;
+}
+
+/**
+ * buildTownSituation - Creates a narrative summary of the town's state
+ * from the NPC's perspective, filtered by what they know.
+ */
+function buildTownSituation(npcId: string, sinChain: import('@/types/investigation').SinNode[], townName: string): string {
+  const linkedSins = sinChain.filter(s => s.linkedNpcs.includes(npcId));
+  if (linkedSins.length === 0) {
+    return `${townName} has troubles, though you are not privy to all of them.`;
+  }
+  const sinDescriptions = linkedSins.map(s => s.description).join(' ');
+  return `You know the following about ${townName}'s troubles: ${sinDescriptions}`;
+}
+
 export function DialogueProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(dialogueReducer, initialDialogueState);
   const { dispatch: investigationDispatch } = useInvestigation();
   const { character } = useCharacter();
-  const { getMemoryForNPC, getNPCById } = useNPCMemory();
+  const { getMemoryForNPC, getNPCById, dispatch: npcDispatch } = useNPCMemory();
+  const town = useTown();
 
   /**
    * sendMessage - Handles a complete exchange: topic + approach -> streaming response -> discoveries.
@@ -107,6 +146,14 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
       const trustLevel = memory?.relationshipLevel ?? 0;
       const statValue = character?.stats[approach]?.dice.length ?? 3;
 
+      // Build rich context for the NPC prompt
+      const npcRelationships = npc
+        ? buildRelationshipStrings(npcId, town.npcs, town.sinChain)
+        : [];
+      const townSituation = npc
+        ? buildTownSituation(npcId, town.sinChain, town.name)
+        : undefined;
+
       let response: Response;
 
       try {
@@ -119,6 +166,11 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
             npcRole: npc?.role ?? 'Townsperson',
             npcPersonality: npc?.knowledge?.personality ?? '',
             npcFacts: npc?.knowledge?.facts ?? [],
+            npcMotivation: npc?.knowledge?.motivation,
+            npcDesire: npc?.knowledge?.desire,
+            npcFear: npc?.knowledge?.fear,
+            npcRelationships,
+            townSituation,
             topic: topic.label,
             approach,
             trustLevel,
@@ -202,10 +254,19 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
       // Finish response - transitions to SHOWING_DISCOVERY or SELECTING_TOPIC
       dispatch({ type: 'FINISH_RESPONSE', turn, discoveries });
 
+      // Build trust from conversation — approach determines gain
+      // Heart builds most trust, acuity moderate, body/will cost trust (intimidation)
+      const trustDelta = approach === 'heart' ? 15
+        : approach === 'acuity' ? 8
+        : approach === 'body' ? -5
+        : approach === 'will' ? -3
+        : 5;
+      npcDispatch({ type: 'UPDATE_RELATIONSHIP', npcId, delta: trustDelta });
+
       // Advance fatigue after each exchange
       investigationDispatch({ type: 'ADVANCE_FATIGUE' });
     },
-    [state.currentNPC, dispatch, investigationDispatch, character, getNPCById, getMemoryForNPC]
+    [state.currentNPC, dispatch, investigationDispatch, character, getNPCById, getMemoryForNPC, town, npcDispatch]
   );
 
   /**

@@ -59,6 +59,8 @@ export type GameAction =
   | { type: 'VIEW_SUMMARY' }
   | { type: 'END_CYCLE' }
   | { type: 'REST_EARLY' }
+  | { type: 'UPDATE_ACTIONS'; actions: AvailableAction[] }
+  | { type: 'UPDATE_CONDITION'; delta: number }
   // Conflict actions
   | { type: 'APPLY_FALLOUT'; severity: FalloutSeverity }
   | { type: 'START_GAME_CONFLICT'; npcId: string; stakes: string }

@@ -8,10 +8,10 @@
  * 4. Demonic Attacks - Strange sickness spreading (consequence of disrupted order)
  */
 
-import type { TownData, TopicRule } from '@/types/town';
+import type { TownData, TopicRule, TownEvent } from '@/types/town';
 import type { Location } from '@/types/game';
 import type { NPC, NPCKnowledge, ConflictThreshold } from '@/types/npc';
-import type { SinNode } from '@/types/investigation';
+import type { SinNode, LocationClue } from '@/types/investigation';
 
 // ─── Sin Chain ──────────────────────────────────────────────────────────────
 
@@ -72,6 +72,9 @@ const ezekielKnowledge: NPCKnowledge = {
   npcId: 'steward-ezekiel',
   personality: 'Proud and authoritative. Speaks with absolute certainty about doctrine. Believes his interpretations are the only correct ones. Dismissive of challenges to his authority.',
   speechPattern: 'Speaks in declarative statements, often quoting scripture. Uses "we" when meaning "I." Pauses meaningfully before answering uncomfortable questions.',
+  motivation: 'You believe your authority comes directly from the King of Life, and any challenge to it is blasphemy. You made the decree about Martha because you truly believe illness is divine judgment — but deep down, you are terrified that you might be wrong.',
+  desire: 'You want the Dog to validate your leadership and leave quickly without disrupting the order you have built. If the Dog sides with you, it proves the King supports your rule.',
+  fear: 'You fear that if your authority is questioned publicly, the town will see you as fallible, and the obedience that holds everything together will collapse.',
   facts: [
     {
       id: 'ez-pride-1',
@@ -92,14 +95,14 @@ const ezekielKnowledge: NPCKnowledge = {
       id: 'ez-martha-1',
       content: 'Sister Martha\'s ailment is the King\'s judgment. Medicine won\'t cure a spiritual sickness.',
       tags: ['martha', 'illness', 'doctrine'],
-      minTrustLevel: 20,
+      minTrustLevel: 0,
       sinId: 'sin-injustice',
     },
     {
       id: 'ez-decree-1',
       content: 'I decreed that no medicine be given to those the King has marked. It is for their own salvation.',
       tags: ['decree', 'medicine', 'authority'],
-      minTrustLevel: 40,
+      minTrustLevel: 20,
       sinId: 'sin-injustice',
     },
     {
@@ -121,6 +124,9 @@ const marthaKnowledge: NPCKnowledge = {
   npcId: 'sister-martha',
   personality: 'Suffering but resilient. Grateful for any kindness shown. Speaks softly, often trailing off when discussing the Steward. Protective of Thomas.',
   speechPattern: 'Quiet, measured tone. Coughs between sentences. Uses diminutives and soft language. Avoids direct accusations.',
+  motivation: 'You have been denied care by the Steward\'s decree and grow weaker each day. You need someone with authority to lift the decree before you die — but you fear putting Thomas at risk by speaking too openly.',
+  desire: 'You want the Dog to confront the Steward and lift the decree so you can receive medicine openly. You also want Thomas protected from punishment for his thefts on your behalf.',
+  fear: 'You fear the Dog will side with the Steward and leave, or worse — will discover Thomas\'s thefts and punish him, taking away the only person still trying to save you.',
   facts: [
     {
       id: 'martha-thomas-1',
@@ -140,7 +146,7 @@ const marthaKnowledge: NPCKnowledge = {
       id: 'martha-decree-1',
       content: 'The Steward said my illness is a judgment. He told the store not to sell me medicine.',
       tags: ['steward', 'decree', 'injustice'],
-      minTrustLevel: 25,
+      minTrustLevel: 0,
       sinId: 'sin-injustice',
     },
     {
@@ -170,6 +176,9 @@ const thomasKnowledge: NPCKnowledge = {
   npcId: 'brother-thomas',
   personality: 'Desperate and protective. Will do anything for Martha. Suspicious of authority but respects the Dogs. Speaks plainly, sometimes aggressively when cornered.',
   speechPattern: 'Short, direct sentences. Voice drops when discussing anything criminal. Hands fidget. Changes subject when nervous.',
+  motivation: 'Martha is dying and you are the only one willing to help her. You steal because the Steward left you no other choice, and you would do it again without hesitation.',
+  desire: 'You want the Dog to fix the situation so you can stop stealing — lift the decree, punish the Steward, anything that means Martha gets medicine openly. You want mercy for your thefts, which you committed out of love.',
+  fear: 'You fear the Dog will see only the theft and punish you, leaving Martha without anyone to bring her herbs. You also fear the Steward will retaliate against Martha if you cooperate too openly with the Dog.',
   facts: [
     {
       id: 'thomas-theft-1',
@@ -195,7 +204,7 @@ const thomasKnowledge: NPCKnowledge = {
       id: 'thomas-decree-1',
       content: 'The Steward declared her illness a judgment from the King. Said helping her defies divine will.',
       tags: ['steward', 'decree'],
-      minTrustLevel: 20,
+      minTrustLevel: 0,
       sinId: 'sin-injustice',
     },
     {
@@ -211,6 +220,9 @@ const ruthKnowledge: NPCKnowledge = {
   npcId: 'sister-ruth',
   personality: 'Observant and conflicted. Sees the town\'s problems clearly but fears speaking out. Respects authority of the Dogs above the Steward. Careful with words.',
   speechPattern: 'Speaks in observations rather than accusations. Uses "one might notice" constructions. Glances around before sharing sensitive information.',
+  motivation: 'You have watched and recorded everything from your schoolhouse window, waiting for someone with real authority to act. The children in your class are falling ill and you cannot protect them alone.',
+  desire: 'You want the Dog to use your observations as evidence to bring the Steward to account. You want justice done through proper authority, not vigilante action.',
+  fear: 'You fear the Steward will discover you have been keeping records and silence you. You also fear the Dog will dismiss your careful observations as gossip.',
   facts: [
     {
       id: 'ruth-observe-1',
@@ -230,7 +242,7 @@ const ruthKnowledge: NPCKnowledge = {
       id: 'ruth-sickness-1',
       content: 'The sickness follows a pattern. It started with Martha, then spread to those who spoke against the decree.',
       tags: ['sickness', 'pattern'],
-      minTrustLevel: 30,
+      minTrustLevel: 10,
       sinId: 'sin-sickness',
     },
     {
@@ -260,6 +272,9 @@ const jacobKnowledge: NPCKnowledge = {
   npcId: 'sheriff-jacob',
   personality: 'Loyal to the Steward but respects the authority of the Dogs. Suspicious of outsiders. Tough exterior hiding doubt. Enforces order without questioning it.',
   speechPattern: 'Clipped, official tone. Answers questions with questions. Stands tall, arms crossed. Uses law enforcement language.',
+  motivation: 'You enforce the Steward\'s will because order is all that keeps this town from falling apart. But you have done things you are not proud of — looking the other way, following unjust orders — and the doubt is eating at you.',
+  desire: 'You want the Dog to restore proper order so you can stop doing the Steward\'s dirty work. You want someone with real authority to tell you it is acceptable to stop following unjust orders.',
+  fear: 'You fear that if the Dog investigates too deeply, your own complicity — ignoring Thomas\'s thefts on the Steward\'s orders, turning a blind eye to Martha\'s suffering — will come to light and you will be judged alongside the Steward.',
   facts: [
     {
       id: 'jacob-thomas-1',
@@ -352,6 +367,12 @@ const npcs: NPC[] = [
     role: 'Town Steward',
     knowledge: ezekielKnowledge,
     conflictThresholds: ezekielThresholds,
+    personalSin: {
+      description: 'Ezekiel denied medicine to Martha knowing her illness was natural, not divine. He chose doctrine over a life.',
+      justification: 'If I show weakness now, the whole order collapses. One woman\'s suffering preserves the faith of many.',
+      sinId: 'sin-pride',
+      revealTrust: 75,
+    },
   },
   {
     id: 'sister-martha',
@@ -370,6 +391,12 @@ const npcs: NPC[] = [
     role: 'Farmer',
     knowledge: thomasKnowledge,
     conflictThresholds: thomasThresholds,
+    personalSin: {
+      description: 'Thomas has stolen repeatedly from the general store. He also threatened the storekeeper\'s boy to keep silent.',
+      justification: 'Martha would be dead without me. A few herbs weighed against a life — any Dog would do the same.',
+      sinId: 'sin-theft',
+      revealTrust: 55,
+    },
   },
   {
     id: 'sister-ruth',
@@ -388,6 +415,12 @@ const npcs: NPC[] = [
     role: 'Sheriff',
     knowledge: jacobKnowledge,
     conflictThresholds: jacobThresholds,
+    personalSin: {
+      description: 'Jacob knew Thomas was stealing and did nothing — on the Steward\'s orders. He let Martha suffer to keep his position.',
+      justification: 'I follow the law as it\'s given to me. If the Steward says let it go, that\'s above my pay. I didn\'t make the decree.',
+      sinId: 'sin-injustice',
+      revealTrust: 65,
+    },
   },
 ];
 
@@ -409,6 +442,124 @@ const topicRules: TopicRule[] = [
   { kind: 'location', label: 'farm-crops', npcId: 'brother-thomas', locationId: 'homestead', topicId: 'thomas-farm-crops' },
   { kind: 'location', label: 'well-water', npcId: 'sister-ruth', locationId: 'well', topicId: 'ruth-well-water' },
   { kind: 'location', label: 'office-records', npcId: 'sheriff-jacob', locationId: 'sheriffs-office', topicId: 'jacob-office-records' },
+
+  // Clue-gated topics (unlocked by finding physical evidence)
+  { kind: 'clue', label: 'the-decree', requiredClueId: 'clue-chapel-decree', npcId: 'steward-ezekiel' },
+  { kind: 'clue', label: 'the-ledger', requiredClueId: 'clue-store-ledger' },
+  { kind: 'clue', label: 'the-herbs', requiredClueId: 'clue-homestead-herbs', npcId: 'brother-thomas' },
+  { kind: 'clue', label: 'tainted-water', requiredClueId: 'clue-well-taint' },
+];
+
+// ─── Arrival ──────────────────────────────────────────────────────────────────
+
+const arrival: TownData['arrival'] = {
+  narrative: `The trail opens to a cluster of buildings huddled against the mountain's flank. Bridal Falls. The waterfall that gives the town its name is barely a trickle — drought, or something worse. Shutters drawn on half the houses. No children playing. A dog watches you from a porch but doesn't bark. The chapel bell is silent.
+
+As you ride in, a figure emerges from the general store — a woman, thin and pale, who fixes you with desperate eyes.`,
+  greeterNpcId: 'sister-martha',
+  rumors: [
+    'A trader on the road mentioned sickness in Bridal Falls — said folk were afraid to speak openly.',
+    'The territorial authority asked you to check on the Steward here. No reports in months.',
+  ],
+  observation: 'The gardens have gone to seed. The well rope looks frayed. This town has been neglecting the basics — a sign that something has broken the community\'s spirit.',
+};
+
+// ─── Location Clues ─────────────────────────────────────────────────────────
+
+const clues: LocationClue[] = [
+  {
+    id: 'clue-store-ledger',
+    locationId: 'general-store',
+    description: 'The store ledger shows medicine purchases crossed out with the Steward\'s mark. Someone has been striking entries after hours.',
+    discoveryId: 'sin-injustice',
+    found: false,
+  },
+  {
+    id: 'clue-chapel-decree',
+    locationId: 'church',
+    description: 'A formal decree nailed to the chapel door: "No succor for those the King has marked." The ink is fresh, the tone absolute.',
+    discoveryId: 'sin-pride',
+    found: false,
+  },
+  {
+    id: 'clue-homestead-herbs',
+    locationId: 'homestead',
+    description: 'Behind the farmhouse, a hidden patch of medicinal herbs — recently harvested. Footprints lead toward the general store.',
+    discoveryId: 'sin-theft',
+    requiredApproach: 'acuity',
+    found: false,
+  },
+  {
+    id: 'clue-well-taint',
+    locationId: 'well',
+    description: 'The well water has a bitter, unnatural taste. Dark residue clings to the stones below the waterline. This sickness may not be divine.',
+    discoveryId: 'sin-sickness',
+    found: false,
+  },
+  {
+    id: 'clue-cemetery-graves',
+    locationId: 'cemetery',
+    description: 'Three fresh graves, unmarked. The earth was turned hastily. The dates on nearby stones show no one has died here in years — until now.',
+    discoveryId: 'sin-sickness',
+    requiredApproach: 'acuity',
+    found: false,
+  },
+];
+
+// ─── Town Events ────────────────────────────────────────────────────────────
+
+const events: TownEvent[] = [
+  {
+    id: 'event-martha-collapse',
+    description: 'Sister Martha collapses in the general store. Thomas rushes to her side, shouting for help. The Steward watches from the chapel steps but does not move.',
+    trigger: { type: 'CYCLE_COUNT', min: 2 },
+    effects: [
+      { type: 'TRUST_CHANGE', npcId: 'brother-thomas', delta: 10 },
+      { type: 'NARRATIVE', text: 'Martha\'s condition is worsening. Time is running out.' },
+    ],
+    fired: false,
+  },
+  {
+    id: 'event-sheriff-doubt',
+    description: 'Sheriff Jacob is seen standing alone at the well at dawn, staring into the water. When he notices you watching, he quickly walks away.',
+    trigger: { type: 'CLUE_FOUND', clueId: 'clue-well-taint' },
+    effects: [
+      { type: 'TRUST_CHANGE', npcId: 'sheriff-jacob', delta: 5 },
+      { type: 'NARRATIVE', text: 'The Sheriff knows something about the water. His loyalty wavers.' },
+    ],
+    fired: false,
+  },
+  {
+    id: 'event-steward-sermon',
+    description: 'Steward Ezekiel holds an emergency sermon, declaring the sickness proof of sin among the faithless. He names no names, but his eyes fix on Martha\'s empty seat.',
+    trigger: { type: 'CYCLE_COUNT', min: 3 },
+    effects: [
+      { type: 'ADVANCE_SIN' },
+      { type: 'NARRATIVE', text: 'The Steward tightens his grip. Fear spreads faster than the sickness.' },
+    ],
+    fired: false,
+  },
+  {
+    id: 'event-thomas-caught',
+    description: 'A crash in the night. Thomas is caught leaving the store with a satchel of herbs. The Sheriff holds him by the collar, waiting for the Steward\'s word.',
+    trigger: { type: 'CYCLE_COUNT', min: 4 },
+    effects: [
+      { type: 'TRUST_CHANGE', npcId: 'brother-thomas', delta: -10 },
+      { type: 'UNLOCK_CLUE', clueId: 'clue-store-ledger' },
+      { type: 'NARRATIVE', text: 'Thomas has been caught. Without intervention, the Steward will make an example of him.' },
+    ],
+    fired: false,
+  },
+  {
+    id: 'event-child-sick',
+    description: 'Ruth\'s youngest student does not come to school. Then another. The sickness has reached the children.',
+    trigger: { type: 'CYCLE_COUNT', min: 5 },
+    effects: [
+      { type: 'ADVANCE_SIN' },
+      { type: 'NARRATIVE', text: 'Children are falling ill. The town cannot endure much more.' },
+    ],
+    fired: false,
+  },
 ];
 
 // ─── Assembled Town ─────────────────────────────────────────────────────────
@@ -420,5 +571,8 @@ export const bridalFalls: TownData = {
   locations,
   npcs,
   sinChain,
+  clues,
   topicRules,
+  arrival,
+  events,
 };

@@ -1,8 +1,13 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useEffect, useState, useRef } from 'react';
 import { motion, LayoutGroup } from 'framer-motion';
 import { useGameState } from '@/hooks/useGameState';
 import { useCharacter } from '@/hooks/useCharacter';
+import { useInvestigation } from '@/hooks/useInvestigation';
+import { useNPCMemory } from '@/hooks/useNPCMemory';
+import { useTown } from '@/hooks/useTown';
 import { generateDicePool } from '@/utils/dice';
+import { generateAllActions, parseActionType } from '@/utils/actionGenerator';
+import { resolveAction, type ActionResult } from '@/utils/actionResolver';
 import { DicePool } from '@/components/DicePool/DicePool';
 import { ActionList } from '@/components/Actions/ActionList';
 import { CycleSummary } from '@/components/CycleSummary/CycleSummary';
@@ -21,6 +26,9 @@ import type { AvailableAction, Die } from '@/types/game';
 export function CycleView() {
   const { state, dispatch } = useGameState();
   const { character } = useCharacter();
+  const { state: investigationState, dispatch: investigationDispatch } = useInvestigation();
+  const { npcs, dispatch: npcDispatch } = useNPCMemory();
+  const town = useTown();
   const {
     cyclePhase,
     cycleNumber,
@@ -31,12 +39,104 @@ export function CycleView() {
     clocks,
   } = state;
 
+  // Track resolved action results for the summary
+  const [resolvedResults, setResolvedResults] = useState<ActionResult[]>([]);
+  // Ref guard: synchronously prevents re-entry when effect dispatches cause re-renders
+  const resolveGuardRef = useRef(false);
+
+  // Resolve actions when entering RESOLVE phase
+  useEffect(() => {
+    if (cyclePhase !== 'RESOLVE') {
+      // Reset guard when leaving RESOLVE phase
+      resolveGuardRef.current = false;
+      return;
+    }
+    if (resolveGuardRef.current) return;
+    resolveGuardRef.current = true;
+
+    const assignedDice = dicePool.filter(d => d.assignedTo !== null);
+    if (assignedDice.length === 0) {
+      dispatch({ type: 'VIEW_SUMMARY' });
+      return;
+    }
+
+    const results: ActionResult[] = [];
+    const actionMap = new Map(availableActions.map(a => [a.id, a]));
+
+    for (const die of assignedDice) {
+      const actionId = die.assignedTo!;
+      const action = actionMap.get(actionId);
+      if (!action) continue;
+
+      const actionType = parseActionType(actionId);
+      const locationClues = investigationState.clues.filter(
+        c => c.locationId === currentLocation && !c.found
+      );
+      const npcsHere = npcs.filter(n => n.locationId === currentLocation);
+
+      const result = resolveAction(die, actionId, action.name, actionType, {
+        availableClues: locationClues,
+        npcIds: npcsHere.map(n => n.id),
+      });
+      results.push(result);
+
+      // Apply effects
+      for (const effect of result.effects) {
+        switch (effect.type) {
+          case 'DISCOVER_CLUE':
+            investigationDispatch({ type: 'FIND_CLUE', clueId: effect.clueId });
+            break;
+          case 'TRUST_CHANGE':
+            npcDispatch({ type: 'UPDATE_RELATIONSHIP', npcId: effect.npcId, delta: effect.delta });
+            dispatch({ type: 'ADVANCE_CLOCK', clockId: 'trust-earned', amount: 1 });
+            break;
+          case 'RESTORE_CONDITION':
+            dispatch({ type: 'UPDATE_CONDITION', delta: effect.amount });
+            break;
+          case 'ADVANCE_CLOCK':
+            dispatch({ type: 'ADVANCE_CLOCK', clockId: effect.clockId, amount: effect.amount });
+            break;
+        }
+      }
+    }
+
+    setResolvedResults(results);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cyclePhase]);
+
+  // Regenerate actions when location or game state changes
+  useEffect(() => {
+    if (cyclePhase === 'ALLOCATE' || cyclePhase === 'WAKE') {
+      const discoveredSinIds = investigationState.sinProgression
+        .filter(s => s.discovered)
+        .map(s => s.id);
+      const actions = generateAllActions(
+        town.locations,
+        investigationState.clues,
+        npcs,
+        discoveredSinIds,
+        currentLocation,
+        !!character
+      );
+      dispatch({ type: 'UPDATE_ACTIONS', actions });
+    }
+  }, [cyclePhase, currentLocation, investigationState.clues, investigationState.sinProgression, npcs, character, town.locations, dispatch]);
+
   // Compute actions completed for summary
   const actionsCompleted = useMemo(() => {
+    // Use resolved results if available (from RESOLVE phase)
+    if (resolvedResults.length > 0) {
+      const actionMap = new Map(availableActions.map((a) => [a.id, a]));
+      return resolvedResults.map(r => ({
+        action: actionMap.get(r.actionId) ?? { id: r.actionId, name: r.actionName, description: '', locationId: null, diceCost: 1, available: true },
+        diceUsed: [r.die],
+        result: r.narrativeText,
+      }));
+    }
+
+    // Fallback: placeholder
     const result: { action: AvailableAction; diceUsed: Die[]; result: string }[] = [];
     const actionMap = new Map(availableActions.map((a) => [a.id, a]));
-
-    // Group dice by assigned action
     const diceByAction = new Map<string, Die[]>();
     for (const die of dicePool) {
       if (die.assignedTo) {
@@ -45,21 +145,14 @@ export function CycleView() {
         diceByAction.set(die.assignedTo, existing);
       }
     }
-
-    // Create action results
     for (const [actionId, dice] of diceByAction) {
       const action = actionMap.get(actionId);
       if (action) {
-        result.push({
-          action,
-          diceUsed: dice,
-          result: `You ${action.name.toLowerCase()}...`, // Placeholder result
-        });
+        result.push({ action, diceUsed: dice, result: `You ${action.name.toLowerCase()}...` });
       }
     }
-
     return result;
-  }, [dicePool, availableActions]);
+  }, [dicePool, availableActions, resolvedResults]);
 
   // Compute clock changes (autoAdvance clocks)
   const clockChanges = useMemo(() => {
@@ -78,6 +171,8 @@ export function CycleView() {
 
   // Start cycle with character-based dice pool
   const startCycle = useCallback(() => {
+    setResolvedResults([]);
+    resolveGuardRef.current = false;
     const pool = generateDicePool(state.characterCondition, character);
     dispatch({ type: 'START_CYCLE', dicePool: pool });
   }, [state.characterCondition, character, dispatch]);
@@ -200,15 +295,33 @@ export function CycleView() {
         </LayoutGroup>
       );
 
-    case 'RESOLVE':
-      // Auto-transition to SUMMARY for now (actual resolution in Phase 3)
-      // Use setTimeout to avoid dispatch during render
-      setTimeout(() => dispatch({ type: 'VIEW_SUMMARY' }), 0);
+    case 'RESOLVE': {
       return (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20">
-          <div className="text-gray-400">Resolving actions...</div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="bg-surface rounded-lg p-6 max-w-md w-full shadow-xl"
+          >
+            <h2 className="text-lg font-semibold text-gray-100 mb-4">Actions Resolved</h2>
+            <div className="space-y-2">
+              {resolvedResults.map((r, i) => (
+                <div key={i} className={`text-sm p-2 rounded ${r.success ? 'bg-green-900/30 text-green-200' : 'bg-red-900/30 text-red-300'}`}>
+                  <span className="font-medium">{r.actionName}:</span> {r.narrativeText}
+                </div>
+              ))}
+            </div>
+            <button
+              data-testid="resolve-continue-button"
+              onClick={() => dispatch({ type: 'VIEW_SUMMARY' })}
+              className="mt-4 w-full py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold transition-colors cursor-pointer"
+            >
+              Continue
+            </button>
+          </motion.div>
         </div>
       );
+    }
 
     case 'SUMMARY':
       return (
@@ -220,7 +333,30 @@ export function CycleView() {
         />
       );
 
-    case 'REST':
+    case 'REST': {
+      // Check for town events that should fire this cycle
+      const firedEvents = (town.events ?? []).filter(evt => {
+        if (evt.fired) return false;
+        switch (evt.trigger.type) {
+          case 'CYCLE_COUNT':
+            return cycleNumber >= evt.trigger.min;
+          case 'CLUE_FOUND':
+            return investigationState.clues.some(c => c.id === evt.trigger.clueId && c.found);
+          default:
+            return false;
+        }
+      });
+
+      // Generate inner monologue based on discoveries
+      const discoveryCount = investigationState.discoveries.length;
+      const unresolvedSins = investigationState.sinProgression.filter(s => s.discovered && !s.resolved);
+      let innerMonologue = 'The night is quiet. You review what you\'ve learned.';
+      if (unresolvedSins.length > 0) {
+        innerMonologue = `You lie awake thinking about what you've uncovered. ${unresolvedSins.length} sin${unresolvedSins.length > 1 ? 's' : ''} discovered, festering in this town. The King of Life demands action.`;
+      } else if (discoveryCount === 0) {
+        innerMonologue = 'You\'ve learned little today. Tomorrow you must dig deeper — the town\'s secrets won\'t reveal themselves.';
+      }
+
       return (
         <div
           data-testid="cycle-rest-overlay"
@@ -229,20 +365,42 @@ export function CycleView() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="bg-surface rounded-lg p-8 text-center shadow-xl"
+            className="bg-surface rounded-lg p-8 max-w-lg w-full shadow-xl"
           >
-            <h2 className="text-2xl font-bold text-gray-100 mb-2">Night Falls</h2>
-            <p className="text-gray-400 mb-6">You rest and prepare for tomorrow.</p>
+            <h2 className="text-2xl font-bold text-gray-100 mb-4">Night Falls</h2>
+
+            {/* Inner monologue */}
+            <p className="text-gray-400 italic text-sm mb-4">{innerMonologue}</p>
+
+            {/* Town events */}
+            {firedEvents.length > 0 && (
+              <div className="mb-4 space-y-3">
+                <h3 className="text-xs font-semibold text-amber-400 uppercase tracking-wider">While You Rest...</h3>
+                {firedEvents.map(evt => (
+                  <div key={evt.id} className="bg-amber-900/20 border border-amber-800/30 rounded-lg p-3">
+                    <p className="text-sm text-gray-300">{evt.description}</p>
+                    {evt.effects
+                      .filter((e): e is { type: 'NARRATIVE'; text: string } => e.type === 'NARRATIVE')
+                      .map((e, i) => (
+                        <p key={i} className="text-xs text-amber-300/70 mt-1 italic">{e.text}</p>
+                      ))
+                    }
+                  </div>
+                ))}
+              </div>
+            )}
+
             <button
               data-testid="next-day-button"
               onClick={startCycle}
-              className="px-8 py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="w-full px-8 py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400"
             >
               Next Day
             </button>
           </motion.div>
         </div>
       );
+    }
 
     default:
       return null;
