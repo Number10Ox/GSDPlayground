@@ -34,7 +34,7 @@ export function TypewriterText({ text, isStreaming }: TypewriterTextProps) {
             <motion.span
               initial={{ opacity: 1 }}
               animate={{ opacity: [1, 0, 1] }}
-              transition={{ duration: 1, repeat: Infinity, ease: 'steps(2)' }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
               exit={{ opacity: 0 }}
               className="text-amber-400 font-bold ml-0.5"
             >

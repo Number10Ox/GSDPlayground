@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { ReactFlow, useNodesState, useEdgesState } from '@xyflow/react';
+import { ReactFlow, useNodesState, useEdgesState, type Node, type Edge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useMentalMap } from '@/hooks/useMentalMap';
 import { SinNodeComponent } from '@/components/MentalMap/SinNode';
@@ -17,8 +17,8 @@ import { ConnectionEdgeComponent } from '@/components/MentalMap/ConnectionEdge';
  */
 export function MentalMap() {
   const { nodes: mapNodes, edges: mapEdges } = useMentalMap();
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   // Sync nodes/edges from useMentalMap when investigation state changes
   useEffect(() => {

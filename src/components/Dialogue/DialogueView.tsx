@@ -12,19 +12,24 @@ import { DiscoverySummary } from '@/components/Dialogue/DiscoverySummary';
 import { ConflictTrigger } from '@/components/Dialogue/ConflictTrigger';
 import type { StatName } from '@/types/character';
 
+import type { DieType } from '@/types/game';
+
+const DIE_TYPE_VALUE: Record<DieType, number> = { d4: 1, d6: 2, d8: 3, d10: 4 };
+
 /**
- * getHighestStat - Returns the character's strongest stat.
+ * getHighestStat - Returns the character's strongest stat (by die type quality).
  */
-function getHighestStat(stats: Record<StatName, { dice: { id: string }[] }>): StatName {
+function getHighestStat(stats: Record<StatName, { dice: { id: string; type: DieType }[] }>): StatName {
   const statNames: StatName[] = ['acuity', 'heart', 'body', 'will'];
   let highest: StatName = 'acuity';
-  let highestCount = 0;
+  let highestValue = 0;
 
   for (const name of statNames) {
-    const count = stats[name]?.dice.length ?? 0;
-    if (count > highestCount) {
+    const dieType = stats[name]?.dice[0]?.type ?? 'd4';
+    const value = DIE_TYPE_VALUE[dieType] ?? 0;
+    if (value > highestValue) {
       highest = name;
-      highestCount = count;
+      highestValue = value;
     }
   }
 

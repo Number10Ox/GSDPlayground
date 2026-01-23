@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Lightbulb, Hand, Heart, Cross } from 'lucide-react';
 import { useCharacter } from '@/hooks/useCharacter';
-import { createCharacter, BACKGROUND_DICE } from '@/types/character';
+import { createCharacter, BACKGROUND_DICE, STAT_POINT_TO_DIE_TYPE } from '@/types/character';
 import type { Background, StatName } from '@/types/character';
 
 type CreationStep = 'name' | 'background' | 'allocate' | 'confirm';
@@ -34,7 +34,7 @@ const BACKGROUNDS: BackgroundInfo[] = [
     id: 'complicated-history',
     title: 'Complicated History',
     description: 'You carry the weight of a troubled past. More trait dice, including a powerful d10.',
-    statDice: 13,
+    statDice: 8,
     traitSummary: '5d6 + 3d4 + 1d10',
     relationshipSummary: '4d6',
   },
@@ -42,22 +42,22 @@ const BACKGROUNDS: BackgroundInfo[] = [
     id: 'strong-community',
     title: 'Strong Community',
     description: 'Your bonds with your community run deep. More relationship dice and a d8.',
-    statDice: 15,
+    statDice: 9,
     traitSummary: '3d6 + 2d4',
     relationshipSummary: '1d8 + 5d6',
   },
   {
     id: 'well-rounded',
     title: 'Well-Rounded',
-    description: 'Balanced and capable. More stat dice to distribute across your abilities.',
-    statDice: 17,
+    description: 'Balanced and capable. More stat points to upgrade your abilities.',
+    statDice: 10,
     traitSummary: '2d6 + 2d4',
     relationshipSummary: '3d6 + 1d4',
   },
 ];
 
-const MIN_PER_STAT = 2;
-const MAX_PER_STAT = 6;
+const MIN_PER_STAT = 1;
+const MAX_PER_STAT = 4;
 
 /**
  * CharacterCreation - Point-buy allocation UI for creating a new Dog character.
@@ -81,8 +81,8 @@ export function CharacterCreation({ onComplete }: { onComplete?: () => void }) {
     will: MIN_PER_STAT,
   });
 
-  // Total available dice for the selected background
-  const totalDice = background ? BACKGROUND_DICE[background].statDice : 0;
+  // Total available stat points for the selected background
+  const totalDice = background ? BACKGROUND_DICE[background].statPoints : 0;
   const allocated = allocation.acuity + allocation.body + allocation.heart + allocation.will;
   const remaining = totalDice - allocated;
 
@@ -174,7 +174,7 @@ export function CharacterCreation({ onComplete }: { onComplete?: () => void }) {
                   <div className="font-semibold text-gray-100">{bg.title}</div>
                   <p className="text-gray-400 text-sm mt-1">{bg.description}</p>
                   <div className="flex gap-4 mt-2 text-xs text-gray-500">
-                    <span>Stats: {bg.statDice}d6</span>
+                    <span>Stats: {bg.statDice} pts (8 dice)</span>
                     <span>Traits: {bg.traitSummary}</span>
                     <span>Relationships: {bg.relationshipSummary}</span>
                   </div>
@@ -195,10 +195,13 @@ export function CharacterCreation({ onComplete }: { onComplete?: () => void }) {
           <div className="space-y-4">
             <div className="text-center">
               <p className="text-gray-400 text-sm">
-                Distribute d6 dice across your stats.
+                Distribute points across your stats. Higher points = better dice.
+              </p>
+              <p className="text-gray-500 text-xs mt-1">
+                1 = 2d4 &middot; 2 = 2d6 &middot; 3 = 2d8 &middot; 4 = 2d10
               </p>
               <p className={`text-lg font-bold mt-2 ${remaining === 0 ? 'text-green-400' : 'text-amber-400'}`}>
-                {remaining} dice remaining
+                {remaining} points remaining
               </p>
             </div>
 
@@ -246,7 +249,7 @@ export function CharacterCreation({ onComplete }: { onComplete?: () => void }) {
                       </button>
                     </div>
 
-                    <span className="text-gray-500 text-xs w-8">{value}d6</span>
+                    <span className="text-gray-500 text-xs w-10">2{STAT_POINT_TO_DIE_TYPE[value] || 'd6'}</span>
                   </div>
                 );
               })}

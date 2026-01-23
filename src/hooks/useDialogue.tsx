@@ -86,7 +86,7 @@ function getHighestStat(stats: Record<StatName, { dice: { id: string }[] }>): St
  */
 export function DialogueProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(dialogueReducer, initialDialogueState);
-  const { state: investigationState, dispatch: investigationDispatch } = useInvestigation();
+  const { dispatch: investigationDispatch } = useInvestigation();
   const { character } = useCharacter();
   const { getMemoryForNPC, getNPCById } = useNPCMemory();
 

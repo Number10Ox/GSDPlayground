@@ -72,8 +72,9 @@ export function validateSinChainDiscoverable(town: TownData): ValidationResult {
   }
 
   // Check 2: No circular knowledge dependencies
-  // Build dependency graph: discovery-gated topic rules create edges
-  // If discovering sin A unlocks topics that can reveal sin B, that's an edge A -> B
+  // Build dependency graph from discovery-gated topic rules.
+  // An edge A -> B means: discovering sin A is a prerequisite for accessing
+  // facts about sin B (sin B's facts are ONLY accessible through topics gated by sin A).
   const sinIds = new Set(town.sinChain.map(s => s.id));
   const dependencyGraph = new Map<string, Set<string>>();
 
@@ -81,26 +82,46 @@ export function validateSinChainDiscoverable(town: TownData): ValidationResult {
     dependencyGraph.set(sinId, new Set());
   }
 
-  // Find which sins can be discovered through discovery-gated topics
+  // First, determine which sins have facts accessible without any discovery gate
+  // (i.e., facts at trust level 0 that can be reached through default topics)
+  const independentlyDiscoverable = new Set<string>();
+  for (const npc of town.npcs) {
+    if (!npc.knowledge) continue;
+    for (const fact of npc.knowledge.facts) {
+      if (fact.sinId && fact.minTrustLevel === 0) {
+        independentlyDiscoverable.add(fact.sinId);
+      }
+    }
+  }
+
+  // Build edges: discovery topic rules create dependencies.
+  // If a discovery rule requires sin A and the rule's label matches a sin B topic,
+  // then B depends on A (you must discover A before unlocking B's topic).
+  // However, if sin B is independently discoverable (has trust-0 facts), no dependency exists.
+  const sinLabelToId = new Map<string, string>();
+  for (const sin of town.sinChain) {
+    // Map the sin's discovery topic label to its ID
+    const label = sin.name.toLowerCase().replace(/['']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    sinLabelToId.set(label, sin.id);
+  }
+
   for (const rule of town.topicRules) {
     if (rule.kind !== 'discovery') continue;
 
-    // This topic is unlocked by discovering any of requiredSinIds
-    // Find which sins' facts match this topic's label (via tags or content)
-    // The topic unlocks conversations that may reveal other sins
+    // Check if this rule's label corresponds to a sin's discovery topic
+    const targetSinId = sinLabelToId.get(rule.label);
+    if (!targetSinId) continue;
+
+    // Skip if target sin is independently discoverable (has trust-0 facts)
+    if (independentlyDiscoverable.has(targetSinId)) continue;
+
+    // This topic requires discovering one of requiredSinIds first
+    // Create edges: requiredSinId -> targetSinId
     for (const requiredSinId of rule.requiredSinIds) {
-      // Find sins that could be revealed through topics unlocked by this rule
-      for (const npc of town.npcs) {
-        if (!npc.knowledge) continue;
-        for (const fact of npc.knowledge.facts) {
-          if (fact.sinId && fact.sinId !== requiredSinId && sinIds.has(fact.sinId)) {
-            // Discovering requiredSinId can lead to discovering fact.sinId
-            const edges = dependencyGraph.get(requiredSinId);
-            if (edges) {
-              edges.add(fact.sinId);
-            }
-          }
-        }
+      if (requiredSinId === targetSinId) continue; // Self-reference is not a dependency
+      const edges = dependencyGraph.get(requiredSinId);
+      if (edges) {
+        edges.add(targetSinId);
       }
     }
   }

@@ -19,12 +19,13 @@ import { useNPCMemory } from '@/hooks/useNPCMemory';
 import { useInvestigation } from '@/hooks/useInvestigation';
 import { useDialogue } from '@/hooks/useDialogue';
 import { initialConflictState, conflictReducer } from '@/reducers/conflictReducer';
-import { TEST_SIN_CHAIN } from '@/data/testTown';
-import { getTopicsForNPC } from '@/data/testTown';
+import { useTown } from '@/hooks/useTown';
+import { resolveTopicsForNPC } from '@/utils/topicResolver';
 import type { ConflictState } from '@/types/conflict';
 import type { Die } from '@/types/game';
 
 export function GameView() {
+  const town = useTown();
   const { state, dispatch } = useGameState();
   const { character, dispatch: charDispatch } = useCharacter();
   const { clocks, cycleNumber, cyclePhase, currentLocation, locations, activeConflict } = state;
@@ -54,12 +55,12 @@ export function GameView() {
   // Conflict state for ConflictView (dev mode test conflicts)
   const [conflictState, setConflictState] = useState<ConflictState | null>(null);
 
-  // Initialize investigation on mount with test town sin chain
+  // Initialize investigation on mount with town sin chain
   useEffect(() => {
     if (investigationState.sinProgression.length === 0) {
-      investigationDispatch({ type: 'START_INVESTIGATION', sinNodes: TEST_SIN_CHAIN });
+      investigationDispatch({ type: 'START_INVESTIGATION', sinNodes: town.sinChain });
     }
-  }, [investigationState.sinProgression.length, investigationDispatch]);
+  }, [investigationState.sinProgression.length, investigationDispatch, town.sinChain]);
 
   // Handle NPC click - open dialogue if not fatigued
   const handleNpcClick = useCallback((npcId: string) => {
@@ -77,13 +78,13 @@ export function GameView() {
       .map(s => s.id);
 
     // Generate topics for this NPC
-    const topics = getTopicsForNPC(npcId, discoveredSinIds, currentLocation);
+    const topics = resolveTopicsForNPC(npcId, town.topicRules, discoveredSinIds, currentLocation);
 
     // Open dialogue
     setDialogueNpcId(npcId);
     setShowDialogue(true);
     dialogueDispatch({ type: 'START_CONVERSATION', npcId, topics });
-  }, [investigationState, currentLocation, dialogueDispatch]);
+  }, [investigationState, currentLocation, dialogueDispatch, town.topicRules]);
 
   // Handle dialogue close
   const handleDialogueClose = useCallback(() => {
@@ -300,7 +301,7 @@ export function GameView() {
             {investigationState.sinProgression.length === 0 && (
               <button
                 data-testid="start-investigation"
-                onClick={() => investigationDispatch({ type: 'START_INVESTIGATION', sinNodes: TEST_SIN_CHAIN })}
+                onClick={() => investigationDispatch({ type: 'START_INVESTIGATION', sinNodes: town.sinChain })}
                 className="w-full bg-green-900/50 hover:bg-green-800/50 text-green-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
               >
                 Start Investigation

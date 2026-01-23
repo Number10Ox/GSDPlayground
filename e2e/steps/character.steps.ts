@@ -38,12 +38,12 @@ export async function selectBackground(page: Page, background: string) {
 }
 
 /**
- * Allocate stat dice to reach a target count.
- * All stats start at 2 (minimum). Clicks plus/minus buttons to reach target.
+ * Allocate stat points to reach a target value.
+ * All stats start at 1 (minimum). Clicks plus/minus buttons to reach target.
  */
 export async function allocateStatDice(page: Page, statName: string, targetCount: number) {
   const stat = statName.toLowerCase();
-  const currentCountStart = 2; // All stats start at MIN_PER_STAT = 2
+  const currentCountStart = 1; // All stats start at MIN_PER_STAT = 1
   const clicksNeeded = targetCount - currentCountStart;
 
   if (clicksNeeded > 0) {
@@ -110,12 +110,12 @@ export async function setupCharacterForTest(page: Page, name: string = 'Test Dog
   await openCharacterCreation(page);
   await enterCharacterName(page, name);
   await selectBackground(page, 'well-rounded');
-  // well-rounded gives 17 stat dice, starting at 2 each (total 8), need to add 9 more
-  // Target: 5 Acuity, 4 Body, 4 Heart, 4 Will (total 17)
-  await allocateStatDice(page, 'acuity', 5);
-  await allocateStatDice(page, 'body', 4);
-  await allocateStatDice(page, 'heart', 4);
-  await allocateStatDice(page, 'will', 4);
+  // well-rounded gives 10 stat points, starting at 1 each (total 4), need to add 6 more
+  // Target: 3 Acuity, 3 Body, 2 Heart, 2 Will (total 10)
+  await allocateStatDice(page, 'acuity', 3);
+  await allocateStatDice(page, 'body', 3);
+  await allocateStatDice(page, 'heart', 2);
+  await allocateStatDice(page, 'will', 2);
   await confirmCreation(page);
 }
 

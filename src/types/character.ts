@@ -55,14 +55,23 @@ export type DiceSource =
 export type Background = 'complicated-history' | 'strong-community' | 'well-rounded';
 
 export interface BackgroundDice {
-  statDice: number; // How many d6 to distribute across stats
+  statPoints: number; // Points to distribute across stats (1-4 per stat, determines die type)
   traitDice: CharacterDie[];
   relationshipDice: CharacterDie[];
 }
 
+// Stat point -> die type mapping (each stat always has 2 dice of this type)
+// 1 point = 2d4, 2 points = 2d6, 3 points = 2d8, 4 points = 2d10
+export const STAT_POINT_TO_DIE_TYPE: Record<number, DieType> = {
+  1: 'd4',
+  2: 'd6',
+  3: 'd8',
+  4: 'd10',
+};
+
 export const BACKGROUND_DICE: Record<Background, BackgroundDice> = {
   'complicated-history': {
-    statDice: 13,
+    statPoints: 8, // Fewer stat points, but more/better trait dice
     traitDice: [
       { id: 'bg-trait-1', type: 'd6' },
       { id: 'bg-trait-2', type: 'd6' },
@@ -81,7 +90,7 @@ export const BACKGROUND_DICE: Record<Background, BackgroundDice> = {
     ],
   },
   'strong-community': {
-    statDice: 15,
+    statPoints: 9, // Moderate stats, strong relationships
     traitDice: [
       { id: 'bg-trait-1', type: 'd6' },
       { id: 'bg-trait-2', type: 'd6' },
@@ -99,7 +108,7 @@ export const BACKGROUND_DICE: Record<Background, BackgroundDice> = {
     ],
   },
   'well-rounded': {
-    statDice: 17,
+    statPoints: 10, // Most stat points, fewer traits/relationships
     traitDice: [
       { id: 'bg-trait-1', type: 'd6' },
       { id: 'bg-trait-2', type: 'd6' },
@@ -180,6 +189,8 @@ export function createStartingInventory(): Item[] {
 }
 
 // Helper: create a character with point-buy stat allocation
+// Each stat gets exactly 2 dice. The allocated points determine die TYPE:
+// 1 point = 2d4, 2 points = 2d6, 3 points = 2d8, 4 points = 2d10
 export function createCharacter(
   name: string,
   background: Background,
@@ -188,17 +199,18 @@ export function createCharacter(
   const bgDice = BACKGROUND_DICE[background];
   const total = statAllocation.acuity + statAllocation.body + statAllocation.heart + statAllocation.will;
 
-  if (total !== bgDice.statDice) {
+  if (total !== bgDice.statPoints) {
     throw new Error(
-      `Stat allocation total (${total}) must equal background stat dice (${bgDice.statDice}) for ${background}`
+      `Stat allocation total (${total}) must equal background stat points (${bgDice.statPoints}) for ${background}`
     );
   }
 
-  function createStatDice(count: number): CharacterDie[] {
-    return Array.from({ length: count }, () => ({
-      id: crypto.randomUUID(),
-      type: 'd6' as DieType,
-    }));
+  function createStatDice(points: number): CharacterDie[] {
+    const dieType = STAT_POINT_TO_DIE_TYPE[points] || 'd6';
+    return [
+      { id: crypto.randomUUID(), type: dieType },
+      { id: crypto.randomUUID(), type: dieType },
+    ];
   }
 
   return {

@@ -9,7 +9,7 @@ import {
 import type { NPC, NPCMemory, NPCMemoryAction, ConflictEvent } from '@/types/npc';
 import type { EscalationLevel } from '@/types/conflict';
 import type { LocationId } from '@/types/game';
-import { TEST_NPCS } from '@/data/testTown';
+import { useTown } from '@/hooks/useTown';
 
 /**
  * Relationship level penalties based on escalation.
@@ -29,10 +29,9 @@ interface NPCMemoryState {
   memories: NPCMemory[];
 }
 
-const initialNPCState: NPCMemoryState = {
-  npcs: TEST_NPCS,
-  memories: [], // Empty initially - NPCs have no memory of the player
-};
+function createInitialNPCState(npcs: NPC[]): NPCMemoryState {
+  return { npcs, memories: [] };
+}
 
 /**
  * Generate a unique ID for conflict events.
@@ -174,7 +173,8 @@ const NPCMemoryContext = createContext<NPCMemoryContextType | null>(null);
  * NPCMemoryProvider - Provides NPC memory state to the app.
  */
 export function NPCMemoryProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(npcMemoryReducer, initialNPCState);
+  const town = useTown();
+  const [state, dispatch] = useReducer(npcMemoryReducer, town.npcs, createInitialNPCState);
 
   return (
     <NPCMemoryContext.Provider value={{ state, dispatch }}>

@@ -159,22 +159,22 @@ export async function createCharacterForTest(page: Page, name: string = 'Test Do
   await page.getByTestId('creation-name-input').fill(name);
   await page.locator('button:has-text("Continue")').click();
 
-  // Select well-rounded background (17 stat dice total)
+  // Select well-rounded background (10 stat points total)
   await page.getByTestId('creation-background-well-rounded').click();
   await expect(page.getByTestId('creation-stat-acuity-plus')).toBeVisible({ timeout: 2000 });
 
-  // Allocate: 5 Acuity, 4 Body, 4 Heart, 4 Will (total 17)
+  // Allocate: 3 Acuity, 3 Body, 2 Heart, 2 Will (total 10, starting from 1 each)
   const plusAcuity = page.getByTestId('creation-stat-acuity-plus');
-  for (let i = 0; i < 3; i++) await plusAcuity.click(); // 2 -> 5
+  for (let i = 0; i < 2; i++) await plusAcuity.click(); // 1 -> 3
 
   const plusBody = page.getByTestId('creation-stat-body-plus');
-  for (let i = 0; i < 2; i++) await plusBody.click(); // 2 -> 4
+  for (let i = 0; i < 2; i++) await plusBody.click(); // 1 -> 3
 
   const plusHeart = page.getByTestId('creation-stat-heart-plus');
-  for (let i = 0; i < 2; i++) await plusHeart.click(); // 2 -> 4
+  for (let i = 0; i < 1; i++) await plusHeart.click(); // 1 -> 2
 
   const plusWill = page.getByTestId('creation-stat-will-plus');
-  for (let i = 0; i < 2; i++) await plusWill.click(); // 2 -> 4
+  for (let i = 0; i < 1; i++) await plusWill.click(); // 1 -> 2
 
   // Confirm
   const confirmButton = page.getByTestId('creation-confirm');

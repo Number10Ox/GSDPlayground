@@ -1,6 +1,7 @@
 import { Lightbulb, Heart, Hand, Cross } from 'lucide-react';
 import type { ApproachType } from '@/types/dialogue';
 import type { Character } from '@/types/character';
+import type { DieType } from '@/types/game';
 
 interface ApproachChipsProps {
   onSelect: (approach: ApproachType) => void;
@@ -21,12 +22,13 @@ const APPROACH_CONFIG: {
 ];
 
 /**
- * getEffectivenessOpacity - Returns opacity class based on dice count.
- * 2-3 dice: dim, 4-5: normal, 6: bright
+ * getEffectivenessOpacity - Returns opacity class based on die type quality.
+ * d10: bright, d8: normal, d6/d4: dim
  */
-function getEffectivenessOpacity(diceCount: number): string {
-  if (diceCount >= 6) return 'opacity-100';
-  if (diceCount >= 4) return 'opacity-80';
+function getEffectivenessOpacity(dieType: DieType): string {
+  if (dieType === 'd10') return 'opacity-100';
+  if (dieType === 'd8') return 'opacity-90';
+  if (dieType === 'd6') return 'opacity-75';
   return 'opacity-60';
 }
 
@@ -38,8 +40,9 @@ export function ApproachChips({ onSelect, stats }: ApproachChipsProps) {
   return (
     <div className="flex gap-3 p-3" data-testid="approach-chips">
       {APPROACH_CONFIG.map(({ approach, label, Icon, borderColor, textColor }) => {
+        const dieType = stats[approach]?.dice[0]?.type ?? 'd6';
         const diceCount = stats[approach]?.dice.length ?? 2;
-        const opacity = getEffectivenessOpacity(diceCount);
+        const opacity = getEffectivenessOpacity(dieType);
 
         return (
           <button
@@ -54,7 +57,7 @@ export function ApproachChips({ onSelect, stats }: ApproachChipsProps) {
           >
             <Icon className={`w-4 h-4 ${textColor}`} />
             <span className="text-sm text-gray-200">{label}</span>
-            <span className="text-xs text-gray-400">({diceCount}d6)</span>
+            <span className="text-xs text-gray-400">({diceCount}{dieType})</span>
           </button>
         );
       })}

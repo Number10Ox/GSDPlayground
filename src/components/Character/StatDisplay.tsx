@@ -48,7 +48,7 @@ export function StatDisplay({ stat, dimmed = false, compact = false }: StatDispl
 
   // Count dice by type for notation
   const diceNotation = getDiceNotation(stat.dice);
-  const modifierNotation = hasModifier ? `(-${Math.abs(stat.modifier)}d6)` : '';
+  const modifierNotation = hasModifier ? `(-${Math.abs(stat.modifier)})` : '';
 
   return (
     <div

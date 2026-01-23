@@ -1,10 +1,7 @@
 import { createContext, useContext, useReducer, type ReactNode, type Dispatch } from 'react';
 import type { GameState, GameAction, Location, Clock, AvailableAction } from '@/types/game';
 import { generateDicePool } from '@/utils/dice';
-import { TEST_LOCATIONS } from '@/data/testTown';
-
-// Use test town locations (will be procedurally generated later)
-const SAMPLE_LOCATIONS: Location[] = TEST_LOCATIONS;
+import { useTown } from '@/hooks/useTown';
 
 // Sample clocks for testing the cycle system
 const SAMPLE_CLOCKS: Clock[] = [
@@ -21,27 +18,24 @@ const SAMPLE_ACTIONS: AvailableAction[] = [
   { id: 'rest-early', name: 'Rest Early', description: 'End the day and recover', locationId: null, diceCost: 0, available: true },
 ];
 
-const initialState: GameState = {
-  // Existing Phase 1 state
-  currentLocation: 'town-square',
-  isPanelOpen: false,
-  currentScene: null,
-  locations: SAMPLE_LOCATIONS,
+function createInitialState(locations: Location[]): GameState {
+  return {
+    currentLocation: locations[0]?.id ?? 'town-square',
+    isPanelOpen: false,
+    currentScene: null,
+    locations,
 
-  // Cycle state
-  cyclePhase: 'WAKE',
-  cycleNumber: 1,
-  dicePool: [],
-  selectedDieId: null,
-  clocks: SAMPLE_CLOCKS,
-  availableActions: SAMPLE_ACTIONS,
+    cyclePhase: 'WAKE',
+    cycleNumber: 1,
+    dicePool: [],
+    selectedDieId: null,
+    clocks: SAMPLE_CLOCKS,
+    availableActions: SAMPLE_ACTIONS,
 
-  // Character condition (full health at start)
-  characterCondition: 100,
-
-  // No active conflict at start
-  activeConflict: null,
-};
+    characterCondition: 100,
+    activeConflict: null,
+  };
+}
 
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
@@ -287,7 +281,8 @@ const GameContext = createContext<{
 } | null>(null);
 
 export function GameProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(gameReducer, initialState);
+  const town = useTown();
+  const [state, dispatch] = useReducer(gameReducer, town.locations, createInitialState);
   return (
     <GameContext.Provider value={{ state, dispatch }}>
       {children}
