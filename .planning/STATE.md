@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-20)
 ## Current Position
 
 Phase: 6 of 7 (Town Generation)
-Plan: 4 of 6 in current phase
+Plan: 5 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-23 - Completed 06-04-PLAN.md (Validation Pipeline)
+Last activity: 2026-01-23 - Completed 06-05-PLAN.md (Town Selection Integration)
 
-Progress: [███████████████████░] 94%
+Progress: [████████████████████] 97%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 30
-- Average duration: 5.8 min
-- Total execution time: 3.47 hours
+- Total plans completed: 31
+- Average duration: 5.7 min
+- Total execution time: 3.55 hours
 
 **By Phase:**
 
@@ -34,11 +34,11 @@ Progress: [███████████████████░] 94%
 | 04-character-system | 5 | 29 min | 5.8 min |
 | 05-investigation | 7 | 71 min | 10.1 min |
 
-| 06-town-generation | 4 | 42 min | 10.5 min |
+| 06-town-generation | 5 | 47 min | 9.4 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-07 (50min), 06-01 (9min), 06-02 (19min), 06-03 (7min), 06-04 (7min)
-- Trend: Fast execution for procedural generation validators
+- Last 5 plans: 06-01 (9min), 06-02 (19min), 06-03 (7min), 06-04 (7min), 06-05 (5min)
+- Trend: Fast execution for town generation pipeline and integration
 
 *Updated after each plan completion*
 
@@ -154,6 +154,9 @@ Recent decisions affecting current work:
 - [06-04]: Sins with trust-0 facts are independently discoverable (no incoming dependency edges)
 - [06-04]: Retry uses seed suffix pattern (seed-retry-N) for deterministic but varied attempts
 - [06-04]: NPC connectivity checked via shared sin assignments (implicit, no explicit relationship edges)
+- [06-05]: Fixed seeds at module load for deterministic, debuggable town generation
+- [06-05]: Chain lengths 5 and 6 for generated towns (varied difficulty vs bridalFalls's 4)
+- [06-05]: E2E tests select Bridal Falls by default to preserve existing test behavior
 
 ### Pending Todos
 
@@ -166,7 +169,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-23
-Stopped at: Completed 06-04-PLAN.md (Validation Pipeline) - Phase 6 plan 4 of 6
+Stopped at: Completed 06-05-PLAN.md (Town Selection Integration) - Phase 6 plan 5 of 6
 Resume file: None
 
 ## Phase 2 Completion Notes
