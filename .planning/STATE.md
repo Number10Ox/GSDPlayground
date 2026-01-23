@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** The player must be able to arrive in a procedurally generated town, discover its moral rot through investigation and NPC interaction, and resolve conflicts using the escalating stakes system — experiencing the weight of judgment that defines Dogs in the Vineyard.
-**Current focus:** Phase 5 complete - Investigation System with full E2E coverage
+**Current focus:** Phase 6 in progress - Town Generation (sin chains, NPCs, procedural towns)
 
 ## Current Position
 
-Phase: 5 of 7 (Investigation)
-Plan: 7 of 7 in current phase
-Status: Phase complete
-Last activity: 2026-01-23 - Completed 05-07-PLAN.md (Investigation E2E Tests)
+Phase: 6 of 7 (Town Generation)
+Plan: 1 of 6 in current phase
+Status: In progress
+Last activity: 2026-01-23 - Completed 06-01-PLAN.md (Sin Chain Generator)
 
-Progress: [█████████████████░░░] 87%
+Progress: [██████████████████░░] 90%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 26
-- Average duration: 5.4 min
-- Total execution time: 2.78 hours
+- Total plans completed: 27
+- Average duration: 5.5 min
+- Total execution time: 2.93 hours
 
 **By Phase:**
 
@@ -34,9 +34,11 @@ Progress: [█████████████████░░░] 87%
 | 04-character-system | 5 | 29 min | 5.8 min |
 | 05-investigation | 7 | 71 min | 10.1 min |
 
+| 06-town-generation | 1 | 9 min | 9 min |
+
 **Recent Trend:**
-- Last 5 plans: 05-04 (4min), 05-05 (2min), 05-06 (4min), 05-07 (50min)
-- Trend: E2E test plan took longer due to fixing hooks violation, SVG interaction issues, and cycle overlay conflicts
+- Last 5 plans: 05-05 (2min), 05-06 (4min), 05-07 (50min), 06-01 (9min)
+- Trend: Back to normal cadence after E2E complexity spike
 
 *Updated after each plan completion*
 
@@ -140,6 +142,10 @@ Recent decisions affecting current work:
 - [05-07]: Route interception (page.route) for E2E dialogue mocking over component-level mocks
 - [05-07]: dispatchEvent('click') for SVG g elements in Playwright (click({force:true}) unreliable with overlays)
 - [05-07]: Custom window event (dialogue-conflict) bridges DialogueView context to GameView conflict state
+- [06-01]: Mulberry32 PRNG algorithm (fast, good distribution, zero dependencies)
+- [06-01]: Slot-based templates with {town}/{authority}/{victim}/{sinner} placeholders
+- [06-01]: Chain always starts from pride, takes first N levels from SIN_CHAIN_ORDER
+- [06-01]: Town names derived from seed via RNG pick from curated prefix/suffix lists
 
 ### Pending Todos
 
@@ -152,7 +158,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-23
-Stopped at: Completed 05-07-PLAN.md (Investigation E2E Tests) - Phase 5 complete (all 7 plans)
+Stopped at: Completed 06-01-PLAN.md (Sin Chain Generator) - Phase 6 plan 1 of 6
 Resume file: None
 
 ## Phase 2 Completion Notes
