@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** The player must be able to arrive in a procedurally generated town, discover its moral rot through investigation and NPC interaction, and resolve conflicts using the escalating stakes system — experiencing the weight of judgment that defines Dogs in the Vineyard.
-**Current focus:** Phase 5 - Investigation System (Fatigue/Conflict/Resolution complete)
+**Current focus:** Phase 5 - Investigation System (Integration complete, E2E tests next)
 
 ## Current Position
 
 Phase: 5 of 7 (Investigation)
-Plan: 5 of 6 in current phase
+Plan: 6 of 7 in current phase
 Status: In progress
-Last activity: 2026-01-23 — Completed 05-05-PLAN.md (Fatigue Clock, Conflict Trigger & Resolution)
+Last activity: 2026-01-23 — Completed 05-06-PLAN.md (Investigation Integration)
 
-Progress: [████████████████░░░░] 80%
+Progress: [████████████████░░░░] 83%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 24
-- Average duration: 4.7 min
-- Total execution time: 1.88 hours
+- Total plans completed: 25
+- Average duration: 4.6 min
+- Total execution time: 1.95 hours
 
 **By Phase:**
 
@@ -32,11 +32,11 @@ Progress: [████████████████░░░░] 80%
 | 02.1-e2e-testing | 2 | 8 min | 4 min |
 | 03-conflict-system | 5 | 35 min | 7 min |
 | 04-character-system | 5 | 29 min | 5.8 min |
-| 05-investigation | 5 | 17 min | 3.4 min |
+| 05-investigation | 6 | 21 min | 3.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-02 (6min), 05-03 (3min), 05-04 (4min), 05-05 (2min)
-- Trend: Investigation mechanics reuse established reducer+component patterns
+- Last 5 plans: 05-03 (3min), 05-04 (4min), 05-05 (2min), 05-06 (4min)
+- Trend: Integration plan fast due to well-defined component interfaces from prior plans
 
 *Updated after each plan completion*
 
@@ -133,6 +133,10 @@ Recent decisions affecting current work:
 - [05-05]: ConflictTrigger uses forceTriggered prop for dev-mode deterministic testing
 - [05-05]: CONFRONT_SIN marks sin resolved directly (DitV: confrontation IS resolution)
 - [05-05]: ResolutionSummary renders only when terminal state reached (townResolved or sinEscalatedToMurder)
+- [05-06]: Test town uses existing location IDs plus new homestead/well locations
+- [05-06]: CycleView dispatches END_CYCLE internally; GameView watches phase transition to REST
+- [05-06]: ResolutionSummary self-gates rendering (unconditional mount, internal condition check)
+- [05-06]: Conflict completion auto-confronts discovered linked sins for streamlined gameplay
 
 ### Pending Todos
 
@@ -145,7 +149,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-23
-Stopped at: Completed 05-05-PLAN.md (Fatigue Clock, Conflict Trigger & Resolution) - Phase 5 plans 1-5 of 6 complete
+Stopped at: Completed 05-06-PLAN.md (Investigation Integration) - Phase 5 plans 1-6 of 7 complete
 Resume file: None
 
 ## Phase 2 Completion Notes
