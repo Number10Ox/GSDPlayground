@@ -9,40 +9,7 @@ import {
 import type { NPC, NPCMemory, NPCMemoryAction, ConflictEvent } from '@/types/npc';
 import type { EscalationLevel } from '@/types/conflict';
 import type { LocationId } from '@/types/game';
-
-/**
- * Sample NPCs matching existing locations.
- */
-const SAMPLE_NPCS: NPC[] = [
-  {
-    id: 'sheriff-jacob',
-    name: 'Sheriff Jacob',
-    locationId: 'sheriffs-office',
-    description: 'A weathered man with hard eyes who keeps the peace.',
-    role: 'Sheriff',
-  },
-  {
-    id: 'ezekiel',
-    name: 'Ezekiel',
-    locationId: 'general-store',
-    description: 'The storekeeper, nervous and secretive.',
-    role: 'Storekeeper',
-  },
-  {
-    id: 'sister-abigail',
-    name: 'Sister Abigail',
-    locationId: 'church',
-    description: 'A devout woman with a troubled conscience.',
-    role: 'Church Elder',
-  },
-  {
-    id: 'brother-hiram',
-    name: 'Brother Hiram',
-    locationId: 'cemetery',
-    description: 'The gravedigger, who knows where bodies are buried.',
-    role: 'Gravedigger',
-  },
-];
+import { TEST_NPCS } from '@/data/testTown';
 
 /**
  * Relationship level penalties based on escalation.
@@ -63,7 +30,7 @@ interface NPCMemoryState {
 }
 
 const initialNPCState: NPCMemoryState = {
-  npcs: SAMPLE_NPCS,
+  npcs: TEST_NPCS,
   memories: [], // Empty initially - NPCs have no memory of the player
 };
 

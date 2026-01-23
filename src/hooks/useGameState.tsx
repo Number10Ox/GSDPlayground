@@ -1,15 +1,10 @@
 import { createContext, useContext, useReducer, type ReactNode, type Dispatch } from 'react';
 import type { GameState, GameAction, Location, Clock, AvailableAction } from '@/types/game';
 import { generateDicePool } from '@/utils/dice';
+import { TEST_LOCATIONS } from '@/data/testTown';
 
-// Sample town data for Phase 1 (will be procedurally generated later)
-const SAMPLE_LOCATIONS: Location[] = [
-  { id: 'town-square', name: 'Town Square', description: 'The heart of Bridal Falls', x: 500, y: 400, connections: ['church', 'general-store', 'sheriffs-office'] },
-  { id: 'church', name: 'The Chapel', description: 'A modest house of worship', x: 500, y: 200, connections: ['town-square', 'cemetery'] },
-  { id: 'general-store', name: 'General Store', description: 'Ezekiel runs the store', x: 300, y: 400, connections: ['town-square'] },
-  { id: 'sheriffs-office', name: "Sheriff's Office", description: 'Law in Bridal Falls', x: 700, y: 400, connections: ['town-square'] },
-  { id: 'cemetery', name: 'Cemetery', description: 'The town buries its dead here', x: 500, y: 50, connections: ['church'] },
-];
+// Use test town locations (will be procedurally generated later)
+const SAMPLE_LOCATIONS: Location[] = TEST_LOCATIONS;
 
 // Sample clocks for testing the cycle system
 const SAMPLE_CLOCKS: Clock[] = [
