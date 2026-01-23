@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** The player must be able to arrive in a procedurally generated town, discover its moral rot through investigation and NPC interaction, and resolve conflicts using the escalating stakes system — experiencing the weight of judgment that defines Dogs in the Vineyard.
-**Current focus:** Phase 5 - Investigation System (Mental map visualization complete)
+**Current focus:** Phase 5 - Investigation System (Dialogue UI complete)
 
 ## Current Position
 
 Phase: 5 of 7 (Investigation)
 Plan: 4 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-22 — Completed 05-04-PLAN.md (Mental Map Visualization)
+Last activity: 2026-01-23 — Completed 05-03-PLAN.md (Dialogue UI Components)
 
 Progress: [███████████████░░░░░] 77%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 22
-- Average duration: 4.9 min
-- Total execution time: 1.8 hours
+- Total plans completed: 23
+- Average duration: 4.8 min
+- Total execution time: 1.85 hours
 
 **By Phase:**
 
@@ -32,11 +32,11 @@ Progress: [███████████████░░░░░] 77%
 | 02.1-e2e-testing | 2 | 8 min | 4 min |
 | 03-conflict-system | 5 | 35 min | 7 min |
 | 04-character-system | 5 | 29 min | 5.8 min |
-| 05-investigation | 3 | 12 min | 4 min |
+| 05-investigation | 4 | 15 min | 3.75 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-05 (17min), 05-01 (2min), 05-02 (6min), 05-04 (4min)
-- Trend: React Flow visualization straightforward - manual layout avoids complexity
+- Last 5 plans: 05-01 (2min), 05-02 (6min), 05-03 (3min), 05-04 (4min)
+- Trend: Dialogue components leverage existing patterns (FSM + phase guards + framer-motion)
 
 *Updated after each plan completion*
 
@@ -119,6 +119,12 @@ Recent decisions affecting current work:
 - [05-02]: Template-based inner voice (not LLM-generated) for speed and determinism
 - [05-02]: 30% trigger probability for inner voice interjections
 - [05-02]: Mock streaming handler for dev mode (no API key required)
+- [05-03]: sendMessage handles full exchange flow (SELECT_TOPIC + SELECT_APPROACH + stream + discoveries)
+- [05-03]: Discovery markers format: [DISCOVERY: factId|sinId|content] parsed client-side after stream complete
+- [05-03]: TypewriterText uses framer-motion cursor blink only (not per-character animation)
+- [05-03]: InnerVoice auto-hides after 4 seconds
+- [05-03]: CLOSE_DISCOVERY ends conversation after 3+ exchanges
+- [05-03]: Prose-style narrative display (not chat bubbles) matching DitV literary tone
 - [05-04]: Manual layout positioning for mental map nodes (avoids dagre/force layout for MVP)
 - [05-04]: getStraightPath for edges (cleaner for vertical chain + horizontal NPC links)
 - [05-04]: Severity color gradient: amber->orange->red->dark-red+glow for sin escalation
@@ -134,8 +140,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-22
-Stopped at: Completed 05-04-PLAN.md (Mental Map Visualization) - Phase 5 plan 4 of 6 complete
+Last session: 2026-01-23
+Stopped at: Completed 05-03-PLAN.md (Dialogue UI Components) - Phase 5 plans 1-4 of 6 complete
 Resume file: None
 
 ## Phase 2 Completion Notes
