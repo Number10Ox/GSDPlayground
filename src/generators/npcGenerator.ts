@@ -469,6 +469,129 @@ function ensureConnectivity(
 }
 
 /**
+ * Ensures every sin in the chain has at least one fact with:
+ * 1. sinId matching and minTrustLevel === 0 (for independent discoverability / Check 3)
+ * 2. sinId matching and minTrustLevel <= 30 (for starter fact / Check 1)
+ *
+ * If a sin is missing coverage, patches existing NPC facts:
+ * - For trust-0 coverage: reassigns a trust-0 fact on a linked NPC to point to this sin
+ * - For starter coverage: downgrades the lowest-trust fact for that sin to trust level 20
+ *
+ * Processes sins in chain order so that earlier (more severe) sins get priority
+ * when stealing trust-0 facts from NPCs.
+ */
+function ensureFactCoverage(npcs: NPC[], sinChain: SinNode[]): void {
+  for (const sin of sinChain) {
+    const linkedNpcIds = sin.linkedNpcs;
+
+    // Check 3 fix: ensure at least one trust-0 fact has this sin's ID
+    const hasTrustZeroFact = npcs.some(npc =>
+      npc.knowledge?.facts.some(f => f.sinId === sin.id && f.minTrustLevel === 0)
+    );
+
+    if (!hasTrustZeroFact) {
+      // Strategy: find a linked NPC's trust-0 fact and reassign its sinId.
+      // Prefer NPCs whose trust-0 fact points to a sin that already has other trust-0 coverage.
+      let patched = false;
+
+      // First: try linked NPCs
+      for (const npcId of linkedNpcIds) {
+        const npc = npcs.find(n => n.id === npcId);
+        if (!npc?.knowledge) continue;
+
+        const surfaceFact = npc.knowledge.facts.find(f => f.minTrustLevel === 0);
+        if (surfaceFact) {
+          // Check if the sin this fact currently points to has other trust-0 coverage
+          const currentSinId = surfaceFact.sinId;
+          const currentSinHasOtherCoverage = !currentSinId || npcs.some(n =>
+            n.knowledge?.facts.some(f =>
+              f !== surfaceFact && f.sinId === currentSinId && f.minTrustLevel === 0
+            )
+          );
+
+          if (currentSinHasOtherCoverage) {
+            surfaceFact.sinId = sin.id;
+            patched = true;
+            break;
+          }
+        }
+      }
+
+      // Second: try any NPC (prefer those whose current sin has other coverage)
+      if (!patched) {
+        for (const npc of npcs) {
+          if (!npc.knowledge) continue;
+          const surfaceFact = npc.knowledge.facts.find(f => f.minTrustLevel === 0);
+          if (surfaceFact) {
+            const currentSinId = surfaceFact.sinId;
+            const currentSinHasOtherCoverage = !currentSinId || npcs.some(n =>
+              n.knowledge?.facts.some(f =>
+                f !== surfaceFact && f.sinId === currentSinId && f.minTrustLevel === 0
+              )
+            );
+
+            if (currentSinHasOtherCoverage) {
+              surfaceFact.sinId = sin.id;
+              patched = true;
+              break;
+            }
+          }
+        }
+      }
+
+      // Last resort: force-reassign a linked NPC's trust-0 fact regardless of other coverage
+      if (!patched) {
+        for (const npcId of linkedNpcIds) {
+          const npc = npcs.find(n => n.id === npcId);
+          if (!npc?.knowledge) continue;
+          const surfaceFact = npc.knowledge.facts.find(f => f.minTrustLevel === 0);
+          if (surfaceFact) {
+            surfaceFact.sinId = sin.id;
+            patched = true;
+            break;
+          }
+        }
+      }
+
+      // Absolute last resort: any NPC's trust-0 fact
+      if (!patched && npcs.length > 0) {
+        for (const npc of npcs) {
+          if (!npc.knowledge) continue;
+          const surfaceFact = npc.knowledge.facts.find(f => f.minTrustLevel === 0);
+          if (surfaceFact) {
+            surfaceFact.sinId = sin.id;
+            break;
+          }
+        }
+      }
+    }
+
+    // Check 1 fix: ensure at least one fact with sinId and minTrustLevel <= 30
+    const hasStarterFact = npcs.some(npc =>
+      npc.knowledge?.facts.some(f => f.sinId === sin.id && f.minTrustLevel <= 30)
+    );
+
+    if (!hasStarterFact) {
+      // Find the lowest-trust fact for this sin and downgrade it to trust 20
+      let lowestTrustFact: KnowledgeFact | null = null;
+      for (const npc of npcs) {
+        if (!npc.knowledge) continue;
+        for (const fact of npc.knowledge.facts) {
+          if (fact.sinId === sin.id) {
+            if (!lowestTrustFact || fact.minTrustLevel < lowestTrustFact.minTrustLevel) {
+              lowestTrustFact = fact;
+            }
+          }
+        }
+      }
+      if (lowestTrustFact && lowestTrustFact.minTrustLevel > 30) {
+        lowestTrustFact.minTrustLevel = 20;
+      }
+    }
+  }
+}
+
+/**
  * Generates a complete NPC cast for a town from its sin chain.
  * Produces 5-7 interconnected NPCs with knowledge, thresholds, and relationships.
  *
@@ -556,6 +679,9 @@ export function generateNPCs(
       }
     }
   }
+
+  // Ensure every sin has discoverable facts (trust-0 and trust <= 30)
+  ensureFactCoverage(npcs, updatedSinChain);
 
   // Build relationships
   const relationships = buildRelationships(npcs, updatedSinChain, assignments);
