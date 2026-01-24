@@ -24,20 +24,13 @@ export async function startConversation(page: Page, npcId: string) {
  * Select a topic chip in the dialogue view.
  * The topic chip testid follows the pattern: topic-chip-{npcId}-{label}
  * (generated from Topic.id which is `${npcId}-${label}`).
- * Waits for approach chips to appear after selection.
+ * Selecting a topic now directly triggers streaming (no approach selection).
  */
 export async function selectTopic(page: Page, topicLabel: string, npcId: string = 'sister-martha') {
   const topicChipId = `${npcId}-${topicLabel}`;
   await page.getByTestId(`topic-chip-${topicChipId}`).click();
-  await expect(page.getByTestId('approach-chips')).toBeVisible({ timeout: 3000 });
-}
-
-/**
- * Select an approach chip (acuity, heart, body, will).
- * Waits for the response streaming to begin (dialogue text appears).
- */
-export async function selectApproach(page: Page, approach: string) {
-  await page.getByTestId(`approach-chip-${approach}`).click();
+  // Topic selection now directly starts streaming — wait briefly for it to begin
+  await page.waitForTimeout(500);
 }
 
 /**
@@ -261,13 +254,20 @@ export async function verifySinNodeDiscovered(page: Page, level: string) {
 }
 
 /**
- * Trigger a conflict by selecting an aggressive approach on a resistant NPC.
- * Uses the body approach on sheriff-jacob's "the-town" topic.
+ * Trigger a conflict by clicking "Press the matter" after NPC deflects.
+ * Requires a trust-gated topic to trigger deflection, then picks approach.
  */
 export async function triggerConflict(page: Page) {
   await startConversation(page, 'sheriff-jacob');
   await selectTopic(page, 'the-town', 'sheriff-jacob');
-  await selectApproach(page, 'body');
+  await waitForResponse(page);
+  // If "Press the matter" appears, click it
+  const pressButton = page.getByTestId('press-the-matter');
+  if (await pressButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await pressButton.click();
+    // Select an approach from the overlay
+    await page.getByTestId('select-approach-body').click();
+  }
 }
 
 /**

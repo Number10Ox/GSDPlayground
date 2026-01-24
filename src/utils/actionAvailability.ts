@@ -11,7 +11,7 @@ export interface ActionContext {
   descentClock: DescentClock;
   investigationState: InvestigationState;
   npcTrust: Record<string, number>; // npcId -> trust level
-  completedActionIds: string[];
+  completedActions: { id: string; name: string; result: string }[];
 }
 
 /**
@@ -80,7 +80,7 @@ export function getAvailableActions(
   // Timed actions at this location (filter out completed one-shots)
   const timed = (town.timedActions ?? [])
     .filter(a => a.locationId === locationId)
-    .filter(a => !a.oneShot || !context.completedActionIds.includes(a.id))
+    .filter(a => !a.oneShot || !context.completedActions.some(c => c.id === a.id))
     .map(action => {
       const locked = !isUnlocked(action.unlockCondition, context);
       return {

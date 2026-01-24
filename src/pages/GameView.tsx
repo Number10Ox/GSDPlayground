@@ -58,8 +58,12 @@ export function GameView() {
   const [showDialogue, setShowDialogue] = useState(false);
   const [dialogueNpcId, setDialogueNpcId] = useState<string | null>(null);
 
-  // Track last dialogue approach for conflict dice pool
-  const [lastApproach, setLastApproach] = useState<ApproachType>('will');
+  // Pending conflict setup — waiting for player to pick approach
+  const [pendingConflictSetup, setPendingConflictSetup] = useState<{
+    npcId: string;
+    stakes: string;
+    definition?: ConflictDefinition;
+  } | null>(null);
 
   // Town arrival sequence state — deferred until character exists
   const [showArrival, setShowArrival] = useState(false);
@@ -156,11 +160,21 @@ export function GameView() {
     // Generate topics for this NPC
     const topics = resolveTopicsForNPC(npcId, town.topicRules, discoveredSinIds, currentLocation, foundClueIds);
 
+    // Enrich topics with explored/trustGated indicators
+    const npc = npcs.find(n => n.id === npcId);
+    const npcTrust = npcMemories.find(m => m.npcId === npcId)?.relationshipLevel ?? 0;
+    const enrichedTopics = topics.map(topic => {
+      const hasTrustGatedFacts = npc?.knowledge?.facts?.some(
+        f => f.tags?.includes(topic.id) && f.minTrustLevel > npcTrust
+      ) ?? false;
+      return { ...topic, trustGated: hasTrustGatedFacts };
+    });
+
     // Open dialogue
     setDialogueNpcId(npcId);
     setShowDialogue(true);
-    dialogueDispatch({ type: 'START_CONVERSATION', npcId, topics });
-  }, [investigationState, currentLocation, dialogueDispatch, town.topicRules]);
+    dialogueDispatch({ type: 'START_CONVERSATION', npcId, topics: enrichedTopics });
+  }, [investigationState, currentLocation, dialogueDispatch, town.topicRules, npcs, npcMemories]);
 
   // Handle dialogue close
   const handleDialogueClose = useCallback(() => {
@@ -168,80 +182,37 @@ export function GameView() {
     setDialogueNpcId(null);
   }, []);
 
-  // Handle conflict start from dialogue
-  const handleConflictFromDialogue = useCallback((npcId: string, stakes: string) => {
-    // Close dialogue
-    handleDialogueClose();
-
-    // Build dice pools from character stats and NPC role
-    const approach = lastApproach;
-    const npc = town.npcs.find(n => n.id === npcId);
-
-    let playerDice: Die[];
-    if (character) {
-      playerDice = buildPlayerDicePool(character, approach);
-    } else {
-      // Fallback if no character created: basic pool
-      playerDice = [
-        { id: 'player-0', type: 'd6', value: Math.floor(Math.random() * 6) + 1, assignedTo: null },
-        { id: 'player-1', type: 'd6', value: Math.floor(Math.random() * 6) + 1, assignedTo: null },
-        { id: 'player-2', type: 'd6', value: Math.floor(Math.random() * 6) + 1, assignedTo: null },
-        { id: 'player-3', type: 'd4', value: Math.floor(Math.random() * 4) + 1, assignedTo: null },
-      ];
-    }
-
-    const npcDice: Die[] = npc
-      ? buildNPCDicePool(npc, approach)
-      : [
-          { id: 'npc-0', type: 'd6', value: Math.floor(Math.random() * 6) + 1, assignedTo: null },
-          { id: 'npc-1', type: 'd6', value: Math.floor(Math.random() * 6) + 1, assignedTo: null },
-          { id: 'npc-2', type: 'd4', value: Math.floor(Math.random() * 4) + 1, assignedTo: null },
-        ];
-
-    const initialState = conflictReducer(initialConflictState, {
-      type: 'START_CONFLICT',
-      npcId,
-      stakes,
-      playerDice,
-      npcDice,
-    });
-
-    dispatch({ type: 'START_GAME_CONFLICT', npcId, stakes });
-    setConflictState(initialState);
-  }, [dispatch, handleDialogueClose, lastApproach, character, town.npcs]);
-
-  // Start a test conflict (dev mode)
+  // Start a test conflict (dev mode) — directly shows approach selection
   const handleStartTestConflict = useCallback(() => {
-    handleConflictFromDialogue('sheriff-jacob', 'who controls the law in this town');
-  }, [handleConflictFromDialogue]);
+    setPendingConflictSetup({ npcId: 'sheriff-jacob', stakes: 'who controls the law in this town' });
+  }, []);
 
-  // Listen for dialogue-conflict events (from ConflictTrigger in DialogueView)
+  // Listen for dialogue-conflict events (from "Press the Matter" in DialogueView)
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       if (detail?.npcId && detail?.stakes) {
-        // Capture the approach that triggered the conflict
-        if (detail.approach) {
-          setLastApproach(detail.approach);
-        }
         setShowDialogue(false);
         setDialogueNpcId(null);
-        handleConflictFromDialogue(detail.npcId, detail.stakes);
+        // Show approach selection overlay before starting conflict
+        setPendingConflictSetup({ npcId: detail.npcId, stakes: detail.stakes });
       }
     };
     window.addEventListener('dialogue-conflict', handler);
     return () => window.removeEventListener('dialogue-conflict', handler);
-  }, [handleConflictFromDialogue]);
+  }, []);
 
   // Handle conflict completion — process descent costs and consequences
   const handleConflictComplete = useCallback((info: ConflictOutcomeInfo) => {
-    // Check if the conflict NPC is linked to a sin - if so, confront it
+    // Check if the conflict NPC is linked to a sin - only confront on player victory
     if (activeConflict) {
-      const linkedSin = investigationState.sinProgression.find(
-        sin => sin.linkedNpcs.includes(activeConflict.npcId) && sin.discovered && !sin.resolved
-      );
-      if (linkedSin) {
-        investigationDispatch({ type: 'CONFRONT_SIN', sinId: linkedSin.id });
+      if (info.outcome !== 'PLAYER_GAVE') {
+        const linkedSin = investigationState.sinProgression.find(
+          sin => sin.linkedNpcs.includes(activeConflict.npcId) && sin.discovered && !sin.resolved
+        );
+        if (linkedSin) {
+          investigationDispatch({ type: 'CONFRONT_SIN', sinId: linkedSin.id });
+        }
       }
 
       // Find the conflict definition (if initiated from ActionMenu)
@@ -307,9 +278,9 @@ export function GameView() {
       descentClock: state.descentClock,
       investigationState,
       npcTrust,
-      completedActionIds: state.completedActionIds,
+      completedActions: state.completedActions,
     };
-  }, [state.descentClock, state.completedActionIds, investigationState, npcMemories]);
+  }, [state.descentClock, state.completedActions, investigationState, npcMemories]);
 
   // Handle timed action from ActionMenu
   const handleTimedAction = useCallback((action: TimedAction) => {
@@ -334,19 +305,46 @@ export function GameView() {
     // Advance descent clock (with overflow/threshold effects)
     advanceDescentWithEffects(action.descentCost);
 
-    // Mark one-shot actions as complete
+    // Mark one-shot actions as complete with result summary
     if (action.oneShot) {
-      dispatch({ type: 'MARK_ACTION_COMPLETE', actionId: action.id });
+      const resultParts: string[] = [];
+      for (const effect of action.effects) {
+        switch (effect.type) {
+          case 'RESTORE_CONDITION': resultParts.push(`Restored condition (+${effect.amount})`); break;
+          case 'DISCOVER_CLUE': resultParts.push(`Discovered clue`); break;
+          case 'TRUST_CHANGE': resultParts.push(`Trust ${effect.delta > 0 ? '+' : ''}${effect.delta}`); break;
+          case 'NARRATIVE': resultParts.push(effect.text ?? 'Observed'); break;
+        }
+      }
+      dispatch({
+        type: 'MARK_ACTION_COMPLETE',
+        actionId: action.id,
+        name: action.name,
+        result: resultParts.join('; ') || 'Completed',
+      });
     }
   }, [dispatch, investigationDispatch, npcMemoryDispatch, advanceDescentWithEffects]);
 
   // Handle conflict from ActionMenu
   const handleConflictFromMenu = useCallback((definition: ConflictDefinition) => {
-    const npc = town.npcs.find(n => n.id === definition.npcId);
+    // Show approach selection overlay before starting conflict
+    setPendingConflictSetup({
+      npcId: definition.npcId,
+      stakes: definition.stakes,
+      definition,
+    });
+  }, []);
+
+  // Handle approach selection from pending conflict overlay
+  const handleApproachSelected = useCallback((approach: ApproachType) => {
+    if (!pendingConflictSetup) return;
+
+    const { npcId, stakes, definition } = pendingConflictSetup;
+    const npc = town.npcs.find(n => n.id === npcId);
 
     let playerDice: Die[];
     if (character) {
-      playerDice = buildPlayerDicePool(character, lastApproach);
+      playerDice = buildPlayerDicePool(character, approach);
     } else {
       playerDice = [
         { id: 'player-0', type: 'd6', value: Math.floor(Math.random() * 6) + 1, assignedTo: null },
@@ -357,7 +355,7 @@ export function GameView() {
     }
 
     const npcDice: Die[] = npc
-      ? buildNPCDicePool(npc, lastApproach)
+      ? buildNPCDicePool(npc)
       : [
           { id: 'npc-0', type: 'd6', value: Math.floor(Math.random() * 6) + 1, assignedTo: null },
           { id: 'npc-1', type: 'd6', value: Math.floor(Math.random() * 6) + 1, assignedTo: null },
@@ -366,22 +364,23 @@ export function GameView() {
 
     const initialState = conflictReducer(initialConflictState, {
       type: 'START_CONFLICT',
-      npcId: definition.npcId,
-      stakes: definition.stakes,
+      npcId,
+      stakes,
       playerDice,
       npcDice,
-      startingEscalation: definition.minEscalation,
-      maxEscalation: definition.maxEscalation,
+      startingEscalation: definition?.minEscalation,
+      maxEscalation: definition?.maxEscalation,
     });
 
     dispatch({
       type: 'START_GAME_CONFLICT',
-      npcId: definition.npcId,
-      stakes: definition.stakes,
-      conflictDefinitionId: definition.id,
+      npcId,
+      stakes,
+      conflictDefinitionId: definition?.id,
     });
     setConflictState(initialState);
-  }, [dispatch, character, lastApproach, town.npcs]);
+    setPendingConflictSetup(null);
+  }, [pendingConflictSetup, dispatch, character, town.npcs]);
 
   // Get current location info
   const currentLocationInfo = useMemo(() => {
@@ -510,6 +509,42 @@ export function GameView() {
           />
         )}
 
+        {/* Journal — completed actions & discovered sins */}
+        {(state.completedActions.length > 0 || investigationState.discoveries.length > 0) && (
+          <div className="bg-surface rounded-lg p-4" data-testid="journal-section">
+            <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3">Journal</h3>
+            {state.completedActions.length > 0 && (
+              <div className="mb-3">
+                <h4 className="text-xs text-gray-500 uppercase mb-1">Recent Actions</h4>
+                <ul className="space-y-1">
+                  {state.completedActions.slice(-3).map(a => (
+                    <li key={a.id} className="text-xs text-gray-300">
+                      <span className="font-medium">{a.name}</span>
+                      <span className="text-gray-500 ml-1">— {a.result}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {investigationState.sinProgression.filter(s => s.discovered).length > 0 && (
+              <div>
+                <h4 className="text-xs text-gray-500 uppercase mb-1">Sins Uncovered</h4>
+                <ul className="space-y-1">
+                  {investigationState.sinProgression.filter(s => s.discovered).map(sin => (
+                    <li key={sin.id} className="text-xs flex items-center gap-1">
+                      <span className={sin.resolved ? 'text-green-400' : 'text-amber-400'}>
+                        {sin.resolved ? '\u2713' : '\u25CF'}
+                      </span>
+                      <span className="text-gray-300 capitalize">{sin.level.replace('-', ' ')}</span>
+                      {sin.resolved && <span className="text-green-600 text-[10px]">(resolved)</span>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Dev mode: Test helpers */}
         {import.meta.env.DEV && !activeConflict && (
           <div className="space-y-2">
@@ -572,6 +607,42 @@ export function GameView() {
       {/* Dialogue view (overlay) */}
       {showDialogue && dialogueNpcId && (
         <DialogueView />
+      )}
+
+      {/* Approach selection overlay (before conflict) */}
+      {pendingConflictSetup && character && (
+        <div
+          data-testid="approach-selection-overlay"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+        >
+          <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md w-full shadow-2xl">
+            <h3 className="text-gray-100 font-semibold text-lg mb-2">How do you press them?</h3>
+            <p className="text-gray-400 text-sm mb-4">{pendingConflictSetup.stakes}</p>
+            <div className="grid grid-cols-2 gap-3">
+              {(['acuity', 'heart', 'body', 'will'] as ApproachType[]).map(approach => {
+                const stat = character.stats[approach];
+                const diceDesc = stat.dice.map(d => d.type).join(', ');
+                return (
+                  <button
+                    key={approach}
+                    data-testid={`select-approach-${approach}`}
+                    onClick={() => handleApproachSelected(approach)}
+                    className="flex flex-col items-center gap-1 p-3 rounded-lg border border-gray-600 hover:border-amber-400 hover:bg-amber-900/20 transition-colors cursor-pointer"
+                  >
+                    <span className="text-gray-200 font-medium capitalize">{approach}</span>
+                    <span className="text-gray-400 text-xs">{diceDesc}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => setPendingConflictSetup(null)}
+              className="mt-4 w-full text-center text-gray-500 hover:text-gray-300 text-sm py-1 cursor-pointer"
+            >
+              Back away
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Mental Map (overlay) */}
@@ -655,11 +726,7 @@ export function GameView() {
       {/* Conflict view (overlay) */}
       {conflictState && conflictState.phase !== 'INACTIVE' && (() => {
         const conflictNpc = town.npcs.find(n => n.id === activeConflict?.npcId);
-        // Derive aggression from average resistChance across approaches
-        const thresholds = conflictNpc?.conflictThresholds ?? [];
-        const avgResist = thresholds.length > 0
-          ? thresholds.reduce((sum, t) => sum + t.resistChance, 0) / thresholds.length
-          : 0.4;
+        const avgResist = conflictNpc?.conflictResistance ?? 0.4;
         return (
           <ConflictView
             initialState={conflictState}

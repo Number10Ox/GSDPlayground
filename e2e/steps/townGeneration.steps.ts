@@ -108,23 +108,17 @@ export async function verifyTopicsAvailable(page: Page) {
 
 /**
  * Attempt to make a discovery in a generated town.
- * Selects a topic and approach, waits for the streamed response,
- * and verifies the discovery summary appears and the mental map updates.
+ * Selects a topic, waits for the streamed response,
+ * and verifies the discovery summary appears.
  *
  * Requires page.route() to be set up beforehand to return
  * responses with [DISCOVERY: ...] markers.
  */
 export async function attemptDiscovery(page: Page) {
-  // Select first available topic
+  // Select first available topic — triggers sendMessage directly
   const topicChip = page.locator('[data-testid^="topic-chip-"]').first();
   await expect(topicChip).toBeVisible({ timeout: 3000 });
   await topicChip.click();
-
-  // Wait for approach chips
-  await expect(page.getByTestId('approach-chips')).toBeVisible({ timeout: 3000 });
-
-  // Select acuity approach
-  await page.getByTestId('approach-chip-acuity').click();
 
   // Wait for response streaming to complete (RESPONSE_COMPLETE shows continue button)
   const continueBtn = page.getByTestId('dialogue-continue');

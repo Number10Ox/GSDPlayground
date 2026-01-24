@@ -13,17 +13,15 @@ Feature: Investigation System
     And topic chips should be visible
     And the fatigue clock should show 0/6
 
-  Scenario: Player selects topic and approach
+  Scenario: Player selects topic and gets response
     Given the player is in conversation with Sister Martha
     When the player selects the "the-town" topic
-    Then approach chips should be visible
-    When the player selects the "acuity" approach
-    Then the dialogue text should appear
+    Then the dialogue response should stream
     And the fatigue clock should show 1/6
 
   Scenario: Player discovers a sin connection
     Given the player is in conversation with Sister Martha
-    When the player completes a conversation about "the-town" with "acuity"
+    When the player selects the "the-town" topic
     Then the discovery summary should appear
     And the discovery should mention "Steward"
 
@@ -45,8 +43,9 @@ Feature: Investigation System
     Then the sin progression should advance
     And a new sin node should appear in the chain
 
-  Scenario: Conflict triggers from aggressive approach
+  Scenario: Pressing the matter triggers conflict
     Given the player is in conversation with Sheriff Jacob
-    When the player selects a "body" approach on a confrontational topic
-    Then a conflict should trigger
-    And the conflict view should appear
+    When the player selects a trust-gated topic and the NPC deflects
+    And the player clicks "Press the matter"
+    And the player selects an approach
+    Then the conflict view should appear

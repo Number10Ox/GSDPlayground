@@ -48,8 +48,8 @@ export interface GameState {
     conflictDefinitionId?: string;
   } | null;
 
-  // Completed one-shot timed actions
-  completedActionIds: string[];
+  // Completed one-shot timed actions (with result info for journal)
+  completedActions: { id: string; name: string; result: string }[];
 }
 
 export type GameAction =
@@ -67,7 +67,7 @@ export type GameAction =
   // Condition
   | { type: 'UPDATE_CONDITION'; delta: number }
   // Actions
-  | { type: 'MARK_ACTION_COMPLETE'; actionId: string }
+  | { type: 'MARK_ACTION_COMPLETE'; actionId: string; name: string; result: string }
   // Conflict
   | { type: 'APPLY_FALLOUT'; severity: FalloutSeverity }
   | { type: 'START_GAME_CONFLICT'; npcId: string; stakes: string; conflictDefinitionId?: string }

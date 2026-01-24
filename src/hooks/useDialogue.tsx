@@ -7,7 +7,7 @@ import {
   type Dispatch,
 } from 'react';
 import { dialogueReducer, initialDialogueState } from '@/reducers/dialogueReducer';
-import type { DialogueState, DialogueAction, Topic, ApproachType, ConversationTurn } from '@/types/dialogue';
+import type { DialogueState, DialogueAction, Topic, ConversationTurn } from '@/types/dialogue';
 import type { Discovery } from '@/types/investigation';
 import type { StatName } from '@/types/character';
 import { useInvestigation } from '@/hooks/useInvestigation';
@@ -20,7 +20,7 @@ import { getInnerVoiceInterjection } from '@/utils/innerVoiceTemplates';
 interface DialogueContextValue {
   state: DialogueState;
   dispatch: Dispatch<DialogueAction>;
-  sendMessage: (topic: Topic, approach: ApproachType) => Promise<void>;
+  sendMessage: (topic: Topic) => Promise<void>;
   endConversation: () => void;
 }
 
@@ -61,6 +61,16 @@ function parseDiscoveryMarkers(
 }
 
 /**
+ * parseDeflectionMarker - Checks for [DEFLECTED] marker in response text.
+ * Returns the cleaned text and whether deflection occurred.
+ */
+function parseDeflectionMarker(text: string): { cleanText: string; deflected: boolean } {
+  const deflected = text.includes('[DEFLECTED]');
+  const cleanText = text.replace(/\[DEFLECTED\]/g, '').trim();
+  return { cleanText, deflected };
+}
+
+/**
  * getHighestStat - Returns the stat name with the most dice.
  */
 function getHighestStat(stats: Record<StatName, { dice: { id: string }[] }>): StatName {
@@ -83,7 +93,8 @@ function getHighestStat(stats: Record<StatName, { dice: { id: string }[] }>): St
  * DialogueProvider - Wraps children with dialogue state and actions.
  *
  * Manages the dialogue FSM, streaming from /api/dialogue endpoint,
- * discovery extraction, inner voice interjections, and fatigue tracking.
+ * discovery extraction, deflection detection, inner voice interjections,
+ * and trust tracking.
  */
 /**
  * buildRelationshipStrings - Derives human-readable relationship descriptions
@@ -130,21 +141,19 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
   const town = useTown();
 
   /**
-   * sendMessage - Handles a complete exchange: topic + approach -> streaming response -> discoveries.
+   * sendMessage - Handles a complete exchange: topic -> streaming response -> discoveries.
    */
   const sendMessage = useCallback(
-    async (topic: Topic, approach: ApproachType) => {
+    async (topic: Topic) => {
       if (!state.currentNPC) return;
 
-      // Advance FSM: topic -> approach
+      // Advance FSM: select topic (transitions directly to STREAMING_RESPONSE)
       dispatch({ type: 'SELECT_TOPIC', topic });
-      dispatch({ type: 'SELECT_APPROACH', approach });
 
       const npcId = state.currentNPC;
       const npc = getNPCById(npcId);
       const memory = getMemoryForNPC(npcId);
       const trustLevel = memory?.relationshipLevel ?? 0;
-      const statValue = character?.stats[approach]?.dice.length ?? 3;
 
       // Build rich context for the NPC prompt
       const npcRelationships = npc
@@ -172,9 +181,7 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
             npcRelationships,
             townSituation,
             topic: topic.label,
-            approach,
             trustLevel,
-            statValue,
           }),
         });
 
@@ -184,7 +191,7 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
       } catch {
         // Fall back to mock in dev mode
         if (import.meta.env.DEV) {
-          response = mockDialogueEndpoint(topic.label, approach, npc?.name ?? 'NPC');
+          response = mockDialogueEndpoint(topic.label, npc?.name ?? 'NPC', trustLevel, npc?.knowledge?.facts);
         } else {
           // In production, dispatch an error state (reset to topic selection)
           dispatch({ type: 'END_CONVERSATION' });
@@ -215,8 +222,11 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
         reader.releaseLock();
       }
 
+      // Parse deflection marker
+      const { cleanText: textAfterDeflection, deflected } = parseDeflectionMarker(fullText);
+
       // Parse discovery markers from full response
-      const { cleanText, discoveries } = parseDiscoveryMarkers(fullText, npcId);
+      const { cleanText, discoveries } = parseDiscoveryMarkers(textAfterDeflection, npcId);
 
       // Record discoveries in investigation state
       for (const discovery of discoveries) {
@@ -230,11 +240,13 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
         // Determine situation based on context
         const situation = discoveries.length > 0
           ? (discoveries.some(d => d.sinId) ? 'sin-connection' : 'new-discovery')
-          : trustLevel < -20
-            ? 'trust-low'
-            : trustLevel > 30
-              ? 'trust-high'
-              : 'npc-evasion';
+          : deflected
+            ? 'npc-evasion'
+            : trustLevel < -20
+              ? 'trust-low'
+              : trustLevel > 30
+                ? 'trust-high'
+                : 'npc-evasion';
 
         const interjection = getInnerVoiceInterjection(highestStat, situation);
         if (interjection) {
@@ -245,25 +257,23 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
       // Create conversation turn
       const turn: ConversationTurn = {
         topic: topic.label,
-        approach,
-        playerDialogue: `[Topic: ${topic.label}, Approach: ${approach}]`,
-        npcResponse: cleanText || fullText,
+        playerDialogue: `[Topic: ${topic.label}]`,
+        npcResponse: cleanText || textAfterDeflection,
         innerVoice,
       };
 
-      // Finish response - transitions to SHOWING_DISCOVERY or SELECTING_TOPIC
+      // Finish response - transitions to RESPONSE_COMPLETE
       dispatch({ type: 'FINISH_RESPONSE', turn, discoveries });
 
-      // Build trust from conversation — approach determines gain
-      // Heart builds most trust, acuity moderate, body/will cost trust (intimidation)
-      const trustDelta = approach === 'heart' ? 15
-        : approach === 'acuity' ? 8
-        : approach === 'body' ? -5
-        : approach === 'will' ? -3
-        : 5;
-      npcDispatch({ type: 'UPDATE_RELATIONSHIP', npcId, delta: trustDelta });
+      // Mark deflection if NPC withheld info
+      if (deflected) {
+        dispatch({ type: 'MARK_DEFLECTION', topicLabel: topic.label });
+      }
+
+      // Build trust from conversation — flat +5 per exchange
+      npcDispatch({ type: 'UPDATE_RELATIONSHIP', npcId, delta: 5 });
     },
-    [state.currentNPC, dispatch, character, getNPCById, getMemoryForNPC, town, npcDispatch]
+    [state.currentNPC, dispatch, character, getNPCById, getMemoryForNPC, town, npcDispatch, investigationDispatch]
   );
 
   /**

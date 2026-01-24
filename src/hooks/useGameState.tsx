@@ -30,7 +30,7 @@ function createInitialState({ locations, descentThresholds }: InitialStateArgs):
 
     characterCondition: 100,
     activeConflict: null,
-    completedActionIds: [],
+    completedActions: [],
   };
 }
 
@@ -105,12 +105,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         characterCondition: Math.max(0, Math.min(100, state.characterCondition + action.delta)),
       };
 
-    // Actions (one-shot tracking)
+    // Actions (one-shot tracking with result info)
     case 'MARK_ACTION_COMPLETE':
-      if (state.completedActionIds.includes(action.actionId)) return state;
+      if (state.completedActions.some(a => a.id === action.actionId)) return state;
       return {
         ...state,
-        completedActionIds: [...state.completedActionIds, action.actionId],
+        completedActions: [...state.completedActions, { id: action.actionId, name: action.name, result: action.result }],
       };
 
     // Conflict

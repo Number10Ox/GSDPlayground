@@ -4,11 +4,9 @@ import { useDialogue } from '@/hooks/useDialogue';
 import { useCharacter } from '@/hooks/useCharacter';
 import { useNPCMemory } from '@/hooks/useNPCMemory';
 import { TopicChips } from '@/components/Dialogue/TopicChips';
-import { ApproachChips } from '@/components/Dialogue/ApproachChips';
 import { TypewriterText } from '@/components/Dialogue/TypewriterText';
 import { InnerVoice } from '@/components/Dialogue/InnerVoice';
 import { DiscoverySummary } from '@/components/Dialogue/DiscoverySummary';
-import { ConflictTrigger } from '@/components/Dialogue/ConflictTrigger';
 import type { StatName } from '@/types/character';
 
 import type { DieType } from '@/types/game';
@@ -40,8 +38,7 @@ function getHighestStat(stats: Record<StatName, { dice: { id: string; type: DieT
  *
  * Full-screen overlay with dark backdrop, centered content panel.
  * Renders phase-appropriate UI:
- * - SELECTING_TOPIC: TopicChips
- * - SELECTING_APPROACH: ApproachChips
+ * - SELECTING_TOPIC: TopicChips + optional "Press the Matter" button
  * - STREAMING_RESPONSE: TypewriterText streaming
  * - SHOWING_DISCOVERY: DiscoverySummary overlay
  */
@@ -139,26 +136,33 @@ export function DialogueView() {
         {/* Bottom: Interaction chips */}
         <div className="border-t border-gray-700 px-4 py-3">
           {state.phase === 'SELECTING_TOPIC' && (
-            <TopicChips
-              topics={state.availableTopics}
-              onSelect={(topic) => {
-                // When a topic is selected, we need to wait for approach
-                dispatch({ type: 'SELECT_TOPIC', topic });
-              }}
-            />
-          )}
+            <>
+              <TopicChips
+                topics={state.availableTopics}
+                onSelect={(topic) => {
+                  sendMessage(topic);
+                }}
+              />
 
-          {state.phase === 'SELECTING_APPROACH' && character && (
-            <ApproachChips
-              onSelect={(approach) => {
-                // Topic already selected (FSM at SELECTING_APPROACH).
-                // sendMessage will handle SELECT_APPROACH dispatch and streaming.
-                if (state.selectedTopic) {
-                  sendMessage(state.selectedTopic, approach);
-                }
-              }}
-              stats={character.stats}
-            />
+              {/* "Press the Matter" — shown when NPC deflected a topic */}
+              {state.npcDeflected && state.currentNPC && npc && (
+                <button
+                  data-testid="press-the-matter"
+                  onClick={() => {
+                    endConversation();
+                    window.dispatchEvent(new CustomEvent('dialogue-conflict', {
+                      detail: {
+                        npcId: state.currentNPC,
+                        stakes: `Force ${npc.name} to reveal what they know about ${state.deflectedTopicLabel}`,
+                      },
+                    }));
+                  }}
+                  className="mt-3 w-full text-center text-amber-300 hover:text-amber-100 text-sm py-2 px-3 rounded border border-amber-600/50 hover:border-amber-400 bg-amber-900/20 transition-colors cursor-pointer"
+                >
+                  Press the matter — Force {npc.name} to talk about {state.deflectedTopicLabel}
+                </button>
+              )}
+            </>
           )}
 
           {state.phase === 'STREAMING_RESPONSE' && (
@@ -176,27 +180,6 @@ export function DialogueView() {
               Continue...
             </button>
           )}
-
-          {/* Conflict trigger - only for body/will approaches after response */}
-          {state.phase === 'SELECTING_TOPIC' && state.currentNPC && npc?.conflictThresholds && (() => {
-            const lastTurnApproach = state.conversationHistory[state.conversationHistory.length - 1]?.approach;
-            if (lastTurnApproach === 'body' || lastTurnApproach === 'will') {
-              return (
-                <ConflictTrigger
-                  npcId={state.currentNPC}
-                  approach={lastTurnApproach}
-                  conflictThresholds={npc.conflictThresholds}
-                  forceTriggered={import.meta.env.DEV}
-                  onConflictStart={(npcId, stakes) => {
-                    endConversation();
-                    // Pass approach so conflict uses correct stat for dice pool
-                    window.dispatchEvent(new CustomEvent('dialogue-conflict', { detail: { npcId, stakes, approach: lastTurnApproach } }));
-                  }}
-                />
-              );
-            }
-            return null;
-          })()}
         </div>
 
         {/* Discovery overlay */}

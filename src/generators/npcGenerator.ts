@@ -8,8 +8,8 @@
  */
 
 import type { SinNode } from '@/types/investigation';
-import type { ApproachType, KnowledgeFact } from '@/types/dialogue';
-import type { NPC, NPCKnowledge, ConflictThreshold } from '@/types/npc';
+import type { KnowledgeFact } from '@/types/dialogue';
+import type { NPC, NPCKnowledge } from '@/types/npc';
 import { NPC_ARCHETYPES } from '@/templates/npcArchetypes';
 import type { NPCArchetype } from '@/templates/npcArchetypes';
 import { SIN_TEMPLATES } from '@/templates/sinTemplates';
@@ -291,10 +291,6 @@ function generateKnowledge(
       minTrustLevel: template.minTrustLevel,
     };
 
-    if (template.requiredApproach) {
-      fact.requiredApproach = template.requiredApproach;
-    }
-
     if (sinId) {
       fact.sinId = sinId;
     }
@@ -319,15 +315,12 @@ function generateKnowledge(
 }
 
 /**
- * Generates conflict thresholds from an archetype's resist profile.
- * Maps resist values (0-100) to conflict trigger chances.
+ * Generates a single conflict resistance scalar from an archetype's resist profile.
+ * Takes the average of all approach resistance values (0-1 scale).
  */
-function generateConflictThresholds(archetype: NPCArchetype): ConflictThreshold[] {
-  const approaches: ApproachType[] = ['body', 'will', 'heart', 'acuity'];
-  return approaches.map(approach => ({
-    approach,
-    resistChance: archetype.resistProfile[approach] / 100,
-  }));
+function generateConflictResistance(archetype: NPCArchetype): number {
+  const { body, will, heart, acuity } = archetype.resistProfile;
+  return (body + will + heart + acuity) / 400; // Average of 0-100 values, normalized to 0-1
 }
 
 /**
@@ -649,8 +642,8 @@ export function generateNPCs(
     const knowledge = generateKnowledge(archetype, updatedSinChain, sinIndices, slots, rng);
     knowledge.npcId = id;
 
-    // Generate conflict thresholds
-    const conflictThresholds = generateConflictThresholds(archetype);
+    // Generate conflict resistance scalar
+    const conflictResistance = generateConflictResistance(archetype);
 
     // Map defaultLocationType to a location ID
     const locationId = `loc-${archetype.defaultLocationType}`;
@@ -662,7 +655,7 @@ export function generateNPCs(
       description,
       role: archetype.role,
       knowledge,
-      conflictThresholds,
+      conflictResistance,
     };
   });
 

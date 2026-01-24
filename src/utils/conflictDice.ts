@@ -61,16 +61,14 @@ export function buildPlayerDicePool(character: Character, approach: ApproachType
  * buildNPCDicePool - Builds an NPC's conflict dice based on their role and resistance.
  *
  * NPCs are generally weaker than Dogs (the Dog carries divine authority).
- * The resistChance from conflict thresholds scales how strong their pool is.
+ * The conflictResistance scalar (0-1) determines pool strength.
  * High resistance = more/better dice. Low resistance = fewer/weaker dice.
  */
-export function buildNPCDicePool(npc: NPC, approach: ApproachType): Die[] {
+export function buildNPCDicePool(npc: NPC): Die[] {
   const dice: Die[] = [];
   let counter = 0;
 
-  // Find this NPC's resistance to the player's approach
-  const threshold = npc.conflictThresholds?.find(t => t.approach === approach);
-  const resistance = threshold?.resistChance ?? 0.4;
+  const resistance = npc.conflictResistance ?? 0.4;
 
   // Base pool size: 2-5 dice depending on resistance
   // resistance 0.1 -> 2 dice, 0.5 -> 3 dice, 0.8 -> 5 dice

@@ -106,7 +106,7 @@ test.describe('Town Generation', () => {
     // Select generated town
     await selectTown(page, 'hollow-creek');
 
-    // Create character (needed for approach chips)
+    // Create character
     await createCharacterForTest(page, 'Brother Test');
 
     // Skip town arrival overlay
@@ -121,17 +121,17 @@ test.describe('Town Generation', () => {
     // Verify topics are available
     await verifyTopicsAvailable(page);
 
-    // Verify approach chips appear after selecting a topic
+    // Select a topic — dialogue should begin streaming response
     const topicChip = page.locator('[data-testid^="topic-chip-"]').first();
     await topicChip.click();
-    await expect(page.getByTestId('approach-chips')).toBeVisible({ timeout: 3000 });
+    await expect(page.getByTestId('dialogue-continue')).toBeVisible({ timeout: 5000 });
   });
 
   test('generated town sin chain is discoverable', async ({ page }) => {
     // Mock dialogue API to return a discovery response
     await page.route('**/api/dialogue', async (route) => {
       const request = route.request();
-      let body: { npcId?: string; topic?: string; approach?: string } = {};
+      let body: { npcId?: string; topic?: string } = {};
 
       try {
         const postData = request.postData();

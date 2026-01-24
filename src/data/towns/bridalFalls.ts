@@ -10,7 +10,7 @@
 
 import type { TownData, TopicRule, TownEvent } from '@/types/town';
 import type { Location } from '@/types/game';
-import type { NPC, NPCKnowledge, ConflictThreshold } from '@/types/npc';
+import type { NPC, NPCKnowledge } from '@/types/npc';
 import type { SinNode, LocationClue } from '@/types/investigation';
 import type { TimedAction, ConflictDefinition } from '@/types/actions';
 import type { DescentThreshold } from '@/types/descent';
@@ -90,7 +90,6 @@ const ezekielKnowledge: NPCKnowledge = {
       content: 'My word IS the doctrine here. I don\'t need the Dogs to tell me what\'s right.',
       tags: ['pride', 'defiance'],
       minTrustLevel: 80,
-      requiredApproach: 'will',
       sinId: 'sin-pride',
     },
     {
@@ -302,7 +301,6 @@ const jacobKnowledge: NPCKnowledge = {
       content: 'Ezekiel told me to ignore Thomas\'s nighttime visits. Said the theft serves a purpose. I didn\'t ask what purpose.',
       tags: ['steward', 'orders', 'theft'],
       minTrustLevel: 70,
-      requiredApproach: 'will',
       sinId: 'sin-pride',
     },
     {
@@ -321,42 +319,7 @@ const jacobKnowledge: NPCKnowledge = {
   ],
 };
 
-// ─── NPC Conflict Thresholds ────────────────────────────────────────────────
-
-const ezekielThresholds: ConflictThreshold[] = [
-  { approach: 'body', resistChance: 0.8 },
-  { approach: 'will', resistChance: 0.4 },
-  { approach: 'heart', resistChance: 0.6 },
-  { approach: 'acuity', resistChance: 0.5 },
-];
-
-const marthaThresholds: ConflictThreshold[] = [
-  { approach: 'body', resistChance: 0.2 },
-  { approach: 'will', resistChance: 0.3 },
-  { approach: 'heart', resistChance: 0.1 },
-  { approach: 'acuity', resistChance: 0.2 },
-];
-
-const thomasThresholds: ConflictThreshold[] = [
-  { approach: 'body', resistChance: 0.6 },
-  { approach: 'will', resistChance: 0.5 },
-  { approach: 'heart', resistChance: 0.3 },
-  { approach: 'acuity', resistChance: 0.4 },
-];
-
-const ruthThresholds: ConflictThreshold[] = [
-  { approach: 'body', resistChance: 0.1 },
-  { approach: 'will', resistChance: 0.2 },
-  { approach: 'heart', resistChance: 0.1 },
-  { approach: 'acuity', resistChance: 0.15 },
-];
-
-const jacobThresholds: ConflictThreshold[] = [
-  { approach: 'body', resistChance: 0.7 },
-  { approach: 'will', resistChance: 0.6 },
-  { approach: 'heart', resistChance: 0.5 },
-  { approach: 'acuity', resistChance: 0.4 },
-];
+// ─── NPC Conflict Resistance (0-1 scalar: higher = stronger in conflict) ────
 
 // ─── NPCs ───────────────────────────────────────────────────────────────────
 
@@ -368,7 +331,7 @@ const npcs: NPC[] = [
     description: 'The town steward, a man of absolute certainty and unwavering authority.',
     role: 'Town Steward',
     knowledge: ezekielKnowledge,
-    conflictThresholds: ezekielThresholds,
+    conflictResistance: 0.575,
     personalSin: {
       description: 'Ezekiel denied medicine to Martha knowing her illness was natural, not divine. He chose doctrine over a life.',
       justification: 'If I show weakness now, the whole order collapses. One woman\'s suffering preserves the faith of many.',
@@ -383,7 +346,7 @@ const npcs: NPC[] = [
     description: 'The town midwife, weakened by illness but still caring for others.',
     role: 'Midwife',
     knowledge: marthaKnowledge,
-    conflictThresholds: marthaThresholds,
+    conflictResistance: 0.2,
   },
   {
     id: 'brother-thomas',
@@ -392,7 +355,7 @@ const npcs: NPC[] = [
     description: 'A desperate farmer who will do anything to save the woman he loves.',
     role: 'Farmer',
     knowledge: thomasKnowledge,
-    conflictThresholds: thomasThresholds,
+    conflictResistance: 0.45,
     personalSin: {
       description: 'Thomas has stolen repeatedly from the general store. He also threatened the storekeeper\'s boy to keep silent.',
       justification: 'Martha would be dead without me. A few herbs weighed against a life — any Dog would do the same.',
@@ -407,7 +370,7 @@ const npcs: NPC[] = [
     description: 'The schoolteacher who sees everything but fears speaking out.',
     role: 'Teacher',
     knowledge: ruthKnowledge,
-    conflictThresholds: ruthThresholds,
+    conflictResistance: 0.14,
   },
   {
     id: 'sheriff-jacob',
@@ -416,7 +379,7 @@ const npcs: NPC[] = [
     description: 'A lawman loyal to the Steward, torn between duty and doubt.',
     role: 'Sheriff',
     knowledge: jacobKnowledge,
-    conflictThresholds: jacobThresholds,
+    conflictResistance: 0.55,
     personalSin: {
       description: 'Jacob knew Thomas was stealing and did nothing — on the Steward\'s orders. He let Martha suffer to keep his position.',
       justification: 'I follow the law as it\'s given to me. If the Steward says let it go, that\'s above my pay. I didn\'t make the decree.',
@@ -488,7 +451,6 @@ const clues: LocationClue[] = [
     locationId: 'homestead',
     description: 'Behind the farmhouse, a hidden patch of medicinal herbs — recently harvested. Footprints lead toward the general store.',
     discoveryId: 'sin-theft',
-    requiredApproach: 'acuity',
     found: false,
   },
   {
@@ -503,7 +465,6 @@ const clues: LocationClue[] = [
     locationId: 'cemetery',
     description: 'Three fresh graves, unmarked. The earth was turned hastily. The dates on nearby stones show no one has died here in years — until now.',
     discoveryId: 'sin-sickness',
-    requiredApproach: 'acuity',
     found: false,
   },
 ];

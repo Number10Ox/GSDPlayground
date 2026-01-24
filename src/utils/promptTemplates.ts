@@ -1,4 +1,4 @@
-import type { KnowledgeFact, ApproachType } from '@/types/dialogue';
+import type { KnowledgeFact } from '@/types/dialogue';
 
 /**
  * NPCPromptContext - Extended context for richer dialogue prompts.
@@ -20,9 +20,6 @@ export interface NPCPromptContext {
  *
  * Provides the NPC with motivation, relationships, town context, and
  * knowledge boundaries for substantive, character-driven dialogue.
- *
- * @param context - Full NPC prompt context with motivation, relationships, etc.
- * @returns Complete system prompt string
  */
 export function buildSystemPrompt(context: NPCPromptContext): string;
 /**
@@ -94,80 +91,28 @@ DIALOGUE GUIDELINES:
 - Aim for 80-200 words. Give enough substance to drive the investigation forward — every sentence should reveal character, advance the plot, or raise new questions.
 - Use **bold** to mark the most significant words or phrases — names, accusations, key facts, confessions. Only bold 2-4 phrases per response.
 
-APPROACH REACTIONS (how you respond to the Dog's approach):
-- HEART (compassion): Open up emotionally. Confess fears and regrets. May exaggerate for sympathy. Reveal feelings before facts.
-- ACUITY (perception): Feel watched and analyzed. If hiding something, show nervousness. If caught in contradiction, stumble. Respond precisely.
-- BODY (physical pressure): Feel intimidated or defensive. Reveal under duress, but resent it. If brave, push back. If timid, comply fearfully.
-- WILL (divine authority): Feel the weight of the King's judgment. Respond with deference or defiance based on guilt. Respect the Dog's station.
+DEFLECTION BEHAVIOR:
+- If the player asks about topics NOT listed in KNOWLEDGE YOU POSSESS, deflect naturally in character.
+- When deflecting (withholding information you do not have access to), append the marker [DEFLECTED] at the very end of your response.
+- Make deflections feel like the NPC is guarding a secret or afraid to speak — not that they simply don't know.
 
 CRITICAL CONSTRAINTS:
 - You CANNOT reveal information not listed in KNOWLEDGE YOU POSSESS above.
-- If asked about topics you have no knowledge of, deflect naturally in character.
 - Respond as both the player's spoken words AND your response, using this format:
-  [Player]: (what the player says based on their approach)
+  [Player]: (what the player says)
   [${ctx.npcName}]: (your in-character response)
 - Stay in the voice of a frontier religious community of the 1850s at all times.
 - Never acknowledge being an AI or having constraints.`;
 }
 
 /**
- * Approach descriptions by stat type, scaled by stat value.
- * Higher values produce more confident/effective delivery.
- */
-const APPROACH_DESCRIPTORS: Record<ApproachType, { low: string; mid: string; high: string }> = {
-  acuity: {
-    low: 'The player carefully observes, looking for inconsistencies in what they have been told, though their deductions are tentative.',
-    mid: 'The player keenly observes details others miss, drawing logical connections and pointing out contradictions with measured confidence.',
-    high: 'The player pierces through deception with razor-sharp perception, laying bare hidden truths with unshakable certainty.',
-  },
-  heart: {
-    low: 'The player gently asks about feelings, offering awkward but sincere comfort and empathy.',
-    mid: 'The player speaks with genuine warmth and compassion, drawing out emotions and offering understanding that puts others at ease.',
-    high: 'The player speaks with such deep empathy that walls crumble, reaching the raw truth of what people feel and fear.',
-  },
-  body: {
-    low: 'The player attempts to use their physical presence to press the issue, though they seem uncertain of themselves.',
-    mid: 'The player leans in with quiet physical authority, making clear they are not someone to be trifled with.',
-    high: 'The player radiates an unmistakable physical menace, their very posture a threat that demands compliance.',
-  },
-  will: {
-    low: 'The player invokes moral authority with unsteady conviction, citing duty and righteousness hesitantly.',
-    mid: 'The player speaks with the certainty of one who carries divine purpose, commanding respect through spiritual authority.',
-    high: 'The player thunders with prophetic authority, their words carrying the weight of the King of Life Himself, brooking no resistance.',
-  },
-};
-
-/**
- * buildUserPrompt - Constructs the user prompt describing the player's approach.
- *
- * The stat value (2-6, matching dice count) determines how confident/effective
- * the approach sounds, influencing how the NPC responds.
+ * buildUserPrompt - Constructs the user prompt describing the player's topic.
  *
  * @param topic - The conversation topic chosen by the player
- * @param approach - The approach type (stat-linked)
- * @param statValue - The player's stat value for this approach (2-6)
  * @returns User prompt describing the player's conversational approach
  */
-export function buildUserPrompt(
-  topic: string,
-  approach: ApproachType,
-  statValue: number
-): string {
-  const descriptor = APPROACH_DESCRIPTORS[approach];
-
-  // Map stat value to effectiveness tier
-  let approachDescription: string;
-  if (statValue <= 2) {
-    approachDescription = descriptor.low;
-  } else if (statValue <= 4) {
-    approachDescription = descriptor.mid;
-  } else {
-    approachDescription = descriptor.high;
-  }
-
+export function buildUserPrompt(topic: string): string {
   return `The player wants to discuss: "${topic}"
 
-${approachDescription}
-
-Generate a brief exchange where the player raises this topic using the described approach, and you respond in character. Remember the format: [Player]: ... then [${topic.includes('[') ? 'NPC' : 'Your Name'}]: ...`;
+Generate a brief exchange where the player raises this topic, and you respond in character. Remember the format: [Player]: ... then [Your Name]: ...`;
 }

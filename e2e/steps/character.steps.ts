@@ -196,13 +196,19 @@ export async function skipArrivalOverlay(page: Page) {
 
 /**
  * Start a test conflict using the dev-mode trigger button.
- * In the descent clock flow, the test button is visible in EXPLORING phase.
+ * Clicks the button then selects an approach from the overlay.
  */
 export async function triggerConflictForTest(page: Page) {
   const testButton = page.getByTestId('start-test-conflict');
   await expect(testButton).toBeVisible({ timeout: 3000 });
   await testButton.click();
-  await expect(page.getByTestId('conflict-view')).toBeVisible({ timeout: 3000 });
+
+  // Approach selection overlay appears — pick body
+  const approachOverlay = page.getByTestId('approach-selection-overlay');
+  await expect(approachOverlay).toBeVisible({ timeout: 3000 });
+  await page.getByTestId('select-approach-body').click();
+
+  await expect(page.getByTestId('conflict-view')).toBeVisible({ timeout: 5000 });
 }
 
 /**

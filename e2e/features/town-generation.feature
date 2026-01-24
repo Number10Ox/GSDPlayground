@@ -30,7 +30,7 @@ Feature: Town Generation
 
   Scenario: Generated town sin chain is discoverable
     Given I have entered a generated town
-    When I talk to NPCs using different approaches
+    When I talk to NPCs about different topics
     Then I should be able to uncover at least one discovery
     And the mental map should update with the discovery
 

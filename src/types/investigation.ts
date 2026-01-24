@@ -58,7 +58,6 @@ export interface LocationClue {
   locationId: string;
   description: string;
   discoveryId: string;
-  requiredApproach?: import('@/types/dialogue').ApproachType;
   found: boolean;
 }
 

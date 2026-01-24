@@ -1,4 +1,4 @@
-import type { KnowledgeFact, ApproachType, Topic } from '@/types/dialogue';
+import type { KnowledgeFact, Topic } from '@/types/dialogue';
 import type { Discovery } from '@/types/investigation';
 
 /**
@@ -12,8 +12,7 @@ export interface NPCKnowledge {
 }
 
 /**
- * filterKnowledgeByTrust - Filters NPC knowledge facts based on current trust level
- * and optionally by approach type.
+ * filterKnowledgeByTrust - Filters NPC knowledge facts based on current trust level.
  *
  * This is the core guardrail: facts with minTrustLevel above the player's current
  * trust will NEVER be included in the LLM prompt, preventing knowledge leakage
@@ -21,22 +20,15 @@ export interface NPCKnowledge {
  *
  * @param facts - Full pool of NPC knowledge facts
  * @param trustLevel - Player's current trust level with this NPC (0-100)
- * @param approach - Optional approach type to filter approach-gated facts
  * @returns Filtered subset of facts the NPC CAN reveal
  */
 export function filterKnowledgeByTrust(
   facts: KnowledgeFact[],
-  trustLevel: number,
-  approach?: ApproachType
+  trustLevel: number
 ): KnowledgeFact[] {
   return facts.filter((fact) => {
     // Trust gate: fact only available if player trust >= required level
-    if (trustLevel < fact.minTrustLevel) return false;
-
-    // Approach gate: if fact requires specific approach, only pass if it matches
-    if (fact.requiredApproach && fact.requiredApproach !== approach) return false;
-
-    return true;
+    return trustLevel >= fact.minTrustLevel;
   });
 }
 

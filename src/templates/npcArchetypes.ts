@@ -6,7 +6,6 @@
  * and knowledge fact templates spanning multiple trust levels.
  */
 
-import type { ApproachType } from '@/types/dialogue';
 import type { SinLevel } from '@/types/investigation';
 
 /**
@@ -17,7 +16,6 @@ export interface FactTemplate {
   contentPattern: string;
   tags: string[];
   minTrustLevel: number;
-  requiredApproach?: ApproachType;
   forSinLevel?: SinLevel;
 }
 
@@ -96,21 +94,18 @@ export const NPC_ARCHETYPES: NPCArchetype[] = [
         contentPattern: 'I stopped consulting the elders two seasons ago. They are weak — they would have let {victim} spread their complaints unchecked. Someone must hold this town together, and I am the only one with the spine for it.',
         tags: ['pride', 'authority', 'abuse'],
         minTrustLevel: 40,
-        requiredApproach: 'acuity',
         forSinLevel: 'pride',
       },
       {
         contentPattern: '{victim} came to me weeping, begging for help. I told them their suffering was the King\'s will and sent them away. I hear them crying at night still. I tell myself it was necessary — but I have not slept well since.',
         tags: ['injustice', 'guilt', 'confession'],
         minTrustLevel: 60,
-        requiredApproach: 'heart',
         forSinLevel: 'injustice',
       },
       {
         contentPattern: 'I built {town} into what it is. Every decision, every sacrifice — mine. And I will not surrender that to some traveling Dog who rides in knowing nothing of what it cost. This town answers to me, not to you.',
         tags: ['pride', 'defiance', 'confession'],
         minTrustLevel: 80,
-        requiredApproach: 'will',
         forSinLevel: 'pride',
       },
     ],
@@ -165,21 +160,18 @@ export const NPC_ARCHETYPES: NPCArchetype[] = [
         contentPattern: 'The {authority} told me to keep {victim} away from the meeting house — physically, if need be. Said they were a corrupting influence. I stood at the door and barred their entry while they wept. I can still hear it.',
         tags: ['injustice', 'order', 'shame'],
         minTrustLevel: 40,
-        requiredApproach: 'body',
         forSinLevel: 'injustice',
       },
       {
         contentPattern: 'Three nights ago the {authority} sent me to {victim}\'s homestead. Said they needed "persuading." I used my fists, Brother. On someone half my size who could not fight back. I washed the blood off my hands in the creek and told myself it was duty. It was not duty.',
         tags: ['injustice', 'violence', 'confession'],
         minTrustLevel: 60,
-        requiredApproach: 'heart',
         forSinLevel: 'injustice',
       },
       {
         contentPattern: 'If you move against the {authority}, I will not stop you. I will stand aside and let it happen. That is all I can offer — but it is more than you might think. Without me, the {authority} has no enforcer. No muscle. Just words.',
         tags: ['pride', 'turning-point', 'ally'],
         minTrustLevel: 80,
-        requiredApproach: 'will',
         forSinLevel: 'pride',
       },
     ],
@@ -233,21 +225,18 @@ export const NPC_ARCHETYPES: NPCArchetype[] = [
         contentPattern: 'When {victim} collapsed in the street last month, I ran to help. The {authority} grabbed my arm and said "Leave them. Their suffering is earned." I watched {victim} lie in the dust for an hour before someone dared carry them home. I need you to make it so I can do my work again.',
         tags: ['injustice', 'denied-care', 'witness'],
         minTrustLevel: 40,
-        requiredApproach: 'heart',
         forSinLevel: 'injustice',
       },
       {
         contentPattern: 'The sickness spreading through {town} — I have seen its like only once before, in a settlement where they found an altar in the root cellar. The fever runs cold, not hot. The afflicted speak in their sleep — the same words, over and over, in a language I do not know. This is not disease, Brother. Something is feeding on this town.',
         tags: ['demonic-attacks', 'supernatural', 'knowledge'],
         minTrustLevel: 60,
-        requiredApproach: 'acuity',
         forSinLevel: 'demonic-attacks',
       },
       {
         contentPattern: 'I was changing {victim}\'s bandages three days ago when I saw them — marks burned into the skin of their back. Not brands from iron. Symbols. They form a pattern I found drawn in the margins of a book the {sinner} left at my door last spring. I have the book hidden under my floorboards. Take it. Please. I do not want it in my home any longer.',
         tags: ['sorcery', 'evidence', 'horror'],
         minTrustLevel: 80,
-        requiredApproach: 'acuity',
         forSinLevel: 'sorcery',
       },
     ],
@@ -301,21 +290,18 @@ export const NPC_ARCHETYPES: NPCArchetype[] = [
         contentPattern: 'My children were crying from hunger. Three nights without a full meal. So I went to {victim}\'s storehouse and took a sack of grain. They had six sacks and I had none. I know it is theft. I know what the Book says. But Brother — have you ever watched your child go hungry while your neighbor feasts? Judge me if you must, but feed my family first.',
         tags: ['sin', 'theft', 'confession'],
         minTrustLevel: 40,
-        requiredApproach: 'heart',
         forSinLevel: 'sin',
       },
       {
         contentPattern: 'The {sinner} came to my field at dusk last month. Said they could save my crops — had a bundle of herbs tied with black thread. Said to bury it at the four corners of my plot and speak certain words at moonrise. I did it, Brother. God forgive me, I did it. The crops grew back within a week. But now I hear whispering from the soil at night.',
         tags: ['sorcery', 'complicity', 'desperation'],
         minTrustLevel: 60,
-        requiredApproach: 'acuity',
         forSinLevel: 'sorcery',
       },
       {
         contentPattern: 'I could not sleep last week. Went walking. Found {sinner} at the crossroads south of town, past midnight. They were kneeling in a circle of salt with candles at the compass points. Something stood in the circle with them — tall, thin, wrong. It turned toward me and I ran. I have not been back to that field since. Brother, I need you to go there. I need you to see what I saw and tell me I am not losing my mind.',
         tags: ['sorcery', 'witness', 'horror'],
         minTrustLevel: 80,
-        requiredApproach: 'will',
         forSinLevel: 'sorcery',
       },
     ],
@@ -368,21 +354,18 @@ export const NPC_ARCHETYPES: NPCArchetype[] = [
         contentPattern: 'The {sinner} visits {victim}\'s homestead when the town is at evening prayers. Every week for two months now. I have recorded the dates in my ledger. Whatever passes between them, they do not want witnesses — but they have one.',
         tags: ['sin', 'witness', 'pattern'],
         minTrustLevel: 40,
-        requiredApproach: 'acuity',
         forSinLevel: 'sin',
       },
       {
         contentPattern: 'The {authority} summoned the older children to the meeting house last Sunday and taught them things that are not in the Book of Life. Told them the King requires blood sacrifice for atonement — that is doctrine I have never read in any scripture. Two of the children came to me frightened. One would not stop shaking.',
         tags: ['false-doctrine', 'witness', 'corruption'],
         minTrustLevel: 60,
-        requiredApproach: 'acuity',
         forSinLevel: 'false-doctrine',
       },
       {
         contentPattern: 'I have kept a record since the trouble began — dates, times, who met whom, what I observed from my window. Three months of entries, cross-referenced. It is all in this book. Take it, Brother. Use it. I copied it in case something happens to the original. If something happens to me, the copy is beneath the third floorboard in my schoolhouse, left of the stove.',
         tags: ['evidence', 'ally', 'proof'],
         minTrustLevel: 80,
-        requiredApproach: 'acuity',
       },
     ],
   },
@@ -435,21 +418,18 @@ export const NPC_ARCHETYPES: NPCArchetype[] = [
         contentPattern: 'The King of Life speaks to me directly, Brother. Not through the Book — through visions. He has shown me truths the common scripture does not contain. The elders in the eastern settlements would call it heresy. But they have not seen what I have seen. They have not heard His voice as I hear it.',
         tags: ['false-doctrine', 'heresy', 'pride'],
         minTrustLevel: 40,
-        requiredApproach: 'will',
         forSinLevel: 'false-doctrine',
       },
       {
         contentPattern: 'The King revealed to me that some sins cannot be cleansed by prayer or penance. They require blood — the sinner\'s own blood, shed willingly in atonement. I have counseled two souls to this act of holy sacrifice. They thanked me for it, Brother. They wept with gratitude as the blade did its work. This is not murder. This is salvation.',
         tags: ['false-doctrine', 'blood-atonement', 'dangerous'],
         minTrustLevel: 60,
-        requiredApproach: 'will',
         forSinLevel: 'false-doctrine',
       },
       {
         contentPattern: 'It began as faith. Genuine faith. But somewhere the voice I heard stopped being the King\'s and became my own pride whispering back at me. I have led {town} into darkness and called it light. The blood-atonements, the private revelations, the casting out of doubters — all of it was me. Not the King. Me. I am so tired, Brother. Tell me how to undo what I have done.',
         tags: ['false-doctrine', 'confession', 'truth'],
         minTrustLevel: 80,
-        requiredApproach: 'heart',
         forSinLevel: 'false-doctrine',
       },
     ],
@@ -503,21 +483,18 @@ export const NPC_ARCHETYPES: NPCArchetype[] = [
         contentPattern: 'The {authority} takes a third of my earnings every month. Calls it a tithe to the congregation, but no tithe goes into the collection box. I have watched. That coin goes into the {authority}\'s own strongbox. Anyone who refuses to pay finds their goods spoiled by morning — or their windows broken. I cannot afford to refuse. But I cannot afford to keep paying either.',
         tags: ['injustice', 'extortion', 'resentment'],
         minTrustLevel: 40,
-        requiredApproach: 'acuity',
         forSinLevel: 'injustice',
       },
       {
         contentPattern: 'The {sinner} came to me four months ago with a list of ingredients — nightshade, graveyard dirt, tallow rendered from... I do not want to say what. I sold it all. I told myself it was none of my business. But last week {victim} fell ill with symptoms I have heard described in old wives\' tales about curses. I sold the tools for that, Brother. That is on my ledger and on my soul.',
         tags: ['sorcery', 'complicity', 'guilt'],
         minTrustLevel: 60,
-        requiredApproach: 'heart',
         forSinLevel: 'sorcery',
       },
       {
         contentPattern: 'I keep a ledger of every transaction — names, dates, quantities, what was purchased. Three years of records. It proves the {authority}\'s extortion, the {sinner}\'s strange purchases, everything. I will give it to you, Brother, but I need something in return: guarantee my safety. If they learn I gave you this, I am a dead man before sunrise. Can you promise me that?',
         tags: ['evidence', 'proof', 'ally'],
         minTrustLevel: 80,
-        requiredApproach: 'acuity',
       },
     ],
   },
@@ -570,21 +547,18 @@ export const NPC_ARCHETYPES: NPCArchetype[] = [
         contentPattern: 'When {victim} was cast out of the congregation, I sat in my chair and said nothing. I am an elder — my voice carries weight. If I had stood and objected, others would have followed. Instead I let a good soul be thrown into the cold, and I told myself it was not my fight. I have carried that silence like a stone around my neck ever since.',
         tags: ['injustice', 'guilt', 'confession'],
         minTrustLevel: 40,
-        requiredApproach: 'heart',
         forSinLevel: 'injustice',
       },
       {
         contentPattern: 'There is something in {town} that was not here before. I feel it at night — a presence, cold and watchful. My dog whimpers and hides under the bed. The candles gutter without wind. Last week I woke to find frost on the inside of my windows in the middle of summer. This is not natural, Brother. This is what happens when pride opens a door that should stay shut.',
         tags: ['demonic-attacks', 'supernatural', 'fear'],
         minTrustLevel: 60,
-        requiredApproach: 'will',
         forSinLevel: 'demonic-attacks',
       },
       {
         contentPattern: 'I was walking home from evening prayers when I heard voices by the creek. I crept close and saw — the King forgive me for my cowardice — I saw {sinner} hold {victim} under the water. I watched them struggle and go still. I stood behind the willows and did nothing. That was six weeks ago. I have not slept a full night since. I am telling you now because I am dying, Brother, and I will not meet the King with this on my conscience.',
         tags: ['hate-and-murder', 'witness', 'confession'],
         minTrustLevel: 80,
-        requiredApproach: 'heart',
         forSinLevel: 'hate-and-murder',
       },
     ],
@@ -638,21 +612,18 @@ export const NPC_ARCHETYPES: NPCArchetype[] = [
         contentPattern: 'Three days after the funeral, the {authority} came to my homestead. Alone, after dark. Said that a widow without protection should be... grateful for guidance. Put their hand on my shoulder in a way that was not comfort. I told them to leave. They said I should reconsider, given how easily accidents happen in {town}. I have not slept without a chair against my door since.',
         tags: ['sin', 'abuse', 'victim'],
         minTrustLevel: 40,
-        requiredApproach: 'heart',
         forSinLevel: 'sin',
       },
       {
         contentPattern: '{sinner} was the last person to see my husband alive. They argued that evening — I heard raised voices from inside our home. My husband owed {sinner} money from a livestock deal gone wrong. When I came outside, {sinner} was walking away fast, and my husband was sitting on the ground holding his stomach. He said it was nothing. He was dead by morning.',
         tags: ['hate-and-murder', 'motive', 'witness'],
         minTrustLevel: 60,
-        requiredApproach: 'acuity',
         forSinLevel: 'hate-and-murder',
       },
       {
         contentPattern: 'I found this letter sewn into the lining of my husband\'s coat last week. He must have hidden it there before he died — he knew he was in danger. It names {sinner} directly: says they threatened him, says the {authority} knew and did nothing because the debt was owed to them too. It names dates, amounts, and witnesses. Take it, Brother. Take it and make them answer for what they did to him. I am asking you — not as a matter of doctrine, but as a woman who loved her husband. Give me justice.',
         tags: ['hate-and-murder', 'evidence', 'proof'],
         minTrustLevel: 80,
-        requiredApproach: 'acuity',
         forSinLevel: 'hate-and-murder',
       },
     ],

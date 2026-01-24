@@ -3,98 +3,52 @@
     {
       "npcId": "sister-martha",
       "topic": "greeting",
-      "approach": "heart",
       "response": "[Player]: Sister Martha, how are you feeling?\n[NPC]: Brother, the Lord tests us with affliction. I am... managing. Your kindness in asking means more than you know."
     },
     {
       "npcId": "sister-martha",
-      "topic": "greeting",
-      "approach": "acuity",
-      "response": "[Player]: Sister, your hands tremble. That pallor is not from overwork alone.\n[NPC]: You see too much, Brother. The King of Life sends sharp eyes when He sends His Dogs."
-    },
-    {
-      "npcId": "sister-martha",
       "topic": "the-town",
-      "approach": "acuity",
       "response": "[Player]: I notice tension in the town, Sister. The shutters drawn tight, the silence at midday.\n[NPC]: You've eyes to see, Brother. The Steward's word weighs heavy on us all. He declared my illness a judgment.\n[DISCOVERY: fact-steward-decree|sin-injustice|The Steward has been making harsh decrees that deny care to the sick]"
-    },
-    {
-      "npcId": "sister-martha",
-      "topic": "the-town",
-      "approach": "heart",
-      "response": "[Player]: Tell me what troubles you, Sister. I can see the weight you carry.\n[NPC]: The town is... afraid, Brother. Since the Steward made his decree, no one dares speak against him. And those who do fall ill."
-    },
-    {
-      "npcId": "sister-martha",
-      "topic": "the-town",
-      "approach": "will",
-      "response": "[Player]: By the authority of the Faith, I would know the state of this congregation.\n[NPC]: Praise be you've come, Brother. The Steward said my sickness is the King's judgment. He forbade the store from selling me medicine.\n[DISCOVERY: fact-martha-decree|sin-injustice|Martha was denied medicine by the Steward's decree]"
     },
     {
       "npcId": "brother-thomas",
       "topic": "greeting",
-      "approach": "heart",
       "response": "[Player]: How fares your family, Brother Thomas?\n[NPC]: We endure, Brother. But Sister Martha... she needs medicine the Steward won't provide. I do what I can."
     },
     {
       "npcId": "brother-thomas",
       "topic": "the-town",
-      "approach": "heart",
-      "response": "[Player]: How fares your family, Brother Thomas?\n[NPC]: We endure, Brother. But Sister Martha... she needs medicine the Steward won't provide. I take what she needs from the store at night.\n[DISCOVERY: fact-martha-illness|sin-injustice|Martha is being denied care by the Steward's decree]"
-    },
-    {
-      "npcId": "brother-thomas",
-      "topic": "the-town",
-      "approach": "acuity",
       "response": "[Player]: I noticed your boots are muddy at odd hours, Brother. The store is a long walk from the homestead.\n[NPC]: You... you're observant, Brother. I won't deny it. Martha needs those herbs. I take them because no one will sell to her.\n[DISCOVERY: fact-thomas-theft|sin-theft|Brother Thomas steals medicine for Martha from the store at night]"
     },
     {
       "npcId": "steward-ezekiel",
       "topic": "greeting",
-      "approach": "will",
       "response": "[Player]: Steward. I come bearing the authority of the Faith.\n[NPC]: Welcome, Brother. Bridal Falls walks the path of righteousness under my guidance. You will find all is in order here."
     },
     {
       "npcId": "steward-ezekiel",
       "topic": "the-town",
-      "approach": "will",
       "response": "[Player]: Steward, I come with the authority of the Faith. Tell me of this town's spiritual state.\n[NPC]: Brother, you're welcome here. Our town walks the path of righteousness, as I guide them. My word is doctrine here.\n[DISCOVERY: fact-steward-pride|sin-pride|The Steward believes only he knows God's will for Bridal Falls]"
-    },
-    {
-      "npcId": "steward-ezekiel",
-      "topic": "the-town",
-      "approach": "acuity",
-      "response": "[Player]: Services have not been held in three Sabbaths, Steward. That is irregular.\n[NPC]: The faithful are not ready, Brother. I determine when the congregation gathers. That is my charge."
     },
     {
       "npcId": "sheriff-jacob",
       "topic": "greeting",
-      "approach": "body",
       "response": "[Player]: Sheriff. I need to understand what's happening here.\n[NPC]: You Dogs ride in thinking you own the place. Talk to the Steward. He keeps the peace. I enforce it."
     },
     {
       "npcId": "sheriff-jacob",
       "topic": "the-town",
-      "approach": "body",
-      "response": "[Player]: I didn't ride all this way for evasions, Sheriff. Out with it.\n[NPC]: You push too hard, Brother. This is my town to keep order in. I answer to the Steward, not to wandering Dogs.\n[CONFLICT]"
-    },
-    {
-      "npcId": "sheriff-jacob",
-      "topic": "the-town",
-      "approach": "will",
-      "response": "[Player]: By the King's authority, I demand an accounting of the law in this town.\n[NPC]: The law here is the Steward's word. I enforce what he commands. Thomas moves at night -- I've seen him. But the Steward says to leave him be.\n[DISCOVERY: fact-jacob-orders|sin-pride|The Sheriff follows the Steward's orders without question]"
-    },
-    {
-      "npcId": "sister-ruth",
-      "topic": "the-town",
-      "approach": "acuity",
-      "response": "[Player]: You observe much from the schoolhouse, Sister Ruth. What have you seen?\n[NPC]: One might notice that Thomas walks to the store at night. That the Sheriff watches but does nothing. That the sickness follows a pattern.\n[DISCOVERY: fact-ruth-pattern|sin-sickness|The sickness spreads to those who question the Steward's decree]"
+      "response": "[Player]: I didn't ride all this way for evasions, Sheriff. Out with it.\n[NPC]: You push too hard, Brother. This is my town to keep order in. I answer to the Steward, not to wandering Dogs.\n[DEFLECTED]"
     },
     {
       "npcId": "sister-ruth",
       "topic": "greeting",
-      "approach": "heart",
       "response": "[Player]: Peace be with you, Sister. How are the children?\n[NPC]: They feel what their parents hide, Brother. Fear runs through this town like creek water. Three fell ill last week."
+    },
+    {
+      "npcId": "sister-ruth",
+      "topic": "the-town",
+      "response": "[Player]: You observe much from the schoolhouse, Sister Ruth. What have you seen?\n[NPC]: One might notice that Thomas walks to the store at night. That the Sheriff watches but does nothing. That the sickness follows a pattern.\n[DISCOVERY: fact-ruth-pattern|sin-sickness|The sickness spreads to those who question the Steward's decree]"
     }
   ]
 }

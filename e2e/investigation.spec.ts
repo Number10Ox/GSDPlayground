@@ -5,7 +5,6 @@ import { fileURLToPath } from 'url';
 import {
   startConversation,
   selectTopic,
-  selectApproach,
   waitForResponse,
   closeDiscovery,
   endConversation,
@@ -23,23 +22,23 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const recordingsPath = resolve(__dirname, 'fixtures/dialogue-recordings.json');
 const dialogueRecordings: {
-  recordings: Array<{ npcId: string; topic: string; approach: string; response: string }>;
+  recordings: Array<{ npcId: string; topic: string; response: string }>;
 } = JSON.parse(readFileSync(recordingsPath, 'utf-8'));
 
 /**
  * Investigation System E2E Tests
  *
  * Tests use route interception to provide deterministic dialogue responses
- * without calling a real LLM. Recordings are keyed by {npcId, topic, approach}.
+ * without calling a real LLM. Recordings are keyed by {npcId, topic}.
  *
  * The dialogue hook (useDialogue.tsx) fetches /api/dialogue with a streaming body.
  * For E2E tests, we intercept this route and return recorded responses.
  */
 
 // Helper: find recorded response by matching request params
-function findRecording(npcId: string, topic: string, approach: string): string | null {
+function findRecording(npcId: string, topic: string): string | null {
   const recording = dialogueRecordings.recordings.find(
-    (r) => r.npcId === npcId && r.topic === topic && r.approach === approach
+    (r) => r.npcId === npcId && r.topic === topic
   );
   return recording?.response ?? null;
 }
@@ -49,7 +48,7 @@ test.describe('Investigation System', () => {
     // Intercept dialogue API - return recorded responses as streaming text
     await page.route('**/api/dialogue', async (route) => {
       const request = route.request();
-      let body: { npcId?: string; topic?: string; approach?: string } = {};
+      let body: { npcId?: string; topic?: string } = {};
 
       try {
         const postData = request.postData();
@@ -62,9 +61,8 @@ test.describe('Investigation System', () => {
 
       const npcId = body.npcId ?? '';
       const topic = body.topic ?? '';
-      const approach = body.approach ?? '';
 
-      const response = findRecording(npcId, topic, approach);
+      const response = findRecording(npcId, topic);
 
       if (response) {
         await route.fulfill({
@@ -88,7 +86,7 @@ test.describe('Investigation System', () => {
     await page.getByTestId('select-town-bridal-falls').click();
     await page.waitForLoadState('networkidle');
 
-    // Create character (needed for approach chips to render)
+    // Create character
     await createCharacterForTest(page, 'Brother Ezekiel');
 
     // Skip town arrival overlay
@@ -108,7 +106,7 @@ test.describe('Investigation System', () => {
     await expect(page.getByTestId('topic-chips')).toBeVisible();
   });
 
-  test('player selects topic then approach', async ({ page }) => {
+  test('player selects topic and gets response', async ({ page }) => {
     // Navigate to general-store
     await page.locator('[data-testid="map-node-general-store"]').dispatchEvent('click');
     await page.waitForTimeout(500);
@@ -116,15 +114,8 @@ test.describe('Investigation System', () => {
     // Start conversation with martha
     await startConversation(page, 'sister-martha');
 
-    // Select "the-town" topic
+    // Select "the-town" topic - triggers sendMessage which fetches /api/dialogue
     await selectTopic(page, 'the-town', 'sister-martha');
-
-    // Approach chips should be visible
-    await expect(page.getByTestId('approach-chips')).toBeVisible();
-    await expect(page.getByTestId('approach-chip-acuity')).toBeVisible();
-
-    // Select acuity approach - triggers sendMessage which fetches /api/dialogue
-    await selectApproach(page, 'acuity');
 
     // Wait for response to stream and complete
     await waitForResponse(page);
@@ -138,9 +129,8 @@ test.describe('Investigation System', () => {
     // Start conversation
     await startConversation(page, 'sister-martha');
 
-    // Select topic and approach that yields a discovery
+    // Select topic that yields a discovery
     await selectTopic(page, 'the-town', 'sister-martha');
-    await selectApproach(page, 'acuity');
     await waitForResponse(page);
 
     // Discovery summary should appear (response contains [DISCOVERY:...])
@@ -155,7 +145,6 @@ test.describe('Investigation System', () => {
     // Discover a sin via conversation
     await startConversation(page, 'sister-martha');
     await selectTopic(page, 'the-town', 'sister-martha');
-    await selectApproach(page, 'acuity');
     await waitForResponse(page);
 
     // Close discovery and end conversation
@@ -173,7 +162,7 @@ test.describe('Investigation System', () => {
   });
 
 
-  test('aggressive approach can trigger conflict', async ({ page }) => {
+  test('pressing the matter triggers conflict via approach selection', async ({ page }) => {
     // Navigate to sheriff's office
     await page.locator('[data-testid="map-node-sheriffs-office"]').dispatchEvent('click');
     await page.waitForTimeout(500);
@@ -181,27 +170,25 @@ test.describe('Investigation System', () => {
     // Start conversation with sheriff
     await startConversation(page, 'sheriff-jacob');
 
-    // Select topic and body approach (can trigger conflict)
+    // Select a trust-gated topic — the NPC should deflect
     await selectTopic(page, 'the-town', 'sheriff-jacob');
-    await selectApproach(page, 'body');
-
-    // Wait for response to stream and complete, then acknowledge it
     await waitForResponse(page);
 
-    // After acknowledge, phase transitions to SELECTING_TOPIC.
-    // ConflictTrigger renders when last approach was body/will (forceTriggered in dev).
-    // It shows a warning message briefly then triggers the conflict after 1s delay.
-    const conflictTrigger = page.getByTestId('conflict-trigger');
-    const conflictView = page.getByTestId('conflict-view');
+    // "Press the Matter" button should appear after deflection
+    const pressButton = page.getByTestId('press-the-matter');
+    await expect(pressButton).toBeVisible({ timeout: 5000 });
 
-    await Promise.race([
-      expect(conflictTrigger).toBeVisible({ timeout: 10000 }),
-      expect(conflictView).toBeVisible({ timeout: 10000 }),
-    ]);
+    // Click "Press the Matter" — triggers approach selection overlay
+    await pressButton.click();
 
-    // Verify conflict was triggered (either trigger or view visible)
-    const hasTrigger = await conflictTrigger.isVisible().catch(() => false);
-    const hasView = await conflictView.isVisible().catch(() => false);
-    expect(hasTrigger || hasView).toBeTruthy();
+    // Approach selection overlay should appear
+    const approachOverlay = page.getByTestId('approach-selection-overlay');
+    await expect(approachOverlay).toBeVisible({ timeout: 3000 });
+
+    // Select body approach to start the conflict
+    await page.getByTestId('select-approach-body').click();
+
+    // Conflict view should appear
+    await expect(page.getByTestId('conflict-view')).toBeVisible({ timeout: 5000 });
   });
 });

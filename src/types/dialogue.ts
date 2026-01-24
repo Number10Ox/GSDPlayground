@@ -1,14 +1,14 @@
 /**
  * Dialogue types - Models the NPC conversation system with
- * knowledge gating, approach selection, and discovery output.
+ * knowledge gating, deflection detection, and discovery output.
  */
 
 import type { StatName } from '@/types/character';
 import type { Discovery } from '@/types/investigation';
 
 /**
- * ApproachType - The four stat-linked conversation approaches.
- * Each approach may unlock different knowledge from NPCs.
+ * ApproachType - The four stat-linked approaches.
+ * Used at conflict entry (not during dialogue).
  */
 export type ApproachType = 'acuity' | 'heart' | 'body' | 'will';
 
@@ -23,29 +23,29 @@ export interface Topic {
   requiresDiscovery?: string;
   requiresClue?: string;
   locationOnly?: string;
+  explored?: boolean;     // True if player has already discussed this topic
+  trustGated?: boolean;   // True if NPC has higher-trust facts on this topic
 }
 
 /**
  * KnowledgeFact - A piece of knowledge an NPC possesses.
- * Gated by trust level and optionally by approach type.
+ * Gated by trust level only.
  */
 export interface KnowledgeFact {
   id: string;
   content: string;
   tags: string[];
   minTrustLevel: number;
-  requiredApproach?: ApproachType;
   sinId?: string;
 }
 
 /**
  * ConversationTurn - A single exchange in a conversation.
- * Tracks the player's choice of topic and approach, NPC response,
+ * Tracks the player's choice of topic, NPC response,
  * and any inner voice commentary.
  */
 export interface ConversationTurn {
   topic: string;
-  approach: ApproachType;
   playerDialogue: string;
   npcResponse: string;
   innerVoice?: {
@@ -60,7 +60,6 @@ export interface ConversationTurn {
 export type DialoguePhase =
   | 'IDLE'
   | 'SELECTING_TOPIC'
-  | 'SELECTING_APPROACH'
   | 'STREAMING_RESPONSE'
   | 'RESPONSE_COMPLETE'
   | 'SHOWING_DISCOVERY';
@@ -72,11 +71,12 @@ export interface DialogueState {
   phase: DialoguePhase;
   currentNPC: string | null;
   selectedTopic: Topic | null;
-  selectedApproach: ApproachType | null;
   conversationHistory: ConversationTurn[];
   streamingText: string;
   newDiscoveries: Discovery[];
   availableTopics: Topic[];
+  npcDeflected: boolean;
+  deflectedTopicLabel: string | null;
 }
 
 /**
@@ -85,9 +85,9 @@ export interface DialogueState {
 export type DialogueAction =
   | { type: 'START_CONVERSATION'; npcId: string; topics: Topic[] }
   | { type: 'SELECT_TOPIC'; topic: Topic }
-  | { type: 'SELECT_APPROACH'; approach: ApproachType }
   | { type: 'APPEND_RESPONSE'; text: string }
   | { type: 'FINISH_RESPONSE'; turn: ConversationTurn; discoveries: Discovery[] }
   | { type: 'ACKNOWLEDGE_RESPONSE' }
   | { type: 'CLOSE_DISCOVERY' }
+  | { type: 'MARK_DEFLECTION'; topicLabel: string }
   | { type: 'END_CONVERSATION' };

@@ -2,12 +2,7 @@ import { streamText } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { filterKnowledgeByTrust } from '../src/utils/knowledgeGating.ts';
 import { buildSystemPrompt, buildUserPrompt } from '../src/utils/promptTemplates.ts';
-import type { KnowledgeFact, ApproachType } from '../src/types/dialogue.ts';
-
-/**
- * Valid approach types for runtime validation.
- */
-const VALID_APPROACHES: ApproachType[] = ['acuity', 'heart', 'body', 'will'];
+import type { KnowledgeFact } from '../src/types/dialogue.ts';
 
 /**
  * DialogueRequestBody - Expected shape of incoming request payload.
@@ -24,9 +19,7 @@ interface DialogueRequestBody {
   npcRelationships?: string[];
   townSituation?: string;
   topic: string;
-  approach: ApproachType;
   trustLevel: number;
-  statValue: number;
 }
 
 /**
@@ -44,7 +37,7 @@ export const config = {
  * 1. Parse and validate request body
  * 2. Filter NPC facts by trust level (server-side guardrail)
  * 3. Build system prompt with filtered knowledge only
- * 4. Build user prompt with approach and stat value
+ * 4. Build user prompt with topic
  * 5. Stream LLM response back to client
  *
  * The trust-gating happens server-side to prevent prompt injection:
@@ -56,13 +49,6 @@ export async function POST(request: Request): Promise<Response> {
     const body = await request.json() as DialogueRequestBody;
 
     // Input validation
-    if (!body.approach || !VALID_APPROACHES.includes(body.approach)) {
-      return new Response(
-        JSON.stringify({ error: `Invalid approach. Must be one of: ${VALID_APPROACHES.join(', ')}` }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-
     if (typeof body.trustLevel !== 'number' || body.trustLevel < 0 || body.trustLevel > 100) {
       return new Response(
         JSON.stringify({ error: 'trustLevel must be a number between 0 and 100' }),
@@ -77,11 +63,10 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    // Server-side knowledge gating: filter facts by trust and approach
+    // Server-side knowledge gating: filter facts by trust
     const safeFacts = filterKnowledgeByTrust(
       body.npcFacts || [],
-      body.trustLevel,
-      body.approach
+      body.trustLevel
     );
 
     // Build prompts with only the safe (trust-gated) knowledge
@@ -97,11 +82,7 @@ export async function POST(request: Request): Promise<Response> {
       townSituation: body.townSituation,
     });
 
-    const userPrompt = buildUserPrompt(
-      body.topic,
-      body.approach,
-      body.statValue || 3
-    );
+    const userPrompt = buildUserPrompt(body.topic);
 
     // Stream LLM response using AI SDK v6 format
     const result = streamText({

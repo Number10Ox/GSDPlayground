@@ -7,11 +7,12 @@ export const initialDialogueState: DialogueState = {
   phase: 'IDLE',
   currentNPC: null,
   selectedTopic: null,
-  selectedApproach: null,
   conversationHistory: [],
   streamingText: '',
   newDiscoveries: [],
   availableTopics: [],
+  npcDeflected: false,
+  deflectedTopicLabel: null,
 };
 
 /**
@@ -19,8 +20,7 @@ export const initialDialogueState: DialogueState = {
  *
  * Phase transitions:
  *   IDLE -> SELECTING_TOPIC (START_CONVERSATION)
- *   SELECTING_TOPIC -> SELECTING_APPROACH (SELECT_TOPIC)
- *   SELECTING_APPROACH -> STREAMING_RESPONSE (SELECT_APPROACH)
+ *   SELECTING_TOPIC -> STREAMING_RESPONSE (SELECT_TOPIC)
  *   STREAMING_RESPONSE -> RESPONSE_COMPLETE (FINISH_RESPONSE)
  *   RESPONSE_COMPLETE -> SHOWING_DISCOVERY | SELECTING_TOPIC (ACKNOWLEDGE_RESPONSE)
  *   SHOWING_DISCOVERY -> SELECTING_TOPIC | IDLE (CLOSE_DISCOVERY)
@@ -38,12 +38,10 @@ export function dialogueReducer(
       if (state.phase !== 'IDLE') return state;
 
       return {
-        ...state,
+        ...initialDialogueState,
         phase: 'SELECTING_TOPIC',
         currentNPC: action.npcId,
         availableTopics: action.topics,
-        conversationHistory: [],
-        newDiscoveries: [],
       };
     }
 
@@ -53,20 +51,11 @@ export function dialogueReducer(
 
       return {
         ...state,
-        phase: 'SELECTING_APPROACH',
-        selectedTopic: action.topic,
-      };
-    }
-
-    case 'SELECT_APPROACH': {
-      // Guard: only from SELECTING_APPROACH
-      if (state.phase !== 'SELECTING_APPROACH') return state;
-
-      return {
-        ...state,
         phase: 'STREAMING_RESPONSE',
-        selectedApproach: action.approach,
+        selectedTopic: action.topic,
         streamingText: '',
+        npcDeflected: false,
+        deflectedTopicLabel: null,
       };
     }
 
@@ -100,12 +89,16 @@ export function dialogueReducer(
       if (state.phase !== 'RESPONSE_COMPLETE') return state;
 
       const hasDiscoveries = state.newDiscoveries.length > 0;
+      // Mark the topic as explored
+      const updatedTopics = state.availableTopics.map(t =>
+        t.id === state.selectedTopic?.id ? { ...t, explored: true } : t
+      );
 
       return {
         ...state,
         phase: hasDiscoveries ? 'SHOWING_DISCOVERY' : 'SELECTING_TOPIC',
         selectedTopic: hasDiscoveries ? state.selectedTopic : null,
-        selectedApproach: hasDiscoveries ? state.selectedApproach : null,
+        availableTopics: updatedTopics,
       };
     }
 
@@ -123,7 +116,14 @@ export function dialogueReducer(
         phase: 'SELECTING_TOPIC',
         newDiscoveries: [],
         selectedTopic: null,
-        selectedApproach: null,
+      };
+    }
+
+    case 'MARK_DEFLECTION': {
+      return {
+        ...state,
+        npcDeflected: true,
+        deflectedTopicLabel: action.topicLabel,
       };
     }
 
