@@ -57,7 +57,7 @@ export function ConvictionPicker({ onConfirm, onBack }: ConvictionPickerProps) {
   function handleConfirm() {
     const selections = selected.map(seed => ({
       seed,
-      editedText: editedTexts[seed.id] || seed.text,
+      editedText: (editedTexts[seed.id]?.trim() || '') || seed.text,
     }));
     onConfirm(selections);
   }

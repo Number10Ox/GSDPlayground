@@ -1,18 +1,5 @@
-import type { Conviction, ConvictionTest, ConvictionTestTrigger, ConvictionCategory } from '@/types/conviction';
+import type { Conviction, ConvictionTest, ConvictionTestTrigger } from '@/types/conviction';
 import type { EscalationLevel } from '@/types/conflict';
-
-/**
- * Category opposition map - which categories challenge each other.
- * Used for heuristic conviction testing without LLM inference.
- */
-export const CATEGORY_OPPOSITIONS: Record<ConvictionCategory, ConvictionCategory[]> = {
-  mercy: ['justice'],
-  justice: ['mercy', 'community'],
-  faith: ['truth'],
-  community: ['justice', 'duty'],
-  duty: ['mercy', 'community'],
-  truth: ['faith'],
-};
 
 /**
  * Determines if a conflict outcome should test a conviction.
@@ -77,6 +64,11 @@ export function shouldTestFromDiscovery(
 
   // Truth convictions tested when discovering sorcery (supernatural undermines observation)
   if (conviction.category === 'truth' && sinLevel === 'sorcery') {
+    return true;
+  }
+
+  // Duty convictions tested when discovering hate-and-murder (duty to protect was insufficient)
+  if (conviction.category === 'duty' && sinLevel === 'hate-and-murder') {
     return true;
   }
 

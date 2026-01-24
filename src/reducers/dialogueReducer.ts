@@ -123,6 +123,11 @@ export function dialogueReducer(
         t.id === state.selectedTopic?.id ? { ...t, explored: true } : t
       );
 
+      // End conversation after 3+ exchanges (prevents unlimited trust farming)
+      if (!hasDiscoveries && state.conversationHistory.length >= 3) {
+        return initialDialogueState;
+      }
+
       return {
         ...state,
         phase: hasDiscoveries ? 'SHOWING_DISCOVERY' : 'SELECTING_TOPIC',
@@ -153,6 +158,19 @@ export function dialogueReducer(
         ...state,
         npcDeflected: true,
         deflectedTopicLabel: action.topicLabel,
+      };
+    }
+
+    case 'STREAM_ERROR': {
+      // Recover from failed stream — return to topic selection
+      if (state.phase !== 'STREAMING_RESPONSE' && state.phase !== 'GENERATING_OPTIONS') return state;
+      return {
+        ...state,
+        phase: 'SELECTING_TOPIC',
+        streamingText: '',
+        selectedTopic: null,
+        dialogueOptions: [],
+        selectedOption: null,
       };
     }
 

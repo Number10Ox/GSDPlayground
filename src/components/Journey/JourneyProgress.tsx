@@ -10,11 +10,8 @@ export function JourneyProgress() {
   const { journey, dispatch } = useJourney();
 
   function handleContinue() {
-    dispatch({ type: 'CHECK_JOURNEY_COMPLETE' });
-    // If not complete, advance to next town
-    if (!journey.allConvictionsResolved && journey.currentTownIndex < journey.maxTowns - 1) {
-      dispatch({ type: 'ADVANCE_TO_NEXT_TOWN' });
-    }
+    // ADVANCE_TO_NEXT_TOWN checks for journey completion internally
+    dispatch({ type: 'ADVANCE_TO_NEXT_TOWN' });
   }
 
   return (

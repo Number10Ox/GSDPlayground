@@ -181,7 +181,7 @@ describe('journeyReducer', () => {
         });
         expect(state.convictions[0].text).toBe('Mercy must be earned');
         expect(state.convictions[0].strength).toBe('steady');
-        expect(state.convictions[0].lifecycle).toBe('resolved');
+        expect(state.convictions[0].lifecycle).toBe('held'); // Transform doesn't resolve — must be tested again
         expect(state.convictions[0].doubtCount).toBe(0);
       });
 
@@ -208,6 +208,20 @@ describe('journeyReducer', () => {
           type: 'REFLECT_ON_CONVICTION',
           convictionId: 'conv-1',
           choice: 'transform',
+        });
+        expect(state.convictions[0].text).toBe('The faithful deserve mercy');
+      });
+
+      it('rejects whitespace-only newText', () => {
+        const conv = makeConviction({ lifecycle: 'broken' });
+        const initial = stateWithConvictions([conv], {
+          completedTowns: [{ townId: 't0', townName: 'Test Town', judgments: [], convictionTests: [], reflectionChoices: [], traitsGained: [], reputation: 'just', resolved: true, escalatedToMurder: false }],
+        });
+        const state = journeyReducer(initial, {
+          type: 'REFLECT_ON_CONVICTION',
+          convictionId: 'conv-1',
+          choice: 'transform',
+          newText: '   ',
         });
         expect(state.convictions[0].text).toBe('The faithful deserve mercy');
       });

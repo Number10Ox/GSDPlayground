@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": 1769225953978,
+  "updated": 1769230873045,
   "files": {
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/vite.config.ts": {
       "exports": [
@@ -9,9 +9,10 @@
       ],
       "imports": [
         "vite",
-        "@vitejs/plugin-react"
+        "@vitejs/plugin-react",
+        "path"
       ],
-      "indexed": 1769049363189
+      "indexed": 1769229512217
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/App.tsx": {
       "exports": [
@@ -20,6 +21,7 @@
       ],
       "imports": [
         "react",
+        "@/hooks/useJourney",
         "@/hooks/useTown",
         "@/hooks/useCharacter",
         "@/hooks/useGameState",
@@ -27,9 +29,13 @@
         "@/hooks/useInvestigation",
         "@/hooks/useDialogue",
         "@/pages/GameView",
-        "@/components/TownSelection/TownSelection"
+        "@/components/TownSelection/TownSelection",
+        "@/components/Character/CharacterCreation",
+        "@/components/Conviction/ConvictionReflection",
+        "@/components/Journey/JourneyProgress",
+        "@/components/Journey/JourneyEnd"
       ],
-      "indexed": 1769145512004
+      "indexed": 1769230873045
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/tailwind.config.js": {
       "exports": [
@@ -141,11 +147,13 @@
         "@/reducers/conflictReducer",
         "@/reducers/investigationReducer",
         "@/hooks/useTown",
+        "@/hooks/useJourney",
+        "@/utils/convictionTesting",
         "@/utils/topicResolver",
         "@/utils/conflictDice",
         "@/utils/descentClock"
       ],
-      "indexed": 1769225922271
+      "indexed": 1769229406857
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Clocks/Clock.tsx": {
       "exports": [
@@ -233,7 +241,7 @@
         "ConflictAction"
       ],
       "imports": [],
-      "indexed": 1769210442863
+      "indexed": 1769228871697
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/reducers/conflictReducer.ts": {
       "exports": [
@@ -245,7 +253,7 @@
         "@/utils/fallout",
         "@/utils/dice"
       ],
-      "indexed": 1769210709177
+      "indexed": 1769228899213
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/utils/fallout.ts": {
       "exports": [
@@ -347,6 +355,7 @@
         "@/hooks/useConflictAtmosphere",
         "@/hooks/useGameState",
         "@/hooks/useNPCMemory",
+        "@/hooks/useTown",
         "@/utils/conflictNarration",
         "./RaiseControls",
         "./EscalationConfirm",
@@ -356,9 +365,10 @@
         "@/components/DicePool/DieIcon",
         "@/components/Character/TraitAndItemInvocation",
         "@/components/Character/RelationshipDice",
-        "@/hooks/useCharacter"
+        "@/hooks/useCharacter",
+        "@/hooks/useJourney"
       ],
-      "indexed": 1769218455724
+      "indexed": 1769229340291
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Conflict/index.ts": {
       "exports": [
@@ -383,7 +393,7 @@
         "NPCMemoryAction"
       ],
       "imports": [],
-      "indexed": 1769225072682
+      "indexed": 1769226749888
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/hooks/useNPCMemory.tsx": {
       "exports": [
@@ -394,7 +404,7 @@
         "react",
         "@/hooks/useTown"
       ],
-      "indexed": 1769189523748
+      "indexed": 1769226791810
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/NPCMemory/ConflictMarker.tsx": {
       "exports": [
@@ -479,7 +489,7 @@
         "CharacterAction"
       ],
       "imports": [],
-      "indexed": 1769131813719
+      "indexed": 1769228431049
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/reducers/characterReducer.ts": {
       "exports": [
@@ -547,9 +557,10 @@
       "imports": [
         "react",
         "framer-motion",
+        "@/types/conviction",
         "@/utils/dice"
       ],
-      "indexed": 1769117313924
+      "indexed": 1769228948345
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Character/CharacterCreation.tsx": {
       "exports": [
@@ -559,11 +570,13 @@
         "react",
         "lucide-react",
         "@/hooks/useCharacter",
+        "@/hooks/useJourney",
         "@/types/character",
         "@/data/belongingsTable",
-        "@/data/initiationScenes"
+        "@/data/initiationScenes",
+        "@/components/Conviction/ConvictionPicker"
       ],
-      "indexed": 1769189170026
+      "indexed": 1769228658080
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/utils/falloutTraits.ts": {
       "exports": [
@@ -629,12 +642,14 @@
         "Topic",
         "KnowledgeFact",
         "ConversationTurn",
+        "DialogueTone",
+        "DialogueOption",
         "DialoguePhase",
         "DialogueState",
         "DialogueAction"
       ],
       "imports": [],
-      "indexed": 1769225834598
+      "indexed": 1769230481025
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/utils/knowledgeGating.ts": {
       "exports": [
@@ -682,7 +697,7 @@
         "InnerVoiceSituation"
       ],
       "imports": [],
-      "indexed": 1769126054543
+      "indexed": 1769228995537
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/api/dialogue.ts": {
       "exports": [
@@ -712,7 +727,7 @@
         "dialogueReducer"
       ],
       "imports": [],
-      "indexed": 1769225884404
+      "indexed": 1769230486434
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/hooks/useMentalMap.tsx": {
       "exports": [
@@ -739,10 +754,12 @@
         "@/hooks/useCharacter",
         "@/hooks/useNPCMemory",
         "@/hooks/useTown",
+        "@/hooks/useJourney",
         "@/utils/mockDialogue",
-        "@/utils/innerVoiceTemplates"
+        "@/utils/innerVoiceTemplates",
+        "@/utils/convictionTesting"
       ],
-      "indexed": 1769224828690
+      "indexed": 1769230592725
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/MentalMap/SinNode.tsx": {
       "exports": [
@@ -836,9 +853,10 @@
         "@/components/Dialogue/TopicChips",
         "@/components/Dialogue/TypewriterText",
         "@/components/Dialogue/InnerVoice",
-        "@/components/Dialogue/DiscoverySummary"
+        "@/components/Dialogue/DiscoverySummary",
+        "@/components/Dialogue/DialogueOptionCard"
       ],
-      "indexed": 1769224880942
+      "indexed": 1769228850733
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/types/investigation.ts": {
       "exports": [
@@ -875,9 +893,10 @@
         "framer-motion",
         "@/hooks/useInvestigation",
         "@/hooks/useNPCMemory",
+        "@/hooks/useJourney",
         "@/reducers/investigationReducer"
       ],
-      "indexed": 1769127322594
+      "indexed": 1769229044941
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/e2e/steps/investigation.steps.ts": {
       "exports": [
@@ -1047,7 +1066,7 @@
         "@/utils/seededRandom",
         "@/templates/locationTemplates"
       ],
-      "indexed": 1769139204540
+      "indexed": 1769229397173
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/generators/topicRuleGenerator.ts": {
       "exports": [
@@ -1299,6 +1318,165 @@
         "./steps/free-roam.steps"
       ],
       "indexed": 1769218348243
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/types/conviction.ts": {
+      "exports": [
+        "CONVICTION_STRENGTH_DICE",
+        "STRENGTH_ORDER",
+        "ConvictionCategory",
+        "ConvictionStrength",
+        "ConvictionLifecycle",
+        "ConvictionHistoryEntry",
+        "Conviction",
+        "ConvictionTestTrigger",
+        "ConvictionTest",
+        "ReflectionChoice",
+        "ConvictionSeed"
+      ],
+      "imports": [],
+      "indexed": 1769228389562
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/types/journey.ts": {
+      "exports": [
+        "DEFAULT_MAX_TOWNS",
+        "createInitialJourneyState",
+        "JourneyPhase",
+        "TownReputation",
+        "JudgmentRecord",
+        "TownRecord",
+        "JourneyState",
+        "JourneyAction"
+      ],
+      "imports": [],
+      "indexed": 1769228403911
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/data/convictionSeeds.ts": {
+      "exports": [
+        "CONVICTION_SEEDS"
+      ],
+      "imports": [],
+      "indexed": 1769228449011
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/reducers/journeyReducer.ts": {
+      "exports": [
+        "createInitialJourneyState",
+        "journeyReducer"
+      ],
+      "imports": [
+        "@/types/conviction",
+        "@/types/journey"
+      ],
+      "indexed": 1769230649531
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/hooks/useJourney.tsx": {
+      "exports": [
+        "JourneyProvider",
+        "useJourney"
+      ],
+      "imports": [
+        "react",
+        "@/reducers/journeyReducer",
+        "@/types/conviction"
+      ],
+      "indexed": 1769228504002
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Conviction/ConvictionReflection.tsx": {
+      "exports": [
+        "ConvictionReflection"
+      ],
+      "imports": [
+        "react",
+        "framer-motion",
+        "@/hooks/useJourney",
+        "@/types/conviction"
+      ],
+      "indexed": 1769230538987
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Journey/JourneyProgress.tsx": {
+      "exports": [
+        "JourneyProgress"
+      ],
+      "imports": [
+        "framer-motion",
+        "@/hooks/useJourney",
+        "@/types/conviction"
+      ],
+      "indexed": 1769230288059
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Journey/JourneyEnd.tsx": {
+      "exports": [
+        "JourneyEnd"
+      ],
+      "imports": [
+        "framer-motion",
+        "@/hooks/useJourney",
+        "@/types/conviction"
+      ],
+      "indexed": 1769228586915
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Conviction/ConvictionPicker.tsx": {
+      "exports": [
+        "ConvictionPicker"
+      ],
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/data/convictionSeeds"
+      ],
+      "indexed": 1769230641041
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Dialogue/DialogueOptionCard.tsx": {
+      "exports": [
+        "DialogueOptionCard"
+      ],
+      "imports": [
+        "lucide-react"
+      ],
+      "indexed": 1769230563558
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/utils/convictionTesting.ts": {
+      "exports": [
+        "shouldTestFromConflict",
+        "shouldTestFromDiscovery",
+        "getConflictTestDescription",
+        "getDiscoveryTestDescription",
+        "buildConflictTests",
+        "buildDiscoveryTests"
+      ],
+      "imports": [],
+      "indexed": 1769230615369
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/reducers/dialogueReducer.test.ts": {
+      "exports": [],
+      "imports": [
+        "vitest",
+        "./dialogueReducer"
+      ],
+      "indexed": 1769230709080
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/reducers/journeyReducer.test.ts": {
+      "exports": [],
+      "imports": [
+        "vitest",
+        "./journeyReducer"
+      ],
+      "indexed": 1769230688471
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/utils/convictionTesting.test.ts": {
+      "exports": [],
+      "imports": [
+        "vitest",
+        "./convictionTesting"
+      ],
+      "indexed": 1769230717307
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/reducers/conflictReducer.test.ts": {
+      "exports": [],
+      "imports": [
+        "vitest",
+        "./conflictReducer"
+      ],
+      "indexed": 1769229657410
     }
   }
 }

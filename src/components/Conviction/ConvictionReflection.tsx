@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useJourney } from '@/hooks/useJourney';
 import { CONVICTION_STRENGTH_DICE, STRENGTH_ORDER } from '@/types/conviction';
@@ -40,13 +40,21 @@ export function ConvictionReflection() {
     );
   }
 
-  if (!current) {
-    // All reflections complete
-    dispatch({ type: 'SET_PHASE', phase: 'RIDING_ON' });
+  // All reflections complete — advance phase via effect (not during render)
+  const allComplete = !current && testedConvictions.length > 0;
+  useEffect(() => {
+    if (allComplete) {
+      dispatch({ type: 'SET_PHASE', phase: 'RIDING_ON' });
+    }
+  }, [allComplete, dispatch]);
+
+  if (!current && testedConvictions.length > 0) {
     return null;
   }
 
-  const pendingTest = journey.pendingTests.find(t => t.convictionId === current.id);
+  // Read from completedTowns (last entry) since COMPLETE_TOWN clears pendingTests before reflection
+  const lastTown = journey.completedTowns[journey.completedTowns.length - 1];
+  const pendingTest = lastTown?.convictionTests.find(t => t.convictionId === current.id);
   const strengthIdx = STRENGTH_ORDER.indexOf(current.strength);
   const nextStrength = strengthIdx < STRENGTH_ORDER.length - 1 ? STRENGTH_ORDER[strengthIdx + 1] : current.strength;
   const prevStrength = strengthIdx > 0 ? STRENGTH_ORDER[strengthIdx - 1] : current.strength;

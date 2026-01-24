@@ -252,6 +252,74 @@ describe('dialogueReducer', () => {
     });
   });
 
+  describe('STREAM_ERROR', () => {
+    it('recovers from STREAMING_RESPONSE to SELECTING_TOPIC', () => {
+      const streaming: DialogueState = {
+        ...initialDialogueState,
+        phase: 'STREAMING_RESPONSE',
+        currentNPC: 'npc-1',
+        streamingText: 'partial text',
+        selectedOption: mockOption,
+        selectedTopic: mockTopic,
+      };
+      const state = dialogueReducer(streaming, { type: 'STREAM_ERROR' });
+      expect(state.phase).toBe('SELECTING_TOPIC');
+      expect(state.streamingText).toBe('');
+      expect(state.selectedOption).toBeNull();
+    });
+
+    it('recovers from GENERATING_OPTIONS to SELECTING_TOPIC', () => {
+      const generating: DialogueState = {
+        ...initialDialogueState,
+        phase: 'GENERATING_OPTIONS',
+        currentNPC: 'npc-1',
+        selectedTopic: mockTopic,
+      };
+      const state = dialogueReducer(generating, { type: 'STREAM_ERROR' });
+      expect(state.phase).toBe('SELECTING_TOPIC');
+    });
+
+    it('ignores STREAM_ERROR from other phases', () => {
+      const selecting: DialogueState = {
+        ...initialDialogueState,
+        phase: 'SELECTING_TOPIC',
+        currentNPC: 'npc-1',
+      };
+      const state = dialogueReducer(selecting, { type: 'STREAM_ERROR' });
+      expect(state.phase).toBe('SELECTING_TOPIC');
+    });
+  });
+
+  describe('ACKNOWLEDGE_RESPONSE exchange cap', () => {
+    it('ends conversation after 3+ exchanges without discoveries', () => {
+      const complete: DialogueState = {
+        ...initialDialogueState,
+        phase: 'RESPONSE_COMPLETE',
+        currentNPC: 'npc-1',
+        selectedTopic: mockTopic,
+        availableTopics: [mockTopic],
+        conversationHistory: [mockTurn, mockTurn, mockTurn],
+        newDiscoveries: [],
+      };
+      const state = dialogueReducer(complete, { type: 'ACKNOWLEDGE_RESPONSE' });
+      expect(state.phase).toBe('IDLE');
+    });
+
+    it('allows continuation when discoveries present even at 3+ exchanges', () => {
+      const complete: DialogueState = {
+        ...initialDialogueState,
+        phase: 'RESPONSE_COMPLETE',
+        currentNPC: 'npc-1',
+        selectedTopic: mockTopic,
+        availableTopics: [mockTopic],
+        conversationHistory: [mockTurn, mockTurn, mockTurn],
+        newDiscoveries: [{ id: 'd1', factId: 'f1', sinId: null, npcId: 'npc-1', content: 'fact', timestamp: 0, newConnections: [] }],
+      };
+      const state = dialogueReducer(complete, { type: 'ACKNOWLEDGE_RESPONSE' });
+      expect(state.phase).toBe('SHOWING_DISCOVERY');
+    });
+  });
+
   describe('full player voice flow', () => {
     it('completes the IDLE → TOPIC → OPTIONS → OPTION → STREAMING → COMPLETE cycle', () => {
       let state = dialogueReducer(initialDialogueState, {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { JourneyProvider, useJourney } from '@/hooks/useJourney';
 import { TownProvider } from '@/hooks/useTown';
 import { CharacterProvider } from '@/hooks/useCharacter';
@@ -8,6 +8,7 @@ import { InvestigationProvider } from '@/hooks/useInvestigation';
 import { DialogueProvider } from '@/hooks/useDialogue';
 import { GameView } from '@/pages/GameView';
 import { TownSelection } from '@/components/TownSelection/TownSelection';
+import { CharacterCreation } from '@/components/Character/CharacterCreation';
 import { ConvictionReflection } from '@/components/Conviction/ConvictionReflection';
 import { JourneyProgress } from '@/components/Journey/JourneyProgress';
 import { JourneyEnd } from '@/components/Journey/JourneyEnd';
@@ -17,8 +18,22 @@ function JourneyRouter() {
   const { journey, dispatch } = useJourney();
   const [selectedTown, setSelectedTown] = useState<TownData | null>(null);
 
+  // Reset selectedTown when leaving town phases
+  useEffect(() => {
+    if (journey.phase !== 'TOWN_ACTIVE') {
+      setSelectedTown(null);
+    }
+  }, [journey.phase]);
+
   // Handle phase-based routing
   switch (journey.phase) {
+    case 'CHARACTER_CREATION':
+      return (
+        <CharacterCreation
+          onComplete={() => dispatch({ type: 'SET_PHASE', phase: 'TOWN_ACTIVE' })}
+        />
+      );
+
     case 'TOWN_REFLECTION':
       return <ConvictionReflection />;
 
@@ -32,29 +47,22 @@ function JourneyRouter() {
       break;
   }
 
-  // CHARACTER_CREATION and TOWN_ACTIVE phases use the existing town flow
+  // TOWN_ACTIVE phase: select a town then play it
   if (!selectedTown) {
-    return <TownSelection onSelectTown={(town) => {
-      setSelectedTown(town);
-      if (journey.phase === 'CHARACTER_CREATION') {
-        dispatch({ type: 'SET_PHASE', phase: 'TOWN_ACTIVE' });
-      }
-    }} />;
+    return <TownSelection onSelectTown={(town) => setSelectedTown(town)} />;
   }
 
   return (
     <TownProvider town={selectedTown}>
-      <CharacterProvider>
-        <GameProvider>
-          <NPCMemoryProvider>
-            <InvestigationProvider>
-              <DialogueProvider>
-                <GameView />
-              </DialogueProvider>
-            </InvestigationProvider>
-          </NPCMemoryProvider>
-        </GameProvider>
-      </CharacterProvider>
+      <GameProvider>
+        <NPCMemoryProvider>
+          <InvestigationProvider>
+            <DialogueProvider>
+              <GameView />
+            </DialogueProvider>
+          </InvestigationProvider>
+        </NPCMemoryProvider>
+      </GameProvider>
     </TownProvider>
   );
 }
@@ -62,7 +70,9 @@ function JourneyRouter() {
 function App() {
   return (
     <JourneyProvider>
-      <JourneyRouter />
+      <CharacterProvider>
+        <JourneyRouter />
+      </CharacterProvider>
     </JourneyProvider>
   );
 }

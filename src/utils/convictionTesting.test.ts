@@ -97,6 +97,17 @@ describe('shouldTestFromDiscovery', () => {
     expect(shouldTestFromDiscovery(conv, 'sorcery')).toBe(true);
   });
 
+  it('tests duty convictions on hate-and-murder', () => {
+    const conv = makeConviction({ category: 'duty' });
+    expect(shouldTestFromDiscovery(conv, 'hate-and-murder')).toBe(true);
+  });
+
+  it('does not test duty on lower sin levels', () => {
+    const conv = makeConviction({ category: 'duty' });
+    expect(shouldTestFromDiscovery(conv, 'pride')).toBe(false);
+    expect(shouldTestFromDiscovery(conv, 'sorcery')).toBe(false);
+  });
+
   it('does not test on lower sin levels', () => {
     const conv = makeConviction({ category: 'mercy' });
     expect(shouldTestFromDiscovery(conv, 'pride')).toBe(false);

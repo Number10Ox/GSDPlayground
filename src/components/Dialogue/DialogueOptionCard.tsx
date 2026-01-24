@@ -21,13 +21,14 @@ const TONE_COLORS: Record<string, string> = {
 interface DialogueOptionCardProps {
   option: DialogueOption;
   onSelect: (option: DialogueOption) => void;
+  disabled?: boolean;
 }
 
 /**
  * DialogueOptionCard - A single player voice option shown during SELECTING_OPTION phase.
  * Shows the Dog's words, stat icon, tone, and risk/conviction indicators.
  */
-export function DialogueOptionCard({ option, onSelect }: DialogueOptionCardProps) {
+export function DialogueOptionCard({ option, onSelect, disabled }: DialogueOptionCardProps) {
   const Icon = STAT_ICONS[option.associatedStat];
   const toneColor = TONE_COLORS[option.tone] ?? 'text-gray-400';
 
@@ -35,6 +36,7 @@ export function DialogueOptionCard({ option, onSelect }: DialogueOptionCardProps
     <button
       data-testid={`dialogue-option-${option.id}`}
       onClick={() => onSelect(option)}
+      disabled={disabled}
       className={`w-full text-left rounded-lg p-3 transition-colors border cursor-pointer ${
         option.risky
           ? 'bg-gray-800 border-amber-700/50 hover:border-amber-500'

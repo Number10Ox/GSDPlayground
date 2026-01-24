@@ -1,19 +1,19 @@
 {
   "version": 1,
-  "updated": 1769225922272,
+  "updated": 1769230873045,
   "naming": {},
   "directories": {
     "types": {
       "purpose": "TypeScript types",
-      "files": 9
+      "files": 11
     },
     "hooks": {
       "purpose": "React/custom hooks",
-      "files": 8
+      "files": 9
     },
     "components": {
       "purpose": "UI components",
-      "files": 44
+      "files": 47
     },
     "pages": {
       "purpose": "Page components",
@@ -21,7 +21,7 @@
     },
     "utils": {
       "purpose": "Utility functions",
-      "files": 14
+      "files": 16
     },
     "api": {
       "purpose": "API endpoints",

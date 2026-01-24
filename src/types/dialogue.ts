@@ -123,4 +123,5 @@ export type DialogueAction =
   | { type: 'ACKNOWLEDGE_RESPONSE' }
   | { type: 'CLOSE_DISCOVERY' }
   | { type: 'MARK_DEFLECTION'; topicLabel: string }
+  | { type: 'STREAM_ERROR' }
   | { type: 'END_CONVERSATION' };

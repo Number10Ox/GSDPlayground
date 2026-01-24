@@ -64,9 +64,9 @@ export function journeyReducer(
       );
       if (alreadyTested) return state;
 
-      // Mark the conviction as tested
+      // Mark the conviction as tested (from held or shaken)
       const updatedConvictions = state.convictions.map(c =>
-        c.id === action.test.convictionId && c.lifecycle === 'held'
+        c.id === action.test.convictionId && (c.lifecycle === 'held' || c.lifecycle === 'shaken')
           ? { ...c, lifecycle: 'tested' as const }
           : c
       );
@@ -125,12 +125,12 @@ export function journeyReducer(
           break;
         }
         case 'transform': {
-          if (!newText) return state;
+          if (!newText?.trim()) return state;
           updated = {
             ...conviction,
             text: newText,
             strength: 'steady',
-            lifecycle: 'resolved',
+            lifecycle: 'held', // Not resolved — transformed conviction must still be tested
             doubtCount: 0,
             reinforceCount: 0,
             history: [...conviction.history, {
@@ -167,9 +167,22 @@ export function journeyReducer(
     }
 
     case 'ADVANCE_TO_NEXT_TOWN': {
-      // Reset tested convictions back to held (those not resolved/broken)
+      // Check if journey should end instead of advancing
+      const advanceAllResolved = checkAllResolved(state.convictions);
+      const advanceAtMax = state.currentTownIndex >= state.maxTowns - 1;
+      if (advanceAllResolved || advanceAtMax) {
+        return {
+          ...state,
+          allConvictionsResolved: advanceAllResolved,
+          phase: 'JOURNEY_COMPLETE',
+        };
+      }
+
+      // Reset tested/shaken convictions back to held (those not resolved/broken)
       const resetConvictions = state.convictions.map(c =>
-        c.lifecycle === 'tested' ? { ...c, lifecycle: 'held' as const } : c
+        (c.lifecycle === 'tested' || c.lifecycle === 'shaken')
+          ? { ...c, lifecycle: 'held' as const }
+          : c
       );
 
       return {

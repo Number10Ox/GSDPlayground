@@ -184,8 +184,18 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
     async (topic: Topic) => {
       if (!state.currentNPC) return;
 
-      // Advance FSM: select topic (transitions directly to STREAMING_RESPONSE)
+      // Advance FSM through the player-voice phases (legacy path skips option selection)
       dispatch({ type: 'SELECT_TOPIC', topic });
+      const legacyOption: DialogueOption = {
+        id: 'legacy',
+        text: `[Topic: ${topic.label}]`,
+        tone: 'inquisitive',
+        associatedStat: 'acuity',
+        risky: false,
+        convictionAligned: false,
+      };
+      dispatch({ type: 'SET_OPTIONS', options: [legacyOption] });
+      dispatch({ type: 'SELECT_OPTION', option: legacyOption });
 
       const npcId = state.currentNPC;
       const npc = getNPCById(npcId);
@@ -277,6 +287,9 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
             dispatch({ type: 'APPEND_RESPONSE', text: flushed });
           }
         }
+      } catch {
+        dispatch({ type: 'STREAM_ERROR' });
+        return;
       } finally {
         reader.releaseLock();
       }
@@ -470,7 +483,7 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
    */
   const sendSelectedOption = useCallback(
     async (option: DialogueOption) => {
-      if (!state.currentNPC || !state.selectedTopic) return;
+      if (!state.currentNPC || !state.selectedTopic || state.phase !== 'SELECTING_OPTION') return;
 
       dispatch({ type: 'SELECT_OPTION', option });
 
@@ -557,6 +570,9 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
             dispatch({ type: 'APPEND_RESPONSE', text: flushed });
           }
         }
+      } catch {
+        dispatch({ type: 'STREAM_ERROR' });
+        return;
       } finally {
         reader.releaseLock();
       }
@@ -645,7 +661,7 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
         }
       }
     },
-    [state.currentNPC, state.selectedTopic, dispatch, character, getNPCById, getMemoryForNPC, town, npcDispatch, investigationDispatch, journey.currentTownIndex, getActiveConvictions, testConviction]
+    [state.currentNPC, state.selectedTopic, state.phase, dispatch, character, getNPCById, getMemoryForNPC, town, npcDispatch, investigationDispatch, journey.currentTownIndex, getActiveConvictions, testConviction]
   );
 
   /**
