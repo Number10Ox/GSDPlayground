@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-20)
 ## Current Position
 
 Phase: 6.2 of 8 (E2E Test Overhaul)
-Plan: 02 of 5 (also 03 done)
+Plan: 04 of 5 (plans 1-4 done)
 Status: In progress
-Last activity: 2026-01-24 - Completed 06.2-02-PLAN.md (character creation + dialogue rework E2E)
+Last activity: 2026-01-24 - Completed 06.2-04-PLAN.md (trust mechanics E2E)
 
-Progress: [████████████████░░░░] ~84% (Phases 1-6.1 complete, 6.2 plans 1,2,3/5 done, Phases 7-8 remain)
+Progress: [█████████████████░░░] ~86% (Phases 1-6.1 complete, 6.2 plans 1-4/5 done, Phases 7-8 remain)
 
 ## Performance Metrics
 
@@ -184,9 +184,9 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-24
-Stopped at: Completed 06.2-02-PLAN.md (character creation + dialogue rework E2E)
+Stopped at: Completed 06.2-04-PLAN.md (trust mechanics E2E)
 Resume file: None
-Note: Plan 06.2-02 added 9 E2E tests: 5 for character creation wizard (conviction picker enforcement, deselection, back navigation, multiple backgrounds) + 4 for dialogue rework (player voice options via route interception, Press the Matter conflict entry). Total suite: 52 tests (51 stable, 1 flaky trust test pre-existing).
+Note: Plan 06.2-04 added trust data-testid attributes (trust-level, trust-broken), dev-mode trust break/adjust buttons, and 4 E2E tests covering trust visibility, conflict reduction, breaking, and cap persistence. 51/52 tests passing (1 pre-existing flaky).
 
 ## Phase 2 Completion Notes
 
