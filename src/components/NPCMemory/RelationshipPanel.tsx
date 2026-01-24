@@ -135,11 +135,25 @@ export function RelationshipPanel({ npcId, onClose }: RelationshipPanelProps) {
         <p className="mt-2 text-sm text-gray-500">{npc.description}</p>
       </div>
 
+      {/* Trust broken indicator */}
+      {memory?.trustBroken && (
+        <div
+          data-testid={`trust-broken-${npcId}`}
+          className="mx-6 mt-4 px-3 py-1.5 bg-red-900/30 border border-red-800/50 rounded text-xs text-red-300 font-medium"
+        >
+          Trust Broken
+        </div>
+      )}
+
       {/* Relationship meter */}
       <div className="p-6 border-b border-gray-700">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm text-gray-400">Relationship</span>
-          <span className={`text-sm font-semibold ${relationshipInfo.color}`}>
+          <span
+            data-testid={`trust-level-${npcId}`}
+            data-trust-value={relationshipLevel}
+            className={`text-sm font-semibold ${relationshipInfo.color}`}
+          >
             {relationshipInfo.label}
           </span>
         </div>

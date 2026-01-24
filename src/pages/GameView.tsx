@@ -516,30 +516,50 @@ export function GameView() {
               People Here
             </h3>
             <div className="space-y-2">
-              {npcsAtLocation.map((npc) => (
-                <button
-                  key={npc.id}
-                  onClick={() => handleNpcClick(npc.id)}
-                  className="w-full text-left p-2 rounded-lg bg-surface-light hover:bg-gray-700 transition-colors flex items-center gap-3"
-                  data-testid={`npc-button-${npc.id}`}
-                >
-                  <div className="relative">
-                    {/* NPC avatar placeholder */}
-                    <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-gray-300 font-semibold">
-                      {npc.name.charAt(0)}
+              {npcsAtLocation.map((npc) => {
+                const npcMemory = npcMemories.find(m => m.npcId === npc.id);
+                const trustValue = npcMemory?.relationshipLevel ?? 0;
+                return (
+                  <button
+                    key={npc.id}
+                    onClick={() => handleNpcClick(npc.id)}
+                    className="w-full text-left p-2 rounded-lg bg-surface-light hover:bg-gray-700 transition-colors flex items-center gap-3"
+                    data-testid={`npc-button-${npc.id}`}
+                  >
+                    <div className="relative">
+                      {/* NPC avatar placeholder */}
+                      <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-gray-300 font-semibold">
+                        {npc.name.charAt(0)}
+                      </div>
+                      <ConflictMarker npcId={npc.id} size="sm" />
                     </div>
-                    <ConflictMarker npcId={npc.id} size="sm" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-200 truncate">
-                      {npc.name}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate">
-                      {npc.role}
-                    </p>
-                  </div>
-                </button>
-              ))}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-200 truncate">
+                        {npc.name}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {npc.role}
+                      </p>
+                    </div>
+                    {/* Trust indicator (visible in sidebar) */}
+                    <span
+                      data-testid={`trust-level-${npc.id}`}
+                      data-trust-value={trustValue}
+                      className="text-xs text-gray-500"
+                    >
+                      {trustValue}
+                    </span>
+                    {npcMemory?.trustBroken && (
+                      <span
+                        data-testid={`trust-broken-${npc.id}`}
+                        className="text-xs text-red-400"
+                      >
+                        Broken
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -645,6 +665,33 @@ export function GameView() {
               >
                 Add Test Trait
               </button>
+            )}
+            {npcsAtLocation.length > 0 && (
+              <>
+                <button
+                  data-testid="dev-trigger-trust-break"
+                  onClick={() => {
+                    const firstNpc = npcsAtLocation[0];
+                    // Seed trust above threshold first (so it can be broken)
+                    npcMemoryDispatch({ type: 'SEED_RELATIONSHIPS', seeds: [{ npcId: firstNpc.id, initialTrust: 50 }] });
+                    // Then break trust
+                    npcMemoryDispatch({ type: 'BREAK_TRUST', npcIds: [firstNpc.id] });
+                  }}
+                  className="w-full bg-rose-900/50 hover:bg-rose-800/50 text-rose-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Break Trust (First NPC)
+                </button>
+                <button
+                  data-testid="dev-adjust-trust"
+                  onClick={() => {
+                    const firstNpc = npcsAtLocation[0];
+                    npcMemoryDispatch({ type: 'UPDATE_RELATIONSHIP', npcId: firstNpc.id, delta: 10 });
+                  }}
+                  className="w-full bg-teal-900/50 hover:bg-teal-800/50 text-teal-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Adjust Trust +10 (First NPC)
+                </button>
+              </>
             )}
           </div>
         )}
