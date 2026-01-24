@@ -16,8 +16,10 @@ This roadmap delivers a browser-based CRPG adapting Dogs in the Vineyard. The jo
 - [x] **Phase 3: Conflict System** - DitV escalation, raise/see mechanics, and fallout
 - [x] **Phase 4: Character System** - Stats, traits, inventory, and relationships affecting gameplay
 - [x] **Phase 5: Investigation** - NPC dialogue, sin progression discovery, and resolution paths
-- [ ] **Phase 6: Town Generation** - Sin progression templates and NPC relationship generation
+- [x] **Phase 6: Town Generation** - Sin progression templates and NPC relationship generation
+- [x] **Phase 6.1: Core Mechanics Overhaul** - Descent clock, convictions, journey persistence, dialogue rework (INSERTED, RETROSPECTIVE)
 - [ ] **Phase 7: Persistence** - Save/load system with manual and automatic saves
+- [ ] **Phase 8: AI Town Creation** - Player-driven town generation via Claude API with aspect selection and IndexedDB persistence
 
 ## Phase Details
 
@@ -154,40 +156,88 @@ Plans:
 - [x] 06-05-PLAN.md — Multi-town integration (pre-generated towns, selection UI, App wiring)
 - [x] 06-06-PLAN.md — Town generation E2E tests (selection, playability, variety)
 
+### Phase 6.1: Core Mechanics Overhaul (INSERTED, RETROSPECTIVE)
+**Goal**: Replace daily cycle with descent clock, add conviction system, implement journey persistence, and rework dialogue/conflict flow
+**Depends on**: Phase 6
+**Status**: Complete (executed outside GSD framework, documented retrospectively)
+**Success Criteria** (verified post-hoc):
+  1. Daily cycle system replaced with descent clock (8-segment urgency tracker)
+  2. Conviction system: creation, testing, reflection, lifecycle (held→tested→shaken→broken→resolved)
+  3. Journey persistence: multi-town arc with conviction carry-over across towns
+  4. Dialogue rework: removed approach selection, added player voice options, "Press the Matter" conflict entry
+  5. Trust mechanics: ripple effects, trust breaking (permanent cap), relationship memory
+  6. Character creation: 6-step wizard (name, background, stats, belongings, initiation, convictions)
+  7. Town arrival narrative with rumors and greeter NPC
+**Commits**: bb134c3 through f2e30c7 (11 commits, 2026-01-23)
+
+**Key Changes from Earlier Phases:**
+- **Phase 2 (Cycle System)**: Daily cycle replaced by descent clock. Deleted: CycleView, DicePool, CycleSummary, ActionCard, ActionList, FatigueClock
+- **Phase 5 (Investigation)**: Approach selection removed from dialogue. ApproachChips deleted. ConflictTrigger replaced by "Press the Matter" flow. DialogueView substantially rewritten.
+- **Phase 4 (Character)**: CharacterCreation expanded from point-buy to full 6-step wizard with belongings table, initiation scenes, and conviction selection
+
+**New Systems Introduced:**
+- Conviction system (`types/conviction.ts`, `ConvictionPicker`, `ConvictionReflection`, `convictionSeeds`, `convictionTesting`)
+- Journey system (`types/journey.ts`, `journeyReducer`, `useJourney`, `JourneyEnd`, `JourneyProgress`)
+- Descent clock (`types/descent.ts`, `utils/descentClock.ts`, `DescentThreshold`)
+- Authority actions (`types/actions.ts`, `actionAvailability`, `authorityActions`, `ActionMenu`)
+- Dialogue options (`DialogueOptionCard`, player voice generation, inner voice stat-matching)
+- Town arrival (`TownArrival` component with narrative and rumors)
+- Judgment (`JudgmentPanel` for sin resolution)
+- Conflict narration (`conflictNarration`, `conflictDice` utilities)
+
 ### Phase 7: Persistence
 **Goal**: Player can save progress and resume later
-**Depends on**: Phase 6
+**Depends on**: Phase 6.1
 **Requirements**: SAVE-01, SAVE-02
+**Note**: Journey persistence (in-memory state across towns via useJourney/journeyReducer) was built in Phase 6.1. This phase adds **browser persistence** — serializing that state to survive page reloads.
 **Success Criteria** (what must be TRUE):
   1. Player can manually save game at any point
   2. Player can load a previous save and continue from that state
-  3. Game automatically saves at the end of each cycle
-  4. Saves persist across browser sessions
+  3. Game automatically saves at key transition points (town complete, conviction reflection done)
+  4. Saves persist across browser sessions (IndexedDB or localStorage)
 **Plans**: TBD
 
 Plans:
-- [ ] 07-01: Save state serialization
+- [ ] 07-01: Save state serialization (JourneyState + per-town GameState + InvestigationState)
 - [ ] 07-02: Manual save/load UI
-- [ ] 07-03: Autosave system with cycle hooks
+- [ ] 07-03: Autosave at journey phase transitions
 - [ ] 07-04: Persistence E2E tests
+
+### Phase 8: AI Town Creation
+**Goal**: Players can create custom towns by selecting thematic aspects, which are used to generate complete playable towns via Claude API, persisted across sessions via IndexedDB
+**Depends on**: Phase 6.1 (town generation and game systems must be stable; independent of Phase 7 save/load)
+**Success Criteria** (what must be TRUE):
+  1. Player can select town aspects from category tables (root sin, town character, central conflict, key figures)
+  2. Player can add custom entries to any category table
+  3. Selected aspects are sent to Claude API which generates a complete, valid TownData JSON
+  4. Generated towns pass the existing playability validator
+  5. Custom towns are persisted to IndexedDB and survive page reloads
+  6. Custom towns appear alongside built-in towns on the TownSelection screen
+  7. Generated towns are fully playable (dialogue, investigation, conflict systems all function)
+**Plans**: TBD
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 8 to break down)
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7
+Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 6.1 -> 7 -> 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete | 2026-01-21 |
-| 2. Cycle System | 4/4 | Complete | 2026-01-22 |
+| 2. Cycle System | 4/4 | Complete (superseded by 6.1) | 2026-01-22 |
 | 2.1 E2E Testing | 2/2 | Complete | 2026-01-22 |
 | 3. Conflict System | 5/5 | Complete | 2026-01-22 |
-| 4. Character System | 5/5 | Complete | 2026-01-22 |
-| 5. Investigation | 7/7 | Complete | 2026-01-22 |
+| 4. Character System | 5/5 | Complete (expanded by 6.1) | 2026-01-22 |
+| 5. Investigation | 7/7 | Complete (reworked by 6.1) | 2026-01-22 |
 | 6. Town Generation | 6/6 | Complete | 2026-01-22 |
+| 6.1 Core Mechanics Overhaul | n/a | Complete (retrospective) | 2026-01-23 |
 | 7. Persistence | 0/4 | Not started | - |
+| 8. AI Town Creation | 0/? | Not started | - |
 
-**Total:** 31/35 plans complete
+**Total:** 32+ plans complete (Phase 6.1 unplanned, executed ad-hoc)
 
 ---
 *Roadmap created: 2026-01-20*

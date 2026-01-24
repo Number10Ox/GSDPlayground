@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** The player must be able to arrive in a procedurally generated town, discover its moral rot through investigation and NPC interaction, and resolve conflicts using the escalating stakes system — experiencing the weight of judgment that defines Dogs in the Vineyard.
-**Current focus:** Phase 6 complete - Town Generation (sin chains, NPCs, procedural towns, E2E tests)
+**Current focus:** Phase 6.1 complete - Core Mechanics Overhaul (descent clock, convictions, journey, dialogue rework)
 
 ## Current Position
 
-Phase: 6 of 7 (Town Generation)
-Plan: 6 of 6 in current phase
-Status: Phase complete
-Last activity: 2026-01-23 - Completed 06-06-PLAN.md (Town Generation E2E Tests)
+Phase: 6.1 of 8 (Core Mechanics Overhaul)
+Plan: n/a (executed ad-hoc, documented retrospectively)
+Status: Phase 6.1 complete, Phase 7 (Persistence) not started
+Last activity: 2026-01-23 - Edge case fixes for conviction, dialogue, and journey systems (commit f2e30c7)
 
-Progress: [█████████████████░░░] 89%
+Progress: [████████████████░░░░] ~80% (Phases 1-6.1 complete, Phases 7-8 remain)
 
 ## Performance Metrics
 
@@ -162,6 +162,11 @@ Recent decisions affecting current work:
 - [06-06]: Discovery tests use route interception with inline [DISCOVERY:] markers
 - [06-06]: navigateToNPCLocation iterates map nodes to find one with visible NPCs
 
+### Roadmap Evolution
+
+- Phase 6.1 added (retrospective): Core Mechanics Overhaul — descent clock, convictions, journey persistence, dialogue rework (11 commits done outside GSD, documented post-hoc)
+- Phase 8 added: AI Town Creation — Player-driven town generation via Claude API with aspect selection and IndexedDB persistence
+
 ### Pending Todos
 
 1. **Dialogue quality overhaul** (api) — Richer prompt context, NPC motivations/relationships, remove 60-word limit, Citizen Sleeper-style narrative depth
@@ -173,8 +178,9 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-23
-Stopped at: Completed 06-06-PLAN.md (Town Generation E2E Tests) - Phase 6 complete (6/6)
+Stopped at: Phase 6.1 complete (core mechanics overhaul — descent clock, convictions, journey, dialogue rework)
 Resume file: None
+Note: Phase 6.1 was executed ad-hoc (11 commits) without GSD planning. Documented retrospectively.
 
 ## Phase 2 Completion Notes
 
@@ -282,3 +288,38 @@ Phase 6 complete with full E2E test coverage. Town generation pipeline functiona
 - Total E2E suite: 36 tests (9 cycle + 7 conflict + 7 character + 7 investigation + 6 town generation)
 
 Ready for Phase 7 (if applicable).
+
+## Phase 6.1 Completion Notes (Retrospective)
+
+Phase 6.1 executed outside GSD framework (11 commits, 2026-01-23). Major architectural changes:
+
+**Superseded Phase 2 (Cycle System):**
+- Daily cycle (WAKE→ALLOCATE→RESOLVE→SUMMARY→REST) replaced by descent clock (8 segments)
+- Deleted: CycleView, DicePool, DieComponent, CycleSummary, ActionCard, ActionList, FatigueClock
+- Dice pool generation still exists for conflicts, but no longer drives a per-day allocation loop
+
+**Expanded Phase 4 (Character System):**
+- CharacterCreation expanded from point-buy to 6-step wizard (name, background, stats, belongings, initiation, convictions)
+- Added: belongingsTable, initiationScenes, relationshipSeeds, ConvictionPicker
+
+**Reworked Phase 5 (Investigation):**
+- Removed approach selection from dialogue (ApproachChips deleted)
+- Added player voice: DialogueOptionCard with tone/stat/risk
+- "Press the Matter" replaces ConflictTrigger for explicit conflict entry
+- DialogueView, useDialogue, dialogueReducer substantially rewritten
+
+**New Systems:**
+- Conviction system (creation, testing, reflection, lifecycle across towns)
+- Journey persistence (multi-town arc with phase routing)
+- Descent clock with threshold events
+- Authority actions (timed actions, conflict definitions, availability gating)
+- Trust ripple/break mechanics
+- Town arrival narrative
+- Judgment panel for sin resolution
+
+**Architectural State After Phase 6.1:**
+- App structure: JourneyProvider → CharacterProvider → JourneyRouter
+- JourneyRouter routes: CHARACTER_CREATION → TOWN_ACTIVE → TOWN_REFLECTION → RIDING_ON → JOURNEY_COMPLETE
+- Per-town: TownProvider → GameProvider → NPCMemoryProvider → InvestigationProvider → DialogueProvider
+- Game loop: explore locations → dialogue with NPCs → discover sins → timed actions (advance descent) → conflicts → judgment
+- No daily cycle; descent clock advances through actions and creates urgency
