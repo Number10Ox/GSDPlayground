@@ -13,6 +13,8 @@ export const initialDialogueState: DialogueState = {
   availableTopics: [],
   npcDeflected: false,
   deflectedTopicLabel: null,
+  dialogueOptions: [],
+  selectedOption: null,
 };
 
 /**
@@ -20,7 +22,9 @@ export const initialDialogueState: DialogueState = {
  *
  * Phase transitions:
  *   IDLE -> SELECTING_TOPIC (START_CONVERSATION)
- *   SELECTING_TOPIC -> STREAMING_RESPONSE (SELECT_TOPIC)
+ *   SELECTING_TOPIC -> GENERATING_OPTIONS (SELECT_TOPIC)
+ *   GENERATING_OPTIONS -> SELECTING_OPTION (SET_OPTIONS)
+ *   SELECTING_OPTION -> STREAMING_RESPONSE (SELECT_OPTION)
  *   STREAMING_RESPONSE -> RESPONSE_COMPLETE (FINISH_RESPONSE)
  *   RESPONSE_COMPLETE -> SHOWING_DISCOVERY | SELECTING_TOPIC (ACKNOWLEDGE_RESPONSE)
  *   SHOWING_DISCOVERY -> SELECTING_TOPIC | IDLE (CLOSE_DISCOVERY)
@@ -51,11 +55,36 @@ export function dialogueReducer(
 
       return {
         ...state,
-        phase: 'STREAMING_RESPONSE',
+        phase: 'GENERATING_OPTIONS',
         selectedTopic: action.topic,
         streamingText: '',
         npcDeflected: false,
         deflectedTopicLabel: null,
+        dialogueOptions: [],
+        selectedOption: null,
+      };
+    }
+
+    case 'SET_OPTIONS_LOADING': {
+      if (state.phase !== 'GENERATING_OPTIONS') return state;
+      return state;
+    }
+
+    case 'SET_OPTIONS': {
+      if (state.phase !== 'GENERATING_OPTIONS') return state;
+      return {
+        ...state,
+        phase: 'SELECTING_OPTION',
+        dialogueOptions: action.options,
+      };
+    }
+
+    case 'SELECT_OPTION': {
+      if (state.phase !== 'SELECTING_OPTION') return state;
+      return {
+        ...state,
+        phase: 'STREAMING_RESPONSE',
+        selectedOption: action.option,
       };
     }
 

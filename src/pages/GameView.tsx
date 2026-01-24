@@ -23,6 +23,8 @@ import { RELATIONSHIP_SEEDS } from '@/data/relationshipSeeds';
 import { initialConflictState, conflictReducer } from '@/reducers/conflictReducer';
 import { SIN_CHAIN_ORDER } from '@/reducers/investigationReducer';
 import { useTown } from '@/hooks/useTown';
+import { useJourney } from '@/hooks/useJourney';
+import { buildConflictTests } from '@/utils/convictionTesting';
 import { resolveTopicsForNPC } from '@/utils/topicResolver';
 import { buildPlayerDicePool, buildNPCDicePool } from '@/utils/conflictDice';
 import type { ActionContext } from '@/utils/actionAvailability';
@@ -41,6 +43,7 @@ export function GameView() {
   const { npcs, memories: npcMemories, dispatch: npcMemoryDispatch } = useNPCMemory();
   const { state: investigationState, dispatch: investigationDispatch } = useInvestigation();
   const { dispatch: dialogueDispatch } = useDialogue();
+  const { journey, testConviction, getActiveConvictions } = useJourney();
 
   // Track selected NPC for relationship panel
   const [selectedNpcId, setSelectedNpcId] = useState<string | null>(null);
@@ -191,12 +194,6 @@ export function GameView() {
     dialogueDispatch({ type: 'START_CONVERSATION', npcId, topics: enrichedTopics });
   }, [investigationState, currentLocation, dialogueDispatch, town.topicRules, npcs, npcMemories]);
 
-  // Handle dialogue close
-  const handleDialogueClose = useCallback(() => {
-    setShowDialogue(false);
-    setDialogueNpcId(null);
-  }, []);
-
   // Start a test conflict (dev mode) — directly shows approach selection
   const handleStartTestConflict = useCallback(() => {
     setPendingConflictSetup({ npcId: 'sheriff-jacob', stakes: 'who controls the law in this town' });
@@ -307,10 +304,25 @@ export function GameView() {
           }
         }
       }
+
+      // Test convictions based on conflict outcome
+      const activeConvictions = getActiveConvictions();
+      if (activeConvictions.length > 0) {
+        const tests = buildConflictTests(
+          activeConvictions,
+          info.escalationLevel,
+          info.outcome,
+          activeConflict.npcId,
+          `town-${journey.currentTownIndex}`,
+        );
+        for (const test of tests) {
+          testConviction(test.convictionId, test.trigger, test.description);
+        }
+      }
     }
 
     setConflictState(null);
-  }, [activeConflict, investigationState.sinProgression, investigationDispatch, dispatch, town.conflictDefinitions, npcMemoryDispatch, advanceDescentWithEffects]);
+  }, [activeConflict, investigationState.sinProgression, investigationDispatch, dispatch, town.conflictDefinitions, npcMemoryDispatch, advanceDescentWithEffects, getActiveConvictions, journey.currentTownIndex, testConviction]);
 
   // Build action context for ActionMenu
   const actionContext: ActionContext = useMemo(() => {

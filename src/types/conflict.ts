@@ -91,6 +91,7 @@ export type ConflictState =
       usedTraits: string[];   // Trait IDs invoked this conflict (once per trait)
       usedItems: string[];    // Item IDs used this conflict (once per item)
       usedRelationships: string[];  // Relationship IDs used this conflict (once per relationship)
+      usedConvictions: string[];  // Conviction IDs invoked this conflict (once per conviction)
     }
   | {
       phase: 'RESOLVED';
@@ -160,5 +161,10 @@ export type ConflictAction =
   | {
       type: 'USE_RELATIONSHIP';
       relationshipId: string;
+      dice: Die[];  // Already rolled dice to add to player pool
+    }
+  | {
+      type: 'INVOKE_CONVICTION';
+      convictionId: string;
       dice: Die[];  // Already rolled dice to add to player pool
     };

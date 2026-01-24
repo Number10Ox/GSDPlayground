@@ -9,7 +9,8 @@ export type InnerVoiceSituation =
   | 'sin-connection'
   | 'conflict-risk'
   | 'trust-low'
-  | 'trust-high';
+  | 'trust-high'
+  | 'conviction-tested';
 
 /**
  * INNER_VOICE_TEMPLATES - Stat-based inner voice interjection templates.
@@ -55,6 +56,11 @@ export const INNER_VOICE_TEMPLATES: Record<StatName, Record<InnerVoiceSituation,
       'You have earned something precious here. Do not squander their trust.',
       'Their words flow easier now. They believe you can carry what they are about to share.',
     ],
+    'conviction-tested': [
+      'The facts do not align with what you believed. Something must give.',
+      'Your conviction strains against the evidence before you. Which will bend?',
+      'You built your reasoning on that belief. Now the foundation cracks.',
+    ],
   },
 
   heart: {
@@ -88,6 +94,11 @@ export const INNER_VOICE_TEMPLATES: Record<StatName, Record<InnerVoiceSituation,
       'They look at you with something like hope. Do not let them down.',
       'The vulnerability in their voice -- they are trusting you with something precious.',
       'You feel the warmth of genuine connection. They are ready to share their burden.',
+    ],
+    'conviction-tested': [
+      'Your heart aches with the weight of what you have learned. Can you still believe?',
+      'The mercy you held so dear -- does it still apply here? The answer hurts.',
+      'What you feel and what you believed are pulling in different directions now.',
     ],
   },
 
@@ -123,6 +134,11 @@ export const INNER_VOICE_TEMPLATES: Record<StatName, Record<InnerVoiceSituation,
       'They no longer flinch when you move. You have become safe in their eyes.',
       'The tension has left their frame. They stand open to you now -- vulnerable.',
     ],
+    'conviction-tested': [
+      'Your body remembers the cost of that conviction. The scars speak louder than words.',
+      'The violence you witnessed puts the lie to what you believed. Your fists know the truth.',
+      'Strength alone cannot uphold a belief the world keeps breaking against.',
+    ],
   },
 
   will: {
@@ -156,6 +172,11 @@ export const INNER_VOICE_TEMPLATES: Record<StatName, Record<InnerVoiceSituation,
       'They see the authority you carry. Use it wisely -- the King of Life watches.',
       'Their submission to your office is proper. Now guide them toward what is right.',
       'They trust the mantle you wear. Honor that trust with righteous judgment.',
+    ],
+    'conviction-tested': [
+      'The doctrine you carry feels heavier now. Is it the weight of truth, or the weight of doubt?',
+      'Your conviction was forged in simpler times. This town demands something harder.',
+      'The King of Life tests His servants with questions that have no easy answers.',
     ],
   },
 };

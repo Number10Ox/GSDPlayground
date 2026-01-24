@@ -49,7 +49,8 @@ export type DiceSource =
   | { source: 'stat'; statName: StatName; dice: CharacterDie[] }
   | { source: 'trait'; traitId: string; traitName: string; dice: CharacterDie[] }
   | { source: 'item'; itemId: string; itemName: string; dice: CharacterDie[] }
-  | { source: 'relationship'; npcId: string; npcName: string; dice: CharacterDie[] };
+  | { source: 'relationship'; npcId: string; npcName: string; dice: CharacterDie[] }
+  | { source: 'conviction'; convictionId: string; convictionText: string; dice: CharacterDie[] };
 
 // Background determines starting dice allocation
 export type Background = 'complicated-history' | 'strong-community' | 'well-rounded';

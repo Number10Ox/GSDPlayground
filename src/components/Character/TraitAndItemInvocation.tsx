@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { Trait, Item } from '@/types/character';
 import type { Die, DieType } from '@/types/game';
 import type { ConflictAction } from '@/types/conflict';
+import type { Conviction } from '@/types/conviction';
+import { CONVICTION_STRENGTH_DICE } from '@/types/conviction';
 import { rollDie } from '@/utils/dice';
 
 /**
@@ -40,8 +42,10 @@ function rollCharacterDice(characterDice: { id: string; type: DieType }[]): Die[
 interface TraitAndItemInvocationProps {
   traits: Trait[];
   items: Item[];
+  convictions?: Conviction[];
   usedTraitIds: string[];
   usedItemIds: string[];
+  usedConvictionIds?: string[];
   dispatch: (action: ConflictAction) => void;
 }
 
@@ -57,17 +61,21 @@ interface TraitAndItemInvocationProps {
 export function TraitAndItemInvocation({
   traits,
   items,
+  convictions = [],
   usedTraitIds,
   usedItemIds,
+  usedConvictionIds = [],
   dispatch,
 }: TraitAndItemInvocationProps) {
   const usedTraitSet = useMemo(() => new Set(usedTraitIds), [usedTraitIds]);
   const usedItemSet = useMemo(() => new Set(usedItemIds), [usedItemIds]);
+  const usedConvictionSet = useMemo(() => new Set(usedConvictionIds), [usedConvictionIds]);
 
   const hasTraits = traits.length > 0;
   const hasItems = items.length > 0;
+  const hasConvictions = convictions.length > 0;
 
-  if (!hasTraits && !hasItems) {
+  if (!hasTraits && !hasItems && !hasConvictions) {
     return null;
   }
 
@@ -87,6 +95,17 @@ export function TraitAndItemInvocation({
     dispatch({
       type: 'USE_ITEM',
       itemId: item.id,
+      dice: rolledDice,
+    });
+  };
+
+  const handleInvokeConviction = (conviction: Conviction) => {
+    if (usedConvictionSet.has(conviction.id)) return;
+    const dieType = CONVICTION_STRENGTH_DICE[conviction.strength];
+    const rolledDice = rollCharacterDice([{ id: `${conviction.id}-die`, type: dieType }]);
+    dispatch({
+      type: 'INVOKE_CONVICTION',
+      convictionId: conviction.id,
       dice: rolledDice,
     });
   };
@@ -155,7 +174,7 @@ export function TraitAndItemInvocation({
 
         {/* Items section */}
         {hasItems && (
-          <div>
+          <div className="mb-3">
             <h4 className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-semibold">
               Items
             </h4>
@@ -196,6 +215,53 @@ export function TraitAndItemInvocation({
                         className="text-[11px] px-2 py-1 rounded bg-green-700 hover:bg-green-600 text-green-100 font-semibold transition-colors flex-shrink-0"
                       >
                         Use
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Convictions section */}
+        {hasConvictions && (
+          <div>
+            <h4 className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-semibold">
+              Convictions
+            </h4>
+            <div className="space-y-1">
+              {convictions.map((conviction) => {
+                const isUsed = usedConvictionSet.has(conviction.id);
+                const dieType = CONVICTION_STRENGTH_DICE[conviction.strength];
+                return (
+                  <div
+                    key={conviction.id}
+                    className={`flex items-center gap-2 p-2 rounded ${
+                      isUsed ? 'opacity-40' : 'hover:bg-gray-800/50'
+                    }`}
+                  >
+                    <span className="text-sm text-gray-200 flex-1 truncate italic">
+                      "{conviction.text}"
+                    </span>
+
+                    <span
+                      className={`w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold text-white ${dieColorClasses[dieType]}`}
+                    >
+                      {dieType.slice(1)}
+                    </span>
+
+                    {isUsed ? (
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-gray-700 text-gray-500 flex-shrink-0">
+                        Used
+                      </span>
+                    ) : (
+                      <button
+                        data-testid={`invoke-conviction-${conviction.id}`}
+                        onClick={() => handleInvokeConviction(conviction)}
+                        className="text-[11px] px-2 py-1 rounded bg-purple-700 hover:bg-purple-600 text-purple-100 font-semibold transition-colors flex-shrink-0"
+                      >
+                        Invoke
                       </button>
                     )}
                   </div>

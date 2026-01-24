@@ -18,6 +18,7 @@ import { DieIcon } from '@/components/DicePool/DieIcon';
 import { TraitAndItemInvocation } from '@/components/Character/TraitAndItemInvocation';
 import { RelationshipDice } from '@/components/Character/RelationshipDice';
 import { useCharacter } from '@/hooks/useCharacter';
+import { useJourney } from '@/hooks/useJourney';
 
 /**
  * NPC response descriptions for variety
@@ -74,6 +75,7 @@ export interface ConflictOutcomeInfo {
   hadFallout: boolean;
   falloutSeverity: FalloutSeverity;
   escalationsJumped: number;
+  escalationLevel: EscalationLevel;
 }
 
 interface ConflictViewProps {
@@ -106,6 +108,7 @@ export function ConflictView({
   const { character } = useCharacter();
   const { dispatch: npcDispatch, getWitnessesAtLocation } = useNPCMemory();
   const town = useTown();
+  const { getActiveConvictions } = useJourney();
   const [state, dispatch] = useReducer(
     conflictReducer,
     initialState ?? initialConflictState
@@ -147,12 +150,14 @@ export function ConflictView({
         ? state.outcome
         : 'PLAYER_GAVE';
 
-      // Count player escalations from the current state's turn history
+      // Count player escalations and determine max escalation level
       let escalations = 0;
+      let escalationLevel: EscalationLevel = 'JUST_TALKING';
       if (state.phase === 'ACTIVE') {
         escalations = state.turnHistory.filter(
           t => t.actor === 'PLAYER' && t.action === 'ESCALATE'
         ).length;
+        escalationLevel = state.playerEscalation;
       }
 
       onComplete?.({
@@ -160,6 +165,7 @@ export function ConflictView({
         hadFallout: severity !== 'NONE',
         falloutSeverity: severity,
         escalationsJumped: escalations,
+        escalationLevel,
       });
     },
     [gameDispatch, onComplete, state, initialState]
@@ -522,12 +528,14 @@ export function ConflictView({
             )}
 
             {/* Trait & Item Invocation - available during player's raise/see turns */}
-            {isPlayerTurn && character && (character.traits.length > 0 || character.inventory.length > 0) && state.phase === 'ACTIVE' && (
+            {isPlayerTurn && character && state.phase === 'ACTIVE' && (
               <TraitAndItemInvocation
                 traits={character.traits}
                 items={character.inventory}
+                convictions={getActiveConvictions()}
                 usedTraitIds={state.usedTraits}
                 usedItemIds={state.usedItems}
+                usedConvictionIds={state.usedConvictions}
                 dispatch={dispatch}
               />
             )}

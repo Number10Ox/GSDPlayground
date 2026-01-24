@@ -55,11 +55,39 @@ export interface ConversationTurn {
 }
 
 /**
+ * DialogueTone - How the Dog delivers their words.
+ */
+export type DialogueTone =
+  | 'compassionate'
+  | 'authoritative'
+  | 'inquisitive'
+  | 'confrontational'
+  | 'gentle'
+  | 'stern';
+
+/**
+ * DialogueOption - A generated speech option for the player.
+ * Replaces the silent "[Topic: label]" with authored player voice.
+ */
+export interface DialogueOption {
+  id: string;
+  text: string;
+  tone: DialogueTone;
+  associatedStat: StatName;
+  risky: boolean;
+  riskDescription?: string;
+  convictionAligned: boolean;
+  convictionId?: string;
+}
+
+/**
  * DialoguePhase - The FSM states for a conversation.
  */
 export type DialoguePhase =
   | 'IDLE'
   | 'SELECTING_TOPIC'
+  | 'GENERATING_OPTIONS'
+  | 'SELECTING_OPTION'
   | 'STREAMING_RESPONSE'
   | 'RESPONSE_COMPLETE'
   | 'SHOWING_DISCOVERY';
@@ -77,6 +105,8 @@ export interface DialogueState {
   availableTopics: Topic[];
   npcDeflected: boolean;
   deflectedTopicLabel: string | null;
+  dialogueOptions: DialogueOption[];
+  selectedOption: DialogueOption | null;
 }
 
 /**
@@ -85,6 +115,9 @@ export interface DialogueState {
 export type DialogueAction =
   | { type: 'START_CONVERSATION'; npcId: string; topics: Topic[] }
   | { type: 'SELECT_TOPIC'; topic: Topic }
+  | { type: 'SET_OPTIONS_LOADING' }
+  | { type: 'SET_OPTIONS'; options: DialogueOption[] }
+  | { type: 'SELECT_OPTION'; option: DialogueOption }
   | { type: 'APPEND_RESPONSE'; text: string }
   | { type: 'FINISH_RESPONSE'; turn: ConversationTurn; discoveries: Discovery[] }
   | { type: 'ACKNOWLEDGE_RESPONSE' }

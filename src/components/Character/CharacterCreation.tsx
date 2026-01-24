@@ -1,12 +1,15 @@
 import { useState, useCallback, useMemo } from 'react';
 import { Lightbulb, Hand, Heart, Cross } from 'lucide-react';
 import { useCharacter } from '@/hooks/useCharacter';
+import { useJourney } from '@/hooks/useJourney';
 import { createCharacter, BACKGROUND_DICE, STAT_POINT_TO_DIE_TYPE } from '@/types/character';
 import type { Background, StatName, Item, Trait } from '@/types/character';
+import type { Conviction, ConvictionSeed } from '@/types/conviction';
 import { drawBelongings, type BelongingTemplate } from '@/data/belongingsTable';
 import { INITIATION_SCENES, type InitiationScene, type InitiationApproach } from '@/data/initiationScenes';
+import { ConvictionPicker } from '@/components/Conviction/ConvictionPicker';
 
-type CreationStep = 'name' | 'background' | 'allocate' | 'belongings' | 'initiation';
+type CreationStep = 'name' | 'background' | 'allocate' | 'belongings' | 'initiation' | 'convictions';
 
 const STAT_ICONS: Record<StatName, typeof Lightbulb> = {
   acuity: Lightbulb,
@@ -72,6 +75,7 @@ const MAX_PER_STAT = 4;
  */
 export function CharacterCreation({ onComplete }: { onComplete?: () => void }) {
   const { dispatch } = useCharacter();
+  const { dispatch: journeyDispatch } = useJourney();
 
   const [step, setStep] = useState<CreationStep>('name');
   const [name, setName] = useState('');
@@ -147,7 +151,12 @@ export function CharacterCreation({ onComplete }: { onComplete?: () => void }) {
     };
   }, [chosenApproach]);
 
-  const handleConfirm = useCallback(() => {
+  const handleProceedToConvictions = useCallback(() => {
+    if (!chosenApproach) return;
+    setStep('convictions');
+  }, [chosenApproach]);
+
+  const handleConfirm = useCallback((convictionSelections: { seed: ConvictionSeed; editedText: string }[]) => {
     if (!background || remaining !== 0) return;
     if (selectedBelongingIds.size !== 2) return;
     if (!initiationTrait) return;
@@ -158,8 +167,26 @@ export function CharacterCreation({ onComplete }: { onComplete?: () => void }) {
     // Add initiation trait
     character.traits.push(initiationTrait);
     dispatch({ type: 'SET_CHARACTER', character });
+
+    // Create convictions from selections
+    const convictions: Conviction[] = convictionSelections.map(({ seed, editedText }) => ({
+      id: crypto.randomUUID(),
+      text: editedText,
+      originalText: editedText,
+      strength: 'steady' as const,
+      lifecycle: 'held' as const,
+      associatedStat: seed.associatedStat,
+      category: seed.category,
+      doubtCount: 0,
+      reinforceCount: 0,
+      history: [],
+    }));
+
+    journeyDispatch({ type: 'SET_CHARACTER', character });
+    journeyDispatch({ type: 'SET_CONVICTIONS', convictions });
+
     onComplete?.();
-  }, [name, background, allocation, remaining, selectedBelongingIds, selectedItems, initiationTrait, dispatch, onComplete]);
+  }, [name, background, allocation, remaining, selectedBelongingIds, selectedItems, initiationTrait, dispatch, journeyDispatch, onComplete]);
 
   const statOrder: StatName[] = ['acuity', 'body', 'heart', 'will'];
 
@@ -466,8 +493,8 @@ export function CharacterCreation({ onComplete }: { onComplete?: () => void }) {
                 Back
               </button>
               <button
-                data-testid="creation-confirm"
-                onClick={handleConfirm}
+                data-testid="creation-to-convictions"
+                onClick={handleProceedToConvictions}
                 disabled={!chosenApproach}
                 className={`flex-1 py-2 rounded-lg font-semibold transition-colors ${
                   chosenApproach
@@ -475,10 +502,17 @@ export function CharacterCreation({ onComplete }: { onComplete?: () => void }) {
                     : 'bg-gray-700 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                Begin Your Journey
+                Continue
               </button>
             </div>
           </div>
+        )}
+        {/* Step 6: Convictions */}
+        {step === 'convictions' && (
+          <ConvictionPicker
+            onConfirm={handleConfirm}
+            onBack={() => setStep('initiation')}
+          />
         )}
       </div>
     </div>

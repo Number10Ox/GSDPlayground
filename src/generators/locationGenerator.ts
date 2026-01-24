@@ -79,8 +79,6 @@ export function generateLocations(npcCount: number, seed: string): Location[] {
   // Generate locations from selected slots
   const locations: Location[] = selectedIndices.map(idx => {
     const slot = template.slots[idx];
-    const slotKey = getSlotKey(slot, idx, template.slots);
-
     // Pick name and description variants using RNG
     const name = rng.pick(slot.nameVariants);
     const description = rng.pick(slot.descriptionVariants);

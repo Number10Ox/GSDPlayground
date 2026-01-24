@@ -108,6 +108,7 @@ export function conflictReducer(
         usedTraits: [],
         usedItems: [],
         usedRelationships: [],
+        usedConvictions: [],
       };
     }
 
@@ -515,6 +516,27 @@ export function conflictReducer(
       return {
         ...state,
         usedRelationships: [...state.usedRelationships, action.relationshipId],
+        playerPool: [...state.playerPool, ...action.dice],
+      };
+    }
+
+    case 'INVOKE_CONVICTION': {
+      // Phase guard: ACTIVE only
+      if (state.phase !== 'ACTIVE') {
+        return state;
+      }
+      // Turn guard: only during player's raise or see
+      if (state.currentTurn !== 'PLAYER_RAISE' && state.currentTurn !== 'PLAYER_SEE') {
+        return state;
+      }
+      // Guard: conviction must not already be used this conflict
+      if (state.usedConvictions.includes(action.convictionId)) {
+        return state;
+      }
+
+      return {
+        ...state,
+        usedConvictions: [...state.usedConvictions, action.convictionId],
         playerPool: [...state.playerPool, ...action.dice],
       };
     }

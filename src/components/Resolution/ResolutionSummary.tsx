@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion';
 import { useInvestigation } from '@/hooks/useInvestigation';
 import { useNPCMemory } from '@/hooks/useNPCMemory';
+import { useJourney } from '@/hooks/useJourney';
 import { SIN_CHAIN_ORDER } from '@/reducers/investigationReducer';
 import type { SinLevel } from '@/types/investigation';
+import type { TownRecord } from '@/types/journey';
 
 /**
  * Get the outcome text for the town resolution scenario.
@@ -86,6 +88,7 @@ const sinLevelLabels: Record<SinLevel, string> = {
 export function ResolutionSummary() {
   const { state: investigationState } = useInvestigation();
   const { npcs, memories } = useNPCMemory();
+  const { journey, dispatch: journeyDispatch } = useJourney();
 
   const { townResolved, sinProgression, sinEscalatedToMurder } = investigationState;
 
@@ -230,6 +233,29 @@ export function ResolutionSummary() {
         >
           <button
             data-testid="resolution-ride-on"
+            onClick={() => {
+              // Build town record for journey history
+              const reputation: TownRecord['reputation'] = townResolved && !sinEscalatedToMurder
+                ? 'just'
+                : sinEscalatedToMurder
+                  ? 'harsh'
+                  : 'absent';
+
+              const record: TownRecord = {
+                townId: `town-${journey.currentTownIndex}`,
+                townName: `Town ${journey.currentTownIndex + 1}`,
+                judgments: [],
+                convictionTests: journey.pendingTests,
+                reflectionChoices: [],
+                traitsGained: [],
+                reputation,
+                resolved: townResolved,
+                escalatedToMurder: sinEscalatedToMurder,
+              };
+
+              journeyDispatch({ type: 'COMPLETE_TOWN', record });
+              journeyDispatch({ type: 'SET_PHASE', phase: 'TOWN_REFLECTION' });
+            }}
             className="px-6 py-3 bg-amber-700 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors cursor-pointer"
           >
             Ride On

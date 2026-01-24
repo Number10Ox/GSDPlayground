@@ -7,6 +7,7 @@ import { TopicChips } from '@/components/Dialogue/TopicChips';
 import { TypewriterText } from '@/components/Dialogue/TypewriterText';
 import { InnerVoice } from '@/components/Dialogue/InnerVoice';
 import { DiscoverySummary } from '@/components/Dialogue/DiscoverySummary';
+import { DialogueOptionCard } from '@/components/Dialogue/DialogueOptionCard';
 import type { StatName } from '@/types/character';
 
 import type { DieType } from '@/types/game';
@@ -43,7 +44,7 @@ function getHighestStat(stats: Record<StatName, { dice: { id: string; type: DieT
  * - SHOWING_DISCOVERY: DiscoverySummary overlay
  */
 export function DialogueView() {
-  const { state, sendMessage, endConversation, dispatch } = useDialogue();
+  const { state, generateOptions, sendSelectedOption, endConversation, dispatch } = useDialogue();
   const { character } = useCharacter();
   const { getNPCById } = useNPCMemory();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -61,11 +62,22 @@ export function DialogueView() {
   if (state.phase === 'IDLE') return null;
 
   // Build full display text from conversation history + current streaming
+  // Include both player dialogue and NPC response for the player voice experience
   const historyText = state.conversationHistory
-    .map((turn) => turn.npcResponse)
-    .join('\n\n');
+    .map((turn) => {
+      const playerLine = turn.playerDialogue && !turn.playerDialogue.startsWith('[Topic:')
+        ? `**You:** "${turn.playerDialogue}"\n\n`
+        : '';
+      return playerLine + turn.npcResponse;
+    })
+    .join('\n\n---\n\n');
+  const currentPlayerLine = state.selectedOption && state.phase === 'STREAMING_RESPONSE'
+    ? `**You:** "${state.selectedOption.text}"\n\n`
+    : '';
   const displayText = state.phase === 'STREAMING_RESPONSE'
-    ? (historyText ? historyText + '\n\n' + state.streamingText : state.streamingText)
+    ? (historyText
+        ? historyText + '\n\n---\n\n' + currentPlayerLine + state.streamingText
+        : currentPlayerLine + state.streamingText)
     : historyText;
 
   // Determine inner voice params
@@ -140,7 +152,7 @@ export function DialogueView() {
               <TopicChips
                 topics={state.availableTopics}
                 onSelect={(topic) => {
-                  sendMessage(topic);
+                  generateOptions(topic);
                 }}
               />
 
@@ -163,6 +175,27 @@ export function DialogueView() {
                 </button>
               )}
             </>
+          )}
+
+          {state.phase === 'GENERATING_OPTIONS' && (
+            <p className="text-gray-500 text-sm italic text-center py-2">
+              You consider your words...
+            </p>
+          )}
+
+          {state.phase === 'SELECTING_OPTION' && (
+            <div className="space-y-2 max-h-[40vh] overflow-y-auto">
+              <p className="text-gray-500 text-xs uppercase tracking-wider mb-2">
+                How do you speak?
+              </p>
+              {state.dialogueOptions.map((option) => (
+                <DialogueOptionCard
+                  key={option.id}
+                  option={option}
+                  onSelect={sendSelectedOption}
+                />
+              ))}
+            </div>
           )}
 
           {state.phase === 'STREAMING_RESPONSE' && (

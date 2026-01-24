@@ -7,20 +7,24 @@ import {
   type Dispatch,
 } from 'react';
 import { dialogueReducer, initialDialogueState } from '@/reducers/dialogueReducer';
-import type { DialogueState, DialogueAction, Topic, ConversationTurn } from '@/types/dialogue';
+import type { DialogueState, DialogueAction, Topic, ConversationTurn, DialogueOption } from '@/types/dialogue';
 import type { Discovery } from '@/types/investigation';
 import type { StatName } from '@/types/character';
 import { useInvestigation } from '@/hooks/useInvestigation';
 import { useCharacter } from '@/hooks/useCharacter';
 import { useNPCMemory } from '@/hooks/useNPCMemory';
 import { useTown } from '@/hooks/useTown';
+import { useJourney } from '@/hooks/useJourney';
 import { mockDialogueEndpoint } from '@/utils/mockDialogue';
 import { getInnerVoiceInterjection } from '@/utils/innerVoiceTemplates';
+import { buildDiscoveryTests } from '@/utils/convictionTesting';
 
 interface DialogueContextValue {
   state: DialogueState;
   dispatch: Dispatch<DialogueAction>;
   sendMessage: (topic: Topic) => Promise<void>;
+  generateOptions: (topic: Topic) => Promise<void>;
+  sendSelectedOption: (option: DialogueOption) => Promise<void>;
   endConversation: () => void;
 }
 
@@ -171,6 +175,7 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
   const { character } = useCharacter();
   const { getMemoryForNPC, getNPCById, dispatch: npcDispatch } = useNPCMemory();
   const town = useTown();
+  const { journey, getActiveConvictions, testConviction } = useJourney();
 
   /**
    * sendMessage - Handles a complete exchange: topic -> streaming response -> discoveries.
@@ -348,10 +353,299 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
               linkedNpcIds: sinNode.linkedNpcs,
             });
           }
+
+          // Test convictions based on discovered sin level
+          const activeConvictions = getActiveConvictions();
+          if (activeConvictions.length > 0 && sinNode) {
+            const tests = buildDiscoveryTests(
+              activeConvictions,
+              sinNode.level,
+              discovery.id,
+              discovery.sinId,
+              `town-${journey.currentTownIndex}`,
+            );
+            for (const test of tests) {
+              testConviction(test.convictionId, test.trigger, test.description);
+            }
+          }
         }
       }
     },
-    [state.currentNPC, dispatch, character, getNPCById, getMemoryForNPC, town, npcDispatch, investigationDispatch]
+    [state.currentNPC, dispatch, character, getNPCById, getMemoryForNPC, town, npcDispatch, investigationDispatch, journey.currentTownIndex, getActiveConvictions, testConviction]
+  );
+
+  /**
+   * generateOptions - Step 1 of player voice flow.
+   * Selects topic and generates 3-4 dialogue options for the player.
+   */
+  const generateOptions = useCallback(
+    async (topic: Topic) => {
+      if (!state.currentNPC) return;
+
+      // Advance FSM: topic selected -> GENERATING_OPTIONS
+      dispatch({ type: 'SELECT_TOPIC', topic });
+
+      const npcId = state.currentNPC;
+      const npc = getNPCById(npcId);
+
+      // Mock options for dev mode / fallback
+      const mockOptions: DialogueOption[] = [
+        {
+          id: `opt-${Date.now()}-1`,
+          text: `I understand this weighs on you. Tell me what troubles your heart about ${topic.label.toLowerCase()}.`,
+          tone: 'compassionate',
+          associatedStat: 'heart',
+          risky: false,
+          convictionAligned: false,
+        },
+        {
+          id: `opt-${Date.now()}-2`,
+          text: `I have heard whispers about ${topic.label.toLowerCase()}. What are you not telling me?`,
+          tone: 'inquisitive',
+          associatedStat: 'acuity',
+          risky: false,
+          convictionAligned: false,
+        },
+        {
+          id: `opt-${Date.now()}-3`,
+          text: `I am a Dog of the King of Life. You will speak plainly about ${topic.label.toLowerCase()}, or I will find the truth myself.`,
+          tone: 'authoritative',
+          associatedStat: 'will',
+          risky: true,
+          riskDescription: 'May break trust',
+          convictionAligned: false,
+        },
+        {
+          id: `opt-${Date.now()}-4`,
+          text: `You look afraid. I am not here to punish — I am here to set things right regarding ${topic.label.toLowerCase()}.`,
+          tone: 'gentle',
+          associatedStat: 'heart',
+          risky: false,
+          convictionAligned: false,
+        },
+      ];
+
+      try {
+        const memory = getMemoryForNPC(npcId);
+        const trustLevel = memory?.relationshipLevel ?? 0;
+
+        const response = await fetch('/api/dialogue-options', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            npcId,
+            npcName: npc?.name ?? 'Unknown',
+            npcRole: npc?.role ?? 'Townsperson',
+            npcPersonality: npc?.knowledge?.personality ?? '',
+            topic: topic.label,
+            trustLevel,
+            playerStats: character ? {
+              acuity: character.stats.acuity.dice.length,
+              body: character.stats.body.dice.length,
+              heart: character.stats.heart.dice.length,
+              will: character.stats.will.dice.length,
+            } : undefined,
+          }),
+        });
+
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+        const data = await response.json();
+        if (data.options && Array.isArray(data.options)) {
+          dispatch({ type: 'SET_OPTIONS', options: data.options });
+          return;
+        }
+      } catch {
+        // Fall back to mock options
+      }
+
+      dispatch({ type: 'SET_OPTIONS', options: mockOptions });
+    },
+    [state.currentNPC, dispatch, character, getNPCById, getMemoryForNPC]
+  );
+
+  /**
+   * sendSelectedOption - Step 2 of player voice flow.
+   * Takes the player's chosen option and generates the NPC response.
+   */
+  const sendSelectedOption = useCallback(
+    async (option: DialogueOption) => {
+      if (!state.currentNPC || !state.selectedTopic) return;
+
+      dispatch({ type: 'SELECT_OPTION', option });
+
+      const npcId = state.currentNPC;
+      const npc = getNPCById(npcId);
+      const memory = getMemoryForNPC(npcId);
+      const trustLevel = memory?.relationshipLevel ?? 0;
+      const topic = state.selectedTopic;
+
+      const npcRelationships = npc
+        ? buildRelationshipStrings(npcId, town.npcs, town.sinChain)
+        : [];
+      const townSituation = npc
+        ? buildTownSituation(npcId, town.sinChain, town.name)
+        : undefined;
+
+      let response: Response;
+
+      try {
+        response = await fetch('/api/dialogue', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            npcId,
+            npcName: npc?.name ?? 'Unknown',
+            npcRole: npc?.role ?? 'Townsperson',
+            npcPersonality: npc?.knowledge?.personality ?? '',
+            npcFacts: npc?.knowledge?.facts ?? [],
+            npcMotivation: npc?.knowledge?.motivation,
+            npcDesire: npc?.knowledge?.desire,
+            npcFear: npc?.knowledge?.fear,
+            npcRelationships,
+            townSituation,
+            topic: topic.label,
+            trustLevel,
+            playerDialogue: option.text,
+            playerTone: option.tone,
+          }),
+        });
+
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
+      } catch {
+        if (import.meta.env.DEV) {
+          response = mockDialogueEndpoint(topic.label, npc?.name ?? 'NPC', trustLevel, npc?.knowledge?.facts);
+        } else {
+          dispatch({ type: 'END_CONVERSATION' });
+          return;
+        }
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        dispatch({ type: 'END_CONVERSATION' });
+        return;
+      }
+
+      const decoder = new TextDecoder();
+      let fullText = '';
+      let displayBuffer = '';
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          fullText += chunk;
+
+          displayBuffer += chunk;
+          const { safe, held } = extractSafeDisplayText(displayBuffer);
+          displayBuffer = held;
+
+          if (safe) {
+            dispatch({ type: 'APPEND_RESPONSE', text: safe });
+          }
+        }
+
+        if (displayBuffer) {
+          const flushed = displayBuffer
+            .replace(/\[DISCOVERY:\s*[^\]]*\]/g, '')
+            .replace(/\[DEFLECTED\]/g, '')
+            .trim();
+          if (flushed) {
+            dispatch({ type: 'APPEND_RESPONSE', text: flushed });
+          }
+        }
+      } finally {
+        reader.releaseLock();
+      }
+
+      const { cleanText: textAfterDeflection, deflected } = parseDeflectionMarker(fullText);
+      const { cleanText, discoveries } = parseDiscoveryMarkers(textAfterDeflection, npcId);
+
+      for (const discovery of discoveries) {
+        investigationDispatch({ type: 'RECORD_DISCOVERY', discovery });
+      }
+
+      let innerVoice: ConversationTurn['innerVoice'] = undefined;
+      if (character) {
+        const highestStat = getHighestStat(character.stats);
+        const situation = discoveries.length > 0
+          ? (discoveries.some(d => d.sinId) ? 'sin-connection' : 'new-discovery')
+          : deflected
+            ? 'npc-evasion'
+            : trustLevel < -20
+              ? 'trust-low'
+              : trustLevel > 30
+                ? 'trust-high'
+                : 'npc-evasion';
+
+        const interjection = getInnerVoiceInterjection(highestStat, situation);
+        if (interjection) {
+          innerVoice = { stat: highestStat, text: interjection };
+        }
+      }
+
+      const turn: ConversationTurn = {
+        topic: topic.label,
+        playerDialogue: option.text,
+        npcResponse: cleanText || textAfterDeflection,
+        innerVoice,
+      };
+
+      dispatch({ type: 'FINISH_RESPONSE', turn, discoveries });
+
+      if (deflected) {
+        dispatch({ type: 'MARK_DEFLECTION', topicLabel: topic.label });
+      }
+
+      // Trust building — conviction-aligned options get +3 bonus
+      const trustDelta = option.convictionAligned ? 11 : 8;
+      npcDispatch({ type: 'UPDATE_RELATIONSHIP', npcId, delta: trustDelta });
+
+      if (option.risky && deflected) {
+        npcDispatch({ type: 'UPDATE_RELATIONSHIP', npcId, delta: -5 });
+      }
+
+      const linkedNpcIds = town.sinChain
+        .filter(sin => sin.linkedNpcs.includes(npcId))
+        .flatMap(sin => sin.linkedNpcs);
+      const uniqueLinked = [...new Set(linkedNpcIds)];
+      if (uniqueLinked.length > 1) {
+        npcDispatch({ type: 'RIPPLE_TRUST', sourceNpcId: npcId, delta: 8, linkedNpcIds: uniqueLinked });
+      }
+
+      for (const discovery of discoveries) {
+        if (discovery.sinId) {
+          const sinNode = town.sinChain.find(s => s.id === discovery.sinId);
+          if (sinNode && sinNode.linkedNpcs.length > 0) {
+            npcDispatch({
+              type: 'RIPPLE_TRUST',
+              sourceNpcId: npcId,
+              delta: 10,
+              linkedNpcIds: sinNode.linkedNpcs,
+            });
+          }
+
+          // Test convictions based on discovered sin level
+          const activeConvictions = getActiveConvictions();
+          if (activeConvictions.length > 0 && sinNode) {
+            const tests = buildDiscoveryTests(
+              activeConvictions,
+              sinNode.level,
+              discovery.id,
+              discovery.sinId,
+              `town-${journey.currentTownIndex}`,
+            );
+            for (const test of tests) {
+              testConviction(test.convictionId, test.trigger, test.description);
+            }
+          }
+        }
+      }
+    },
+    [state.currentNPC, state.selectedTopic, dispatch, character, getNPCById, getMemoryForNPC, town, npcDispatch, investigationDispatch, journey.currentTownIndex, getActiveConvictions, testConviction]
   );
 
   /**
@@ -362,7 +656,7 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
   }, [dispatch]);
 
   return (
-    <DialogueContext.Provider value={{ state, dispatch, sendMessage, endConversation }}>
+    <DialogueContext.Provider value={{ state, dispatch, sendMessage, generateOptions, sendSelectedOption, endConversation }}>
       {children}
     </DialogueContext.Provider>
   );
