@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": 1769230873045,
+  "updated": 1769239571265,
   "files": {
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/vite.config.ts": {
       "exports": [
@@ -1477,6 +1477,17 @@
         "./conflictReducer"
       ],
       "indexed": 1769229657410
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/e2e/regression.spec.ts": {
+      "exports": [],
+      "imports": [
+        "@playwright/test",
+        "./steps/free-roam.steps",
+        "./steps/character.steps",
+        "./steps/investigation.steps",
+        "./steps/journey.steps"
+      ],
+      "indexed": 1769239571265
     }
   }
 }
