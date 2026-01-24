@@ -18,6 +18,7 @@ This roadmap delivers a browser-based CRPG adapting Dogs in the Vineyard. The jo
 - [x] **Phase 5: Investigation** - NPC dialogue, sin progression discovery, and resolution paths
 - [x] **Phase 6: Town Generation** - Sin progression templates and NPC relationship generation
 - [x] **Phase 6.1: Core Mechanics Overhaul** - Descent clock, convictions, journey persistence, dialogue rework (INSERTED, RETROSPECTIVE)
+- [ ] **Phase 6.2: E2E Test Overhaul** - Audit, fix, and expand E2E tests for Phase 6.1 architectural changes (INSERTED)
 - [ ] **Phase 7: Persistence** - Save/load system with manual and automatic saves
 - [ ] **Phase 8: AI Town Creation** - Player-driven town generation via Claude API with aspect selection and IndexedDB persistence
 
@@ -185,9 +186,29 @@ Plans:
 - Judgment (`JudgmentPanel` for sin resolution)
 - Conflict narration (`conflictNarration`, `conflictDice` utilities)
 
+### Phase 6.2: E2E Test Overhaul (INSERTED)
+**Goal**: Audit existing E2E tests against Phase 6.1 architectural changes, fix/remove broken tests referencing deleted components, add comprehensive coverage for new systems
+**Depends on**: Phase 6.1
+**Success Criteria** (what must be TRUE):
+  1. All existing E2E tests pass against the current codebase (fix or remove tests referencing deleted components)
+  2. Character creation wizard has E2E coverage (6-step flow including convictions)
+  3. Descent clock mechanics have E2E coverage (advancement, threshold events)
+  4. Dialogue rework has E2E coverage (player voice options, "Press the Matter" conflict entry)
+  5. Journey flow has E2E coverage (town completion, conviction reflection, riding on, multi-town progression)
+  6. Trust mechanics have E2E coverage (trust changes, trust breaking edge cases)
+  7. Edge cases fixed in commit f2e30c7 are covered by regression tests
+**Plans**: 5 plans
+
+Plans:
+- [ ] 06.2-01-PLAN.md — Fix existing test helpers (conviction step, approach overlay) to pass all 34 tests
+- [ ] 06.2-02-PLAN.md — Character creation wizard + dialogue rework E2E coverage
+- [ ] 06.2-03-PLAN.md — Journey flow E2E (judgment, reflection, multi-town progression)
+- [ ] 06.2-04-PLAN.md — Trust mechanics E2E (data-testid additions, trust changes, breaking)
+- [ ] 06.2-05-PLAN.md — Regression tests for f2e30c7 edge cases + full suite validation
+
 ### Phase 7: Persistence
 **Goal**: Player can save progress and resume later
-**Depends on**: Phase 6.1
+**Depends on**: Phase 6.2
 **Requirements**: SAVE-01, SAVE-02
 **Note**: Journey persistence (in-memory state across towns via useJourney/journeyReducer) was built in Phase 6.1. This phase adds **browser persistence** — serializing that state to survive page reloads.
 **Success Criteria** (what must be TRUE):
@@ -222,7 +243,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 6.1 -> 7 -> 8
+Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 6.1 -> 6.2 -> 7 -> 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -234,6 +255,7 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 6.1 -> 7 -
 | 5. Investigation | 7/7 | Complete (reworked by 6.1) | 2026-01-22 |
 | 6. Town Generation | 6/6 | Complete | 2026-01-22 |
 | 6.1 Core Mechanics Overhaul | n/a | Complete (retrospective) | 2026-01-23 |
+| 6.2 E2E Test Overhaul | 0/5 | Not started | - |
 | 7. Persistence | 0/4 | Not started | - |
 | 8. AI Town Creation | 0/? | Not started | - |
 
@@ -247,5 +269,6 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 6.1 -> 7 -
 *Phase 4 planned: 2026-01-22*
 *Phase 5 planned: 2026-01-22*
 *Phase 6 planned: 2026-01-22*
+*Phase 6.2 planned: 2026-01-24*
 *Depth: comprehensive*
 *Coverage: 23/23 v1 requirements mapped*
