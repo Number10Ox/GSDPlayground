@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-20)
 ## Current Position
 
 Phase: 6.2 of 8 (E2E Test Overhaul)
-Plan: 03 of 5
+Plan: 02 of 5 (also 03 done)
 Status: In progress
-Last activity: 2026-01-24 - Completed 06.2-03-PLAN.md (journey flow E2E coverage)
+Last activity: 2026-01-24 - Completed 06.2-02-PLAN.md (character creation + dialogue rework E2E)
 
-Progress: [████████████████░░░░] ~83% (Phases 1-6.1 complete, 6.2 plans 1,3/5 done, Phases 7-8 remain)
+Progress: [████████████████░░░░] ~84% (Phases 1-6.1 complete, 6.2 plans 1,2,3/5 done, Phases 7-8 remain)
 
 ## Performance Metrics
 
@@ -184,9 +184,9 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-24
-Stopped at: Completed 06.2-03-PLAN.md (journey flow E2E coverage)
+Stopped at: Completed 06.2-02-PLAN.md (character creation + dialogue rework E2E)
 Resume file: None
-Note: Plan 06.2-03 added journey flow E2E tests (conviction reflection, multi-town progression). Dev-mode buttons for test-conviction and complete-town added to GameView. All 52 E2E tests passing.
+Note: Plan 06.2-02 added 9 E2E tests: 5 for character creation wizard (conviction picker enforcement, deselection, back navigation, multiple backgrounds) + 4 for dialogue rework (player voice options via route interception, Press the Matter conflict entry). Total suite: 52 tests (51 stable, 1 flaky trust test pre-existing).
 
 ## Phase 2 Completion Notes
 
