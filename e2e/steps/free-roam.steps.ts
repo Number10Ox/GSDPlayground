@@ -47,14 +47,26 @@ export async function createCharacter(page: Page) {
   await expect(belongingsNext).toBeEnabled({ timeout: 2000 });
   await belongingsNext.click();
 
-  // Step 5: Initiation — pick first approach and confirm
+  // Step 5: Initiation — pick first approach then advance to convictions
   const approachButton = page.locator('[data-testid^="creation-approach-"]').first();
   await expect(approachButton).toBeVisible({ timeout: 3000 });
   await approachButton.click();
 
-  const confirmButton = page.getByTestId('creation-confirm');
-  await expect(confirmButton).toBeVisible({ timeout: 3000 });
-  await confirmButton.click();
+  // Advance from initiation to convictions step
+  const toConvictions = page.getByTestId('creation-to-convictions');
+  await expect(toConvictions).toBeEnabled({ timeout: 3000 });
+  await toConvictions.click();
+
+  // Step 6: Convictions — select 3 seeds and confirm
+  const firstSeed = page.getByTestId('conviction-seed-mercy-faithful');
+  await expect(firstSeed).toBeVisible({ timeout: 3000 });
+  await firstSeed.click();
+  await page.getByTestId('conviction-seed-justice-punished').click();
+  await page.getByTestId('conviction-seed-faith-doctrine').click();
+
+  const convictionConfirm = page.getByTestId('conviction-confirm');
+  await expect(convictionConfirm).toBeEnabled({ timeout: 2000 });
+  await convictionConfirm.click();
 
   // Wait for creation to dismiss
   await expect(nameInput).not.toBeVisible({ timeout: 3000 });

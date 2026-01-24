@@ -78,7 +78,7 @@ export const DEFAULT_MAX_TOWNS = 7;
 
 export function createInitialJourneyState(): JourneyState {
   return {
-    phase: 'CHARACTER_CREATION',
+    phase: 'TOWN_ACTIVE',
     character: null,
     convictions: [],
     completedTowns: [],

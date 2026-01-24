@@ -41,9 +41,9 @@ function stateWithConvictions(convictions: Conviction[], extras: Partial<Journey
 
 describe('journeyReducer', () => {
   describe('createInitialJourneyState', () => {
-    it('starts in CHARACTER_CREATION with empty state', () => {
+    it('starts in TOWN_ACTIVE with empty state', () => {
       const state = createInitialJourneyState();
-      expect(state.phase).toBe('CHARACTER_CREATION');
+      expect(state.phase).toBe('TOWN_ACTIVE');
       expect(state.convictions).toEqual([]);
       expect(state.completedTowns).toEqual([]);
       expect(state.currentTownIndex).toBe(0);

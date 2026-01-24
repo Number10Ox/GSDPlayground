@@ -87,24 +87,50 @@ export async function selectBelongings(page: Page) {
 
 /**
  * Navigate through the initiation step by selecting the first approach.
+ * After selection, clicks "Continue" to advance to the convictions step.
  */
 export async function selectInitiationApproach(page: Page) {
   const approachButton = page.locator('[data-testid^="creation-approach-"]').first();
   await expect(approachButton).toBeVisible({ timeout: 3000 });
   await approachButton.click();
+
+  // Advance from initiation to convictions step
+  const toConvictions = page.getByTestId('creation-to-convictions');
+  await expect(toConvictions).toBeEnabled({ timeout: 3000 });
+  await toConvictions.click();
 }
 
 /**
- * Confirm character creation by clicking the Confirm button.
- * Waits for creation modal to disappear and character info to update.
+ * Select 3 conviction seeds and confirm to complete character creation.
+ * Uses deterministic seeds: mercy-faithful, justice-punished, faith-doctrine.
+ * The conviction confirm button triggers character creation and closes the modal.
  */
-export async function confirmCreation(page: Page) {
-  const confirmButton = page.getByTestId('creation-confirm');
-  await expect(confirmButton).toBeVisible({ timeout: 3000 });
+export async function selectConvictions(page: Page) {
+  // Wait for ConvictionPicker to render after step transition
+  const firstSeed = page.getByTestId('conviction-seed-mercy-faithful');
+  await expect(firstSeed).toBeVisible({ timeout: 3000 });
+
+  // Select 3 conviction seeds
+  await firstSeed.click();
+  await page.getByTestId('conviction-seed-justice-punished').click();
+  await page.getByTestId('conviction-seed-faith-doctrine').click();
+
+  // Confirm convictions (triggers character creation)
+  const confirmButton = page.getByTestId('conviction-confirm');
   await expect(confirmButton).toBeEnabled({ timeout: 2000 });
   await confirmButton.click();
-  // Wait for creation modal to close (CharacterCreation is a fixed overlay)
+
+  // Wait for creation modal to close
   await expect(page.getByTestId('creation-name-input')).not.toBeVisible({ timeout: 3000 });
+}
+
+/**
+ * @deprecated Use selectConvictions() instead. The old creation-confirm button
+ * no longer exists after Phase 6.1 added the conviction step.
+ */
+export async function confirmCreation(page: Page) {
+  // Now delegated to selectConvictions which handles the conviction-confirm flow
+  await selectConvictions(page);
 }
 
 /**
@@ -156,10 +182,10 @@ export async function setupCharacterForTest(page: Page, name: string = 'Test Dog
   const allocateNext = page.getByTestId('creation-allocate-next');
   await expect(allocateNext).toBeEnabled({ timeout: 2000 });
   await allocateNext.click();
-  // Navigate through belongings and initiation
+  // Navigate through belongings, initiation, and convictions
   await selectBelongings(page);
   await selectInitiationApproach(page);
-  await confirmCreation(page);
+  await selectConvictions(page);
   // Skip town arrival overlay that appears after character creation
   await skipArrivalOverlay(page);
 }
