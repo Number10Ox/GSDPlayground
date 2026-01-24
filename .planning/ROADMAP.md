@@ -18,7 +18,7 @@ This roadmap delivers a browser-based CRPG adapting Dogs in the Vineyard. The jo
 - [x] **Phase 5: Investigation** - NPC dialogue, sin progression discovery, and resolution paths
 - [x] **Phase 6: Town Generation** - Sin progression templates and NPC relationship generation
 - [x] **Phase 6.1: Core Mechanics Overhaul** - Descent clock, convictions, journey persistence, dialogue rework (INSERTED, RETROSPECTIVE)
-- [ ] **Phase 6.2: E2E Test Overhaul** - Audit, fix, and expand E2E tests for Phase 6.1 architectural changes (INSERTED)
+- [x] **Phase 6.2: E2E Test Overhaul** - Audit, fix, and expand E2E tests for Phase 6.1 architectural changes (INSERTED)
 - [ ] **Phase 7: Persistence** - Save/load system with manual and automatic saves
 - [ ] **Phase 8: AI Town Creation** - Player-driven town generation via Claude API with aspect selection and IndexedDB persistence
 
@@ -200,11 +200,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 06.2-01-PLAN.md — Fix existing test helpers (conviction step, approach overlay) to pass all 34 tests
-- [ ] 06.2-02-PLAN.md — Character creation wizard + dialogue rework E2E coverage
-- [ ] 06.2-03-PLAN.md — Journey flow E2E (judgment, reflection, multi-town progression)
-- [ ] 06.2-04-PLAN.md — Trust mechanics E2E (data-testid additions, trust changes, breaking)
-- [ ] 06.2-05-PLAN.md — Regression tests for f2e30c7 edge cases + full suite validation
+- [x] 06.2-01-PLAN.md — Fix existing test helpers (conviction step, approach overlay) to pass all 34 tests
+- [x] 06.2-02-PLAN.md — Character creation wizard + dialogue rework E2E coverage
+- [x] 06.2-03-PLAN.md — Journey flow E2E (judgment, reflection, multi-town progression)
+- [x] 06.2-04-PLAN.md — Trust mechanics E2E (data-testid additions, trust changes, breaking)
+- [x] 06.2-05-PLAN.md — Regression tests for f2e30c7 edge cases + full suite validation
 
 ### Phase 7: Persistence
 **Goal**: Player can save progress and resume later
@@ -255,11 +255,11 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 6.1 -> 6.2
 | 5. Investigation | 7/7 | Complete (reworked by 6.1) | 2026-01-22 |
 | 6. Town Generation | 6/6 | Complete | 2026-01-22 |
 | 6.1 Core Mechanics Overhaul | n/a | Complete (retrospective) | 2026-01-23 |
-| 6.2 E2E Test Overhaul | 0/5 | Not started | - |
+| 6.2 E2E Test Overhaul | 5/5 | Complete | 2026-01-24 |
 | 7. Persistence | 0/4 | Not started | - |
 | 8. AI Town Creation | 0/? | Not started | - |
 
-**Total:** 32+ plans complete (Phase 6.1 unplanned, executed ad-hoc)
+**Total:** 37+ plans complete (Phase 6.1 unplanned, executed ad-hoc)
 
 ---
 *Roadmap created: 2026-01-20*
