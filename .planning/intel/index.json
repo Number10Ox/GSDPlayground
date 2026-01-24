@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": 1769215181118,
+  "updated": 1769219150226,
   "files": {
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/vite.config.ts": {
       "exports": [
@@ -52,7 +52,7 @@
         "Clock"
       ],
       "imports": [],
-      "indexed": 1769210394582
+      "indexed": 1769218091848
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/hooks/useGameState.tsx": {
       "exports": [
@@ -61,10 +61,10 @@
       ],
       "imports": [
         "react",
-        "@/utils/pressureClock",
+        "@/utils/descentClock",
         "@/hooks/useTown"
       ],
-      "indexed": 1769214581265
+      "indexed": 1769218206528
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/ui/NarrativeText.tsx": {
       "exports": [
@@ -139,12 +139,13 @@
         "@/hooks/useDialogue",
         "@/data/relationshipSeeds",
         "@/reducers/conflictReducer",
+        "@/reducers/investigationReducer",
         "@/hooks/useTown",
         "@/utils/topicResolver",
         "@/utils/conflictDice",
-        "@/utils/pressureClock"
+        "@/utils/descentClock"
       ],
-      "indexed": 1769211496046
+      "indexed": 1769219088556
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Clocks/Clock.tsx": {
       "exports": [
@@ -357,7 +358,7 @@
         "@/components/Character/RelationshipDice",
         "@/hooks/useCharacter"
       ],
-      "indexed": 1769211377113
+      "indexed": 1769218455724
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Conflict/index.ts": {
       "exports": [
@@ -612,7 +613,7 @@
       "imports": [
         "@playwright/test"
       ],
-      "indexed": 1769214434669
+      "indexed": 1769218465737
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/e2e/character.spec.ts": {
       "exports": [],
@@ -662,7 +663,7 @@
         "investigationReducer"
       ],
       "imports": [],
-      "indexed": 1769210486215
+      "indexed": 1769218459721
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/hooks/useInvestigation.tsx": {
       "exports": [
@@ -872,7 +873,7 @@
         "InvestigationAction"
       ],
       "imports": [],
-      "indexed": 1769210461865
+      "indexed": 1769218126766
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/data/testTown.ts": {
       "exports": [
@@ -951,7 +952,7 @@
         "EventEffect"
       ],
       "imports": [],
-      "indexed": 1769210420662
+      "indexed": 1769218122805
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/utils/topicResolver.ts": {
       "exports": [
@@ -965,7 +966,7 @@
         "bridalFalls"
       ],
       "imports": [],
-      "indexed": 1769214536793
+      "indexed": 1769218425104
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/data/towns/index.ts": {
       "exports": [
@@ -1244,8 +1245,6 @@
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/types/actions.ts": {
       "exports": [
         "UnlockCondition",
-        "FreeAction",
-        "FreeActionEffect",
         "TimedAction",
         "TimedActionEffect",
         "ConflictDefinition",
@@ -1253,37 +1252,17 @@
         "ActionTier"
       ],
       "imports": [],
-      "indexed": 1769210360441
-    },
-    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/types/pressure.ts": {
-      "exports": [
-        "PressureClock",
-        "PressureThreshold"
-      ],
-      "imports": [],
-      "indexed": 1769210373094
-    },
-    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/utils/pressureClock.ts": {
-      "exports": [
-        "advancePressure",
-        "checkUnlockCondition",
-        "calculateConflictPressureCost",
-        "PressureAdvanceResult",
-        "UnlockContext"
-      ],
-      "imports": [],
-      "indexed": 1769210533775
+      "indexed": 1769219150226
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/utils/actionAvailability.ts": {
       "exports": [
         "isUnlocked",
         "getAvailableActions",
         "ActionContext",
-        "FreeAction",
         "AvailableActions"
       ],
       "imports": [],
-      "indexed": 1769211096558
+      "indexed": 1769219109563
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/ActionMenu/ActionMenu.tsx": {
       "exports": [
@@ -1293,7 +1272,7 @@
         "@/types/conflict",
         "@/utils/actionAvailability"
       ],
-      "indexed": 1769211124909
+      "indexed": 1769219069513
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/e2e/steps/free-roam.steps.ts": {
       "exports": [
@@ -1301,13 +1280,13 @@
         "skipArrival",
         "performTimedAction",
         "startConflictFromMenu",
-        "checkPressure",
+        "checkDescent",
         "navigateTo"
       ],
       "imports": [
         "@playwright/test"
       ],
-      "indexed": 1769214423426
+      "indexed": 1769219121602
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/e2e/free-roam.spec.ts": {
       "exports": [],
@@ -1315,15 +1294,34 @@
         "@playwright/test",
         "./steps/free-roam.steps"
       ],
-      "indexed": 1769214467399
+      "indexed": 1769219134637
     },
-    "/Users/jedwards/workspace/JobPrep/GSDPlayground/e2e/pressure-clock.spec.ts": {
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/types/descent.ts": {
+      "exports": [
+        "DescentClock",
+        "DescentThreshold"
+      ],
+      "imports": [],
+      "indexed": 1769218079311
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/utils/descentClock.ts": {
+      "exports": [
+        "advanceDescent",
+        "checkUnlockCondition",
+        "calculateConflictDescentCost",
+        "DescentAdvanceResult",
+        "UnlockContext"
+      ],
+      "imports": [],
+      "indexed": 1769218152214
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/e2e/descent-clock.spec.ts": {
       "exports": [],
       "imports": [
         "@playwright/test",
         "./steps/free-roam.steps"
       ],
-      "indexed": 1769214524824
+      "indexed": 1769218348243
     }
   }
 }

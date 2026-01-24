@@ -1,10 +1,10 @@
 import { createContext, useContext, useReducer, type ReactNode, type Dispatch } from 'react';
 import type { GameState, GameAction, Location } from '@/types/game';
-import type { PressureClock } from '@/types/pressure';
-import { advancePressure } from '@/utils/pressureClock';
+import type { DescentClock } from '@/types/descent';
+import { advanceDescent } from '@/utils/descentClock';
 import { useTown } from '@/hooks/useTown';
 
-function createInitialPressureClock(thresholds?: PressureClock['thresholds']): PressureClock {
+function createInitialDescentClock(thresholds?: DescentClock['thresholds']): DescentClock {
   return {
     segments: 8,
     filled: 0,
@@ -14,10 +14,10 @@ function createInitialPressureClock(thresholds?: PressureClock['thresholds']): P
 
 interface InitialStateArgs {
   locations: Location[];
-  pressureThresholds?: PressureClock['thresholds'];
+  descentThresholds?: DescentClock['thresholds'];
 }
 
-function createInitialState({ locations, pressureThresholds }: InitialStateArgs): GameState {
+function createInitialState({ locations, descentThresholds }: InitialStateArgs): GameState {
   return {
     currentLocation: locations[0]?.id ?? 'town-square',
     isPanelOpen: false,
@@ -25,7 +25,7 @@ function createInitialState({ locations, pressureThresholds }: InitialStateArgs)
     locations,
 
     gamePhase: 'EXPLORING',
-    pressureClock: createInitialPressureClock(pressureThresholds),
+    descentClock: createInitialDescentClock(descentThresholds),
     clocks: [],
 
     characterCondition: 100,
@@ -61,28 +61,28 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SET_GAME_PHASE':
       return { ...state, gamePhase: action.phase };
 
-    // Pressure clock
-    case 'ADVANCE_PRESSURE': {
-      const result = advancePressure(state.pressureClock, action.amount);
+    // Descent clock
+    case 'ADVANCE_DESCENT': {
+      const result = advanceDescent(state.descentClock, action.amount);
       return {
         ...state,
-        pressureClock: result.newClock,
+        descentClock: result.newClock,
         // Note: triggered thresholds and overflow are handled by the component
         // that dispatches this action (GameView processes the return value separately)
       };
     }
 
-    case 'RESET_PRESSURE_CLOCK':
+    case 'RESET_DESCENT_CLOCK':
       return {
         ...state,
-        pressureClock: {
-          ...state.pressureClock,
+        descentClock: {
+          ...state.descentClock,
           filled: 0,
-          thresholds: state.pressureClock.thresholds.map(t => ({ ...t, fired: false })),
+          thresholds: state.descentClock.thresholds.map(t => ({ ...t, fired: false })),
         },
       };
 
-    // Clocks (general-purpose, non-pressure)
+    // Clocks (general-purpose, non-descent)
     case 'ADVANCE_CLOCK': {
       const clockIndex = state.clocks.findIndex(c => c.id === action.clockId);
       if (clockIndex === -1) return state;
@@ -161,7 +161,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const town = useTown();
   const [state, dispatch] = useReducer(
     gameReducer,
-    { locations: town.locations, pressureThresholds: town.pressureThresholds },
+    { locations: town.locations, descentThresholds: town.descentThresholds },
     createInitialState
   );
   return (

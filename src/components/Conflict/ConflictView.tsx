@@ -84,7 +84,7 @@ interface ConflictViewProps {
   witnesses?: string[];
   // NPC aggression level (0-1): how likely they are to escalate. Derived from resistChance.
   npcAggression?: number;
-  // Callback when conflict completes (receives outcome details for pressure cost calculation)
+  // Callback when conflict completes (receives outcome details for descent cost calculation)
   onComplete?: (info: ConflictOutcomeInfo) => void;
 }
 
@@ -140,7 +140,7 @@ export function ConflictView({
       // Clear active conflict in game state
       gameDispatch({ type: 'END_GAME_CONFLICT' });
 
-      // Determine outcome info for pressure cost calculation
+      // Determine outcome info for descent cost calculation
       const outcome: ConflictOutcome = state.phase === 'RESOLVED'
         ? state.outcome
         : 'PLAYER_GAVE';

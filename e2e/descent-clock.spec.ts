@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { createCharacter, skipArrival, performTimedAction, navigateTo, checkPressure } from './steps/free-roam.steps';
+import { createCharacter, skipArrival, performTimedAction, navigateTo, checkDescent } from './steps/free-roam.steps';
 
-test.describe('Pressure Clock - Timed actions and thresholds', () => {
+test.describe('Descent Clock - Timed actions and thresholds', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     // Select Bridal Falls from town selection
@@ -10,18 +10,18 @@ test.describe('Pressure Clock - Timed actions and thresholds', () => {
     await skipArrival(page);
   });
 
-  test('timed action advances pressure clock by 1', async ({ page }) => {
+  test('timed action advances descent clock by 1', async ({ page }) => {
     // Navigate to the well where "Inspect the Well Water" is available
     await navigateTo(page, 'well');
 
-    // Check initial pressure
-    await checkPressure(page, 0, 8);
+    // Check initial descent
+    await checkDescent(page, 0, 8);
 
     // Perform the timed action
     await performTimedAction(page, 'action-inspect-well');
 
-    // Pressure should now be 1/8
-    await checkPressure(page, 1, 8);
+    // Descent should now be 1/8
+    await checkDescent(page, 1, 8);
   });
 
   test('one-shot action disappears after use', async ({ page }) => {
@@ -47,8 +47,8 @@ test.describe('Pressure Clock - Timed actions and thresholds', () => {
     }
   });
 
-  test('pressure threshold triggers town event overlay', async ({ page }) => {
-    // Advance pressure to threshold (2) by performing multiple timed actions
+  test('descent threshold triggers town event overlay', async ({ page }) => {
+    // Advance descent to threshold (2) by performing multiple timed actions
     // Start at town-square → navigate to well
     await navigateTo(page, 'well');
     await performTimedAction(page, 'action-inspect-well'); // +1 → 1/8
@@ -58,7 +58,7 @@ test.describe('Pressure Clock - Timed actions and thresholds', () => {
     await navigateTo(page, 'church');
     await performTimedAction(page, 'action-read-decree'); // +1 → 2/8
 
-    // At pressure 2, "event-martha-collapse" should trigger
+    // At descent 2, "event-martha-collapse" should trigger
     const eventOverlay = page.getByTestId('dismiss-event');
     await expect(eventOverlay).toBeVisible({ timeout: 3000 });
 
@@ -72,7 +72,7 @@ test.describe('Pressure Clock - Timed actions and thresholds', () => {
 
     // "Pray at the Chapel" is not one-shot
     await performTimedAction(page, 'action-pray-chapel');
-    await checkPressure(page, 1, 8);
+    await checkDescent(page, 1, 8);
 
     // Should still be available
     const prayAction = page.getByTestId('action-action-pray-chapel');
@@ -80,6 +80,6 @@ test.describe('Pressure Clock - Timed actions and thresholds', () => {
 
     // Use it again
     await prayAction.click();
-    await checkPressure(page, 2, 8);
+    await checkDescent(page, 2, 8);
   });
 });

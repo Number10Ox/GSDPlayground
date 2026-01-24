@@ -116,16 +116,16 @@ export async function startConflictFromMenu(page: Page, conflictId: string) {
 }
 
 /**
- * Helper: Check the current pressure clock value.
+ * Helper: Check the current descent clock value.
  */
-export async function checkPressure(page: Page, expectedFilled: number, expectedTotal: number) {
-  const pressureText = page.locator('text=' + `${expectedFilled}/${expectedTotal}`);
-  await expect(pressureText).toBeVisible();
+export async function checkDescent(page: Page, expectedFilled: number, expectedTotal: number) {
+  const descentText = page.locator('text=' + `${expectedFilled}/${expectedTotal}`);
+  await expect(descentText).toBeVisible();
 }
 
 /**
- * Helper: Navigate to a location via the ActionMenu.
+ * Helper: Navigate to a location via the map node.
  */
 export async function navigateTo(page: Page, locationId: string) {
-  await page.getByTestId(`action-move-${locationId}`).click();
+  await page.getByTestId(`map-node-${locationId}`).click();
 }

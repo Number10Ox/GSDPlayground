@@ -1,5 +1,5 @@
 import type { FalloutSeverity } from '@/types/conflict';
-import type { PressureClock } from '@/types/pressure';
+import type { DescentClock } from '@/types/descent';
 
 export type LocationId = string;
 
@@ -32,8 +32,8 @@ export interface GameState {
   // Game phase (replaces CyclePhase)
   gamePhase: GamePhase;
 
-  // Pressure clock (replaces daily cycle urgency)
-  pressureClock: PressureClock;
+  // Descent clock (replaces daily cycle urgency)
+  descentClock: DescentClock;
 
   // Clocks for tracking threats and progress
   clocks: Clock[];
@@ -59,9 +59,9 @@ export type GameAction =
   | { type: 'CLOSE_PANEL' }
   // Phase transitions
   | { type: 'SET_GAME_PHASE'; phase: GamePhase }
-  // Pressure clock
-  | { type: 'ADVANCE_PRESSURE'; amount: number }
-  | { type: 'RESET_PRESSURE_CLOCK' }
+  // Descent clock
+  | { type: 'ADVANCE_DESCENT'; amount: number }
+  | { type: 'RESET_DESCENT_CLOCK' }
   // Clocks
   | { type: 'ADVANCE_CLOCK'; clockId: string; amount: number }
   // Condition

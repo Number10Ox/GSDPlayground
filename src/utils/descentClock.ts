@@ -1,22 +1,22 @@
-import type { PressureClock, PressureThreshold } from '@/types/pressure';
+import type { DescentClock, DescentThreshold } from '@/types/descent';
 import type { UnlockCondition } from '@/types/actions';
 import type { ConflictOutcome } from '@/types/conflict';
 import type { ConflictDefinition } from '@/types/actions';
 
 /**
- * Result of advancing the pressure clock.
+ * Result of advancing the descent clock.
  */
-export interface PressureAdvanceResult {
-  newClock: PressureClock;
-  triggeredThresholds: PressureThreshold[];
+export interface DescentAdvanceResult {
+  newClock: DescentClock;
+  triggeredThresholds: DescentThreshold[];
   overflowed: boolean;  // True if clock reached max (8/8) — triggers sin escalation
 }
 
 /**
- * advancePressure - Advance the pressure clock and return triggered thresholds.
+ * advanceDescent - Advance the descent clock and return triggered thresholds.
  * When clock reaches max (8), sets overflowed flag for sin escalation.
  */
-export function advancePressure(clock: PressureClock, amount: number): PressureAdvanceResult {
+export function advanceDescent(clock: DescentClock, amount: number): DescentAdvanceResult {
   const newFilled = Math.min(clock.segments, clock.filled + amount);
   const overflowed = newFilled >= clock.segments;
 
@@ -47,7 +47,7 @@ export function advancePressure(clock: PressureClock, amount: number): PressureA
  * Context needed to evaluate unlock conditions.
  */
 export interface UnlockContext {
-  pressureFilled: number;
+  descentFilled: number;
   discoveredSinIds: string[];
   foundClueIds: string[];
   npcTrustLevels: Map<string, number>;
@@ -61,10 +61,10 @@ export function checkUnlockCondition(
   context: UnlockContext
 ): boolean {
   switch (condition.type) {
-    case 'pressure_min':
-      return context.pressureFilled >= condition.value;
-    case 'pressure_max':
-      return context.pressureFilled <= condition.value;
+    case 'descent_min':
+      return context.descentFilled >= condition.value;
+    case 'descent_max':
+      return context.descentFilled <= condition.value;
     case 'sin_discovered':
       return context.discoveredSinIds.includes(condition.sinId);
     case 'clue_found':
@@ -79,14 +79,14 @@ export function checkUnlockCondition(
 }
 
 /**
- * calculateConflictPressureCost - Determine how many pressure ticks a conflict outcome costs.
+ * calculateConflictDescentCost - Determine how many descent ticks a conflict outcome costs.
  *
  * @param outcome - How the conflict ended
  * @param escalationsJumped - Number of escalation levels jumped during conflict (0+)
  * @param hadFallout - Whether non-NONE fallout was taken
  * @param definition - The conflict definition with cost multipliers
  */
-export function calculateConflictPressureCost(
+export function calculateConflictDescentCost(
   outcome: ConflictOutcome,
   escalationsJumped: number,
   hadFallout: boolean,
@@ -95,13 +95,13 @@ export function calculateConflictPressureCost(
   let cost = 0;
 
   if (outcome === 'PLAYER_GAVE') {
-    cost += definition.pressureCost.onGive;
+    cost += definition.descentCost.onGive;
   }
 
-  cost += definition.pressureCost.onEscalate * escalationsJumped;
+  cost += definition.descentCost.onEscalate * escalationsJumped;
 
   if (hadFallout) {
-    cost += definition.pressureCost.onFallout;
+    cost += definition.descentCost.onFallout;
   }
 
   return cost;

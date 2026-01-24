@@ -13,7 +13,7 @@ import type { Location } from '@/types/game';
 import type { NPC, NPCKnowledge, ConflictThreshold } from '@/types/npc';
 import type { SinNode, LocationClue } from '@/types/investigation';
 import type { TimedAction, ConflictDefinition } from '@/types/actions';
-import type { PressureThreshold } from '@/types/pressure';
+import type { DescentThreshold } from '@/types/descent';
 
 // ─── Sin Chain ──────────────────────────────────────────────────────────────
 
@@ -514,7 +514,7 @@ const events: TownEvent[] = [
   {
     id: 'event-martha-collapse',
     description: 'Sister Martha collapses in the general store. Thomas rushes to her side, shouting for help. The Steward watches from the chapel steps but does not move.',
-    trigger: { type: 'PRESSURE_REACHED', value: 2 },
+    trigger: { type: 'DESCENT_REACHED', value: 2 },
     effects: [
       { type: 'TRUST_CHANGE', npcId: 'brother-thomas', delta: 10 },
       { type: 'NARRATIVE', text: 'Martha\'s condition is worsening. Time is running out.' },
@@ -534,7 +534,7 @@ const events: TownEvent[] = [
   {
     id: 'event-steward-sermon',
     description: 'Steward Ezekiel holds an emergency sermon, declaring the sickness proof of sin among the faithless. He names no names, but his eyes fix on Martha\'s empty seat.',
-    trigger: { type: 'PRESSURE_REACHED', value: 3 },
+    trigger: { type: 'DESCENT_REACHED', value: 3 },
     effects: [
       { type: 'ADVANCE_SIN' },
       { type: 'NARRATIVE', text: 'The Steward tightens his grip. Fear spreads faster than the sickness.' },
@@ -544,7 +544,7 @@ const events: TownEvent[] = [
   {
     id: 'event-thomas-caught',
     description: 'A crash in the night. Thomas is caught leaving the store with a satchel of herbs. The Sheriff holds him by the collar, waiting for the Steward\'s word.',
-    trigger: { type: 'PRESSURE_REACHED', value: 4 },
+    trigger: { type: 'DESCENT_REACHED', value: 4 },
     effects: [
       { type: 'TRUST_CHANGE', npcId: 'brother-thomas', delta: -10 },
       { type: 'UNLOCK_CLUE', clueId: 'clue-store-ledger' },
@@ -555,10 +555,19 @@ const events: TownEvent[] = [
   {
     id: 'event-child-sick',
     description: 'Ruth\'s youngest student does not come to school. Then another. The sickness has reached the children.',
-    trigger: { type: 'PRESSURE_REACHED', value: 5 },
+    trigger: { type: 'DESCENT_REACHED', value: 5 },
     effects: [
       { type: 'ADVANCE_SIN' },
       { type: 'NARRATIVE', text: 'Children are falling ill. The town cannot endure much more.' },
+    ],
+    fired: false,
+  },
+  {
+    id: 'event-descent-overflow',
+    description: 'The rot deepens. You feel it in the air — something has shifted in Bridal Falls. The sin that festers here has taken another step toward damnation. What was hidden grows bolder. What was whispered is now spoken aloud.',
+    trigger: { type: 'DESCENT_REACHED', value: 8 },
+    effects: [
+      { type: 'NARRATIVE', text: 'The town descends further. Sin escalates.' },
     ],
     fired: false,
   },
@@ -572,7 +581,7 @@ const timedActions: TimedAction[] = [
     name: 'Pray at the Chapel',
     description: 'Spend time in quiet prayer, restoring your spirit.',
     locationId: 'church',
-    pressureCost: 1,
+    descentCost: 1,
     effects: [{ type: 'RESTORE_CONDITION', amount: 15 }],
     oneShot: false,
   },
@@ -581,7 +590,7 @@ const timedActions: TimedAction[] = [
     name: 'Tend to Martha',
     description: 'Help ease her suffering with faith and care.',
     locationId: 'general-store',
-    pressureCost: 1,
+    descentCost: 1,
     effects: [
       { type: 'TRUST_CHANGE', npcId: 'sister-martha', delta: 10 },
       { type: 'TRUST_CHANGE', npcId: 'brother-thomas', delta: 5 },
@@ -593,7 +602,7 @@ const timedActions: TimedAction[] = [
     name: 'Search the Homestead',
     description: 'Look through Thomas\'s things for clues about his desperation.',
     locationId: 'homestead',
-    pressureCost: 1,
+    descentCost: 1,
     effects: [{ type: 'DISCOVER_CLUE', clueId: 'clue-homestead-herbs' }],
     unlockCondition: { type: 'trust_min', npcId: 'brother-thomas', value: 20 },
     oneShot: true,
@@ -603,7 +612,7 @@ const timedActions: TimedAction[] = [
     name: 'Inspect the Well Water',
     description: 'Something about this water isn\'t right.',
     locationId: 'well',
-    pressureCost: 1,
+    descentCost: 1,
     effects: [{ type: 'DISCOVER_CLUE', clueId: 'clue-well-taint' }],
     oneShot: true,
   },
@@ -612,7 +621,7 @@ const timedActions: TimedAction[] = [
     name: 'Read the Posted Decree',
     description: 'Study the Steward\'s decree nailed to the chapel door.',
     locationId: 'church',
-    pressureCost: 1,
+    descentCost: 1,
     effects: [{ type: 'DISCOVER_CLUE', clueId: 'clue-chapel-decree' }],
     oneShot: true,
   },
@@ -621,7 +630,7 @@ const timedActions: TimedAction[] = [
     name: 'Visit the Fresh Graves',
     description: 'Someone has been buried recently. The earth is still soft.',
     locationId: 'cemetery',
-    pressureCost: 1,
+    descentCost: 1,
     effects: [{ type: 'DISCOVER_CLUE', clueId: 'clue-cemetery-graves' }],
     oneShot: true,
   },
@@ -630,9 +639,9 @@ const timedActions: TimedAction[] = [
     name: 'Examine the Store Ledger',
     description: 'The ledger might show who has been buying what — and who has been denied.',
     locationId: 'general-store',
-    pressureCost: 1,
+    descentCost: 1,
     effects: [{ type: 'DISCOVER_CLUE', clueId: 'clue-store-ledger' }],
-    unlockCondition: { type: 'pressure_min', value: 3 },
+    unlockCondition: { type: 'descent_min', value: 3 },
     oneShot: true,
   },
   {
@@ -640,7 +649,7 @@ const timedActions: TimedAction[] = [
     name: 'Consecrate the Well',
     description: 'Bless the water and purify what you can.',
     locationId: 'well',
-    pressureCost: 1,
+    descentCost: 1,
     effects: [
       { type: 'RESTORE_CONDITION', amount: 10 },
       { type: 'NARRATIVE', text: 'The water runs clear, if only for now.' },
@@ -661,7 +670,7 @@ const conflictDefinitions: ConflictDefinition[] = [
     minEscalation: 'JUST_TALKING',
     maxEscalation: 'FIGHTING',
     npcAggression: 0.6,
-    pressureCost: { onGive: 1, onEscalate: 1, onFallout: 1 },
+    descentCost: { onGive: 1, onEscalate: 1, onFallout: 1 },
     unlockCondition: { type: 'sin_discovered', sinId: 'sin-pride' },
     consequences: {
       playerWins: [
@@ -669,7 +678,7 @@ const conflictDefinitions: ConflictDefinition[] = [
         { type: 'NARRATIVE', text: 'The Steward yields. His pride cracks, if only for a moment.' },
       ],
       playerGives: [
-        { type: 'ADVANCE_PRESSURE', amount: 1 },
+        { type: 'ADVANCE_DESCENT', amount: 1 },
         { type: 'NARRATIVE', text: 'The Steward smiles coldly. Your words failed to move him.' },
       ],
       npcGives: [
@@ -686,7 +695,7 @@ const conflictDefinitions: ConflictDefinition[] = [
     minEscalation: 'JUST_TALKING',
     maxEscalation: 'PHYSICAL',
     npcAggression: 0.3,
-    pressureCost: { onGive: 1, onEscalate: 1, onFallout: 1 },
+    descentCost: { onGive: 1, onEscalate: 1, onFallout: 1 },
     unlockCondition: { type: 'clue_found', clueId: 'clue-homestead-herbs' },
     consequences: {
       playerWins: [
@@ -711,15 +720,15 @@ const conflictDefinitions: ConflictDefinition[] = [
     minEscalation: 'JUST_TALKING',
     maxEscalation: 'GUNPLAY',
     npcAggression: 0.5,
-    pressureCost: { onGive: 1, onEscalate: 1, onFallout: 1 },
-    unlockCondition: { type: 'pressure_min', value: 4 },
+    descentCost: { onGive: 1, onEscalate: 1, onFallout: 1 },
+    unlockCondition: { type: 'descent_min', value: 4 },
     consequences: {
       playerWins: [
         { type: 'TRUST_CHANGE', npcId: 'sheriff-jacob', delta: 30 },
         { type: 'NARRATIVE', text: 'Jacob\'s resolve breaks. He admits the Steward has gone too far.' },
       ],
       playerGives: [
-        { type: 'ADVANCE_PRESSURE', amount: 2 },
+        { type: 'ADVANCE_DESCENT', amount: 2 },
         { type: 'NARRATIVE', text: 'Jacob stands firm. The Steward\'s grip tightens on the law.' },
       ],
       npcGives: [
@@ -736,7 +745,7 @@ const conflictDefinitions: ConflictDefinition[] = [
     minEscalation: 'JUST_TALKING',
     maxEscalation: 'JUST_TALKING',
     npcAggression: 0.2,
-    pressureCost: { onGive: 1, onEscalate: 0, onFallout: 1 },
+    descentCost: { onGive: 1, onEscalate: 0, onFallout: 1 },
     unlockCondition: { type: 'sin_discovered', sinId: 'sin-injustice' },
     consequences: {
       playerWins: [
@@ -760,15 +769,15 @@ const conflictDefinitions: ConflictDefinition[] = [
     minEscalation: 'PHYSICAL',
     maxEscalation: 'GUNPLAY',
     npcAggression: 0.8,
-    pressureCost: { onGive: 2, onEscalate: 1, onFallout: 1 },
-    unlockCondition: { type: 'pressure_min', value: 6 },
+    descentCost: { onGive: 2, onEscalate: 1, onFallout: 1 },
+    unlockCondition: { type: 'descent_min', value: 6 },
     consequences: {
       playerWins: [
-        { type: 'ADVANCE_PRESSURE', amount: 1 },
+        { type: 'ADVANCE_DESCENT', amount: 1 },
         { type: 'NARRATIVE', text: 'You fight them off. The Steward will think twice before trying that again.' },
       ],
       playerGives: [
-        { type: 'ADVANCE_PRESSURE', amount: 2 },
+        { type: 'ADVANCE_DESCENT', amount: 2 },
         { type: 'NARRATIVE', text: 'They beat you and leave you in the dirt. The message is clear.' },
       ],
       npcGives: [
@@ -779,13 +788,14 @@ const conflictDefinitions: ConflictDefinition[] = [
   },
 ];
 
-// ─── Pressure Thresholds ────────────────────────────────────────────────────
+// ─── Descent Thresholds ─────────────────────────────────────────────────────
 
-const pressureThresholds: PressureThreshold[] = [
+const descentThresholds: DescentThreshold[] = [
   { at: 2, eventId: 'event-martha-collapse', fired: false },
   { at: 3, eventId: 'event-steward-sermon', fired: false },
   { at: 4, eventId: 'event-thomas-caught', fired: false },
   { at: 5, eventId: 'event-child-sick', fired: false },
+  { at: 8, eventId: 'event-descent-overflow', fired: false },
 ];
 
 // ─── Assembled Town ─────────────────────────────────────────────────────────
@@ -804,5 +814,5 @@ export const bridalFalls: TownData = {
   hasLaw: true,
   timedActions,
   conflictDefinitions,
-  pressureThresholds,
+  descentThresholds,
 };

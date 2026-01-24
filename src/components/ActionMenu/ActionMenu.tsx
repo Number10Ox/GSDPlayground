@@ -6,14 +6,12 @@ import { ESCALATION_ORDER } from '@/types/conflict';
 import {
   getAvailableActions,
   type ActionContext,
-  type FreeAction,
 } from '@/utils/actionAvailability';
 
 interface ActionMenuProps {
   locationId: LocationId;
   town: TownData;
   context: ActionContext;
-  onFreeAction: (action: FreeAction) => void;
   onTimedAction: (action: TimedAction) => void;
   onConflict: (definition: ConflictDefinition) => void;
 }
@@ -36,35 +34,13 @@ export function ActionMenu({
   locationId,
   town,
   context,
-  onFreeAction,
   onTimedAction,
   onConflict,
 }: ActionMenuProps) {
-  const { free, timed, conflicts } = getAvailableActions(locationId, town, context);
+  const { timed, conflicts } = getAvailableActions(locationId, town, context);
 
   return (
     <div className="bg-surface rounded-lg p-4 space-y-4" data-testid="action-menu">
-      {/* Free Actions */}
-      {free.length > 0 && (
-        <div>
-          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-            Free
-          </h4>
-          <div className="space-y-1">
-            {free.map(action => (
-              <button
-                key={action.id}
-                onClick={() => onFreeAction(action)}
-                className="w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-gray-700/50 rounded transition-colors cursor-pointer"
-                data-testid={`action-${action.id}`}
-              >
-                {action.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Timed Actions */}
       {timed.length > 0 && (
         <div>
@@ -89,7 +65,7 @@ export function ActionMenu({
                   <span>{action.name}</span>
                 </span>
                 <span className="text-red-400 text-xs font-mono">
-                  {locked ? lockReason : `+${action.pressureCost}`}
+                  {locked ? lockReason : `+${action.descentCost}`}
                 </span>
               </button>
             ))}
@@ -138,7 +114,7 @@ export function ActionMenu({
       )}
 
       {/* Empty state */}
-      {free.length === 0 && timed.length === 0 && conflicts.length === 0 && (
+      {timed.length === 0 && conflicts.length === 0 && (
         <p className="text-gray-600 text-sm text-center py-2">No actions available here.</p>
       )}
     </div>

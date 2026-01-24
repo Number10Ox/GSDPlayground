@@ -83,5 +83,5 @@ export type InvestigationAction =
   | { type: 'MARK_SIN_RESOLVED'; sinId: string }
   | { type: 'MARK_TOWN_RESOLVED' }
   | { type: 'ADVANCE_SIN_PROGRESSION' }
-  | { type: 'PRESSURE_ESCALATE_SIN' }
+  | { type: 'DESCENT_ESCALATE_SIN' }
   | { type: 'CONFRONT_SIN'; sinId: string };

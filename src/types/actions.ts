@@ -6,36 +6,21 @@ import type { LocationId } from '@/types/game';
  * Checked by actionAvailability utility against current game context.
  */
 export type UnlockCondition =
-  | { type: 'pressure_min'; value: number }
-  | { type: 'pressure_max'; value: number }
+  | { type: 'descent_min'; value: number }
+  | { type: 'descent_max'; value: number }
   | { type: 'sin_discovered'; sinId: string }
   | { type: 'clue_found'; clueId: string }
   | { type: 'trust_min'; npcId: string; value: number };
 
 /**
- * FreeAction - No cost, no conflict. Movement and observation.
- */
-export interface FreeAction {
-  id: string;
-  name: string;
-  description: string;
-  locationId: LocationId | null;
-  effects: FreeActionEffect[];
-}
-
-export type FreeActionEffect =
-  | { type: 'NAVIGATE'; locationId: LocationId }
-  | { type: 'NARRATIVE'; text: string };
-
-/**
- * TimedAction - Ticks the pressure clock. Investigation, prayer, tending.
+ * TimedAction - Ticks the descent clock. Investigation, prayer, tending.
  */
 export interface TimedAction {
   id: string;
   name: string;
   description: string;
   locationId: LocationId;
-  pressureCost: number;
+  descentCost: number;
   effects: TimedActionEffect[];
   unlockCondition?: UnlockCondition;
   oneShot: boolean;
@@ -59,7 +44,7 @@ export interface ConflictDefinition {
   minEscalation: EscalationLevel;
   maxEscalation: EscalationLevel;
   npcAggression: number;
-  pressureCost: { onGive: number; onEscalate: number; onFallout: number };
+  descentCost: { onGive: number; onEscalate: number; onFallout: number };
   unlockCondition?: UnlockCondition;
   consequences: {
     playerWins: ConflictConsequence[];
@@ -70,7 +55,7 @@ export interface ConflictDefinition {
 
 export type ConflictConsequence =
   | { type: 'DISCOVER_SIN'; sinId: string }
-  | { type: 'ADVANCE_PRESSURE'; amount: number }
+  | { type: 'ADVANCE_DESCENT'; amount: number }
   | { type: 'TRUST_CHANGE'; npcId: string; delta: number }
   | { type: 'UNLOCK_CLUE'; clueId: string }
   | { type: 'NARRATIVE'; text: string }

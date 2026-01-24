@@ -145,9 +145,9 @@ export function investigationReducer(
       };
     }
 
-    case 'PRESSURE_ESCALATE_SIN':
+    case 'DESCENT_ESCALATE_SIN':
     case 'ADVANCE_SIN_PROGRESSION': {
-      // Called when pressure clock overflows: time pressure mechanic.
+      // Called when descent clock overflows: sin escalation mechanic.
       // Escalates the highest-severity unresolved sin in-place (keeps NPC links).
       if (state.sinProgression.length === 0) return state;
 

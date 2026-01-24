@@ -1,18 +1,18 @@
 /**
- * PressureClock - Per-town urgency tracker.
+ * DescentClock - Per-town urgency tracker.
  * Ticks from timed actions, conflict outcomes (Give, escalation, fallout).
  * At max (8/8): sin escalates, clock resets.
  */
-export interface PressureClock {
+export interface DescentClock {
   segments: 8;
   filled: number;
-  thresholds: PressureThreshold[];
+  thresholds: DescentThreshold[];
 }
 
 /**
- * PressureThreshold - When pressure reaches a certain level, fire an event.
+ * DescentThreshold - When descent reaches a certain level, fire an event.
  */
-export interface PressureThreshold {
+export interface DescentThreshold {
   at: number;
   eventId: string;
   fired: boolean;

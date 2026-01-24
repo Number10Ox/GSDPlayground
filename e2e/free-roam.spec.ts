@@ -15,14 +15,8 @@ test.describe('Free Roam - Game starts in EXPLORING phase', () => {
     await expect(actionMenu).toBeVisible();
   });
 
-  test('ActionMenu shows free actions (Look around, movements)', async ({ page }) => {
-    // "Look around" should always be visible at starting location
-    const lookAction = page.getByTestId('action-look-town-square');
-    await expect(lookAction).toBeVisible();
-  });
-
-  test('movement updates location and ActionMenu', async ({ page }) => {
-    // Navigate to the church
+  test('movement via map node updates location and ActionMenu', async ({ page }) => {
+    // Navigate to the church via map node
     await navigateTo(page, 'church');
 
     // Location card in sidebar should update (h3 heading in the location info card)
@@ -33,7 +27,7 @@ test.describe('Free Roam - Game starts in EXPLORING phase', () => {
     await expect(readDecree).toBeVisible();
   });
 
-  test('pressure clock starts at 0/8', async ({ page }) => {
+  test('descent clock starts at 0/8', async ({ page }) => {
     await expect(page.locator('text=0/8')).toBeVisible();
   });
 

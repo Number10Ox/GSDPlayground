@@ -2,33 +2,22 @@ import type { LocationId } from '@/types/game';
 import type { TimedAction, ConflictDefinition, UnlockCondition } from '@/types/actions';
 import type { TownData } from '@/types/town';
 import type { InvestigationState } from '@/types/investigation';
-import type { PressureClock } from '@/types/pressure';
+import type { DescentClock } from '@/types/descent';
 
 /**
  * Context needed to evaluate unlock conditions and filter available actions.
  */
 export interface ActionContext {
-  pressureClock: PressureClock;
+  descentClock: DescentClock;
   investigationState: InvestigationState;
   npcTrust: Record<string, number>; // npcId -> trust level
   completedActionIds: string[];
 }
 
 /**
- * FreeAction - A zero-cost action (movement or observation).
- */
-export interface FreeAction {
-  id: string;
-  label: string;
-  type: 'move' | 'look';
-  targetLocationId?: LocationId;
-}
-
-/**
  * AvailableActions - The filtered set of actions available at a location.
  */
 export interface AvailableActions {
-  free: FreeAction[];
   timed: { action: TimedAction; locked: boolean; lockReason?: string }[];
   conflicts: { definition: ConflictDefinition; locked: boolean; lockReason?: string }[];
 }
@@ -40,10 +29,10 @@ export function isUnlocked(condition: UnlockCondition | undefined, context: Acti
   if (!condition) return true;
 
   switch (condition.type) {
-    case 'pressure_min':
-      return context.pressureClock.filled >= condition.value;
-    case 'pressure_max':
-      return context.pressureClock.filled <= condition.value;
+    case 'descent_min':
+      return context.descentClock.filled >= condition.value;
+    case 'descent_max':
+      return context.descentClock.filled <= condition.value;
     case 'sin_discovered':
       return context.investigationState.sinProgression.some(
         s => s.id === condition.sinId && s.discovered
@@ -64,10 +53,10 @@ export function isUnlocked(condition: UnlockCondition | undefined, context: Acti
  */
 function getLockReason(condition: UnlockCondition): string {
   switch (condition.type) {
-    case 'pressure_min':
-      return `Requires pressure ${condition.value}+`;
-    case 'pressure_max':
-      return `Requires pressure ${condition.value} or below`;
+    case 'descent_min':
+      return `Requires descent ${condition.value}+`;
+    case 'descent_max':
+      return `Requires descent ${condition.value} or below`;
     case 'sin_discovered':
       return 'Requires discovery';
     case 'clue_found':
@@ -88,30 +77,6 @@ export function getAvailableActions(
   town: TownData,
   context: ActionContext
 ): AvailableActions {
-  // Free actions: connections from this location + "Look around"
-  const location = town.locations.find(l => l.id === locationId);
-  const free: FreeAction[] = [];
-
-  if (location) {
-    free.push({
-      id: `look-${locationId}`,
-      label: 'Look around',
-      type: 'look',
-    });
-
-    for (const connId of location.connections) {
-      const connLoc = town.locations.find(l => l.id === connId);
-      if (connLoc) {
-        free.push({
-          id: `move-${connId}`,
-          label: `Go to ${connLoc.name}`,
-          type: 'move',
-          targetLocationId: connId,
-        });
-      }
-    }
-  }
-
   // Timed actions at this location (filter out completed one-shots)
   const timed = (town.timedActions ?? [])
     .filter(a => a.locationId === locationId)
@@ -141,5 +106,5 @@ export function getAvailableActions(
       };
     });
 
-  return { free, timed, conflicts };
+  return { timed, conflicts };
 }

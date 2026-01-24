@@ -7,7 +7,7 @@ import type { Location } from '@/types/game';
 import type { NPC } from '@/types/npc';
 import type { SinNode, LocationClue } from '@/types/investigation';
 import type { TimedAction, ConflictDefinition } from '@/types/actions';
-import type { PressureThreshold } from '@/types/pressure';
+import type { DescentThreshold } from '@/types/descent';
 
 /**
  * TopicRule - Declarative rule for which topics are available to NPCs.
@@ -76,12 +76,12 @@ export interface TownData {
   events?: TownEvent[];
   /** Whether the town has formal law enforcement (enables Sheriff NPC) */
   hasLaw?: boolean;
-  /** Timed actions available at locations (tick pressure clock) */
+  /** Timed actions available at locations (tick descent clock) */
   timedActions?: TimedAction[];
   /** Conflict encounters available at locations (full DitV conflicts) */
   conflictDefinitions?: ConflictDefinition[];
-  /** Pressure thresholds that trigger events */
-  pressureThresholds?: PressureThreshold[];
+  /** Descent thresholds that trigger events */
+  descentThresholds?: DescentThreshold[];
 }
 
 /**
@@ -96,7 +96,7 @@ export interface TownEvent {
 }
 
 export type EventTrigger =
-  | { type: 'PRESSURE_REACHED'; value: number }
+  | { type: 'DESCENT_REACHED'; value: number }
   | { type: 'SIN_LEVEL'; sinId: string; level: string }
   | { type: 'DISCOVERY_MADE'; discoveryId: string }
   | { type: 'NPC_TRUST'; npcId: string; threshold: number }

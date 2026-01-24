@@ -1,6 +1,6 @@
 # Codebase Intelligence Summary
 
-Last updated: 2026-01-24T00:39:41.121Z
+Last updated: 2026-01-24T01:45:50.229Z
 Indexed files: 115
 
 ## Key Directories
@@ -16,4 +16,4 @@ Indexed files: 115
 - `*.steps.ts`: Unknown (5 files)
 - `*.spec.ts`: Test files (6 files)
 
-Total exports: 337
+Total exports: 334

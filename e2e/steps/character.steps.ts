@@ -196,7 +196,7 @@ export async function skipArrivalOverlay(page: Page) {
 
 /**
  * Start a test conflict using the dev-mode trigger button.
- * In the pressure clock flow, the test button is visible in EXPLORING phase.
+ * In the descent clock flow, the test button is visible in EXPLORING phase.
  */
 export async function triggerConflictForTest(page: Page) {
   const testButton = page.getByTestId('start-test-conflict');

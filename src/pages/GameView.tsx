@@ -21,16 +21,17 @@ import { useInvestigation } from '@/hooks/useInvestigation';
 import { useDialogue } from '@/hooks/useDialogue';
 import { RELATIONSHIP_SEEDS } from '@/data/relationshipSeeds';
 import { initialConflictState, conflictReducer } from '@/reducers/conflictReducer';
+import { SIN_CHAIN_ORDER } from '@/reducers/investigationReducer';
 import { useTown } from '@/hooks/useTown';
 import { resolveTopicsForNPC } from '@/utils/topicResolver';
 import { buildPlayerDicePool, buildNPCDicePool } from '@/utils/conflictDice';
-import type { ActionContext, FreeAction } from '@/utils/actionAvailability';
-import { advancePressure } from '@/utils/pressureClock';
+import type { ActionContext } from '@/utils/actionAvailability';
+import { advanceDescent } from '@/utils/descentClock';
 import type { TimedAction, ConflictDefinition } from '@/types/actions';
 import type { ConflictState } from '@/types/conflict';
 import type { ApproachType } from '@/types/dialogue';
 import type { Die } from '@/types/game';
-import type { PressureThreshold } from '@/types/pressure';
+import type { DescentThreshold } from '@/types/descent';
 
 export function GameView() {
   const town = useTown();
@@ -68,35 +69,43 @@ export function GameView() {
   const [conflictState, setConflictState] = useState<ConflictState | null>(null);
 
   // Town event overlay state
-  const [pendingEvents, setPendingEvents] = useState<PressureThreshold[]>([]);
+  const [pendingEvents, setPendingEvents] = useState<DescentThreshold[]>([]);
 
-  // Advance pressure with side effects (overflow → sin escalation, threshold → events)
-  const advancePressureWithEffects = useCallback((amount: number) => {
-    const result = advancePressure(state.pressureClock, amount);
-    dispatch({ type: 'ADVANCE_PRESSURE', amount });
+  // Track pending overflow (sin escalation deferred until event dismissed)
+  const [pendingOverflow, setPendingOverflow] = useState(false);
 
-    // Queue triggered threshold events
+  // Advance descent with side effects (overflow → event overlay → sin escalation on dismiss)
+  const advanceDescentWithEffects = useCallback((amount: number) => {
+    const result = advanceDescent(state.descentClock, amount);
+    dispatch({ type: 'ADVANCE_DESCENT', amount });
+
+    // Queue triggered threshold events (including overflow event at 8)
     if (result.triggeredThresholds.length > 0) {
       setPendingEvents(prev => [...prev, ...result.triggeredThresholds]);
       dispatch({ type: 'SET_GAME_PHASE', phase: 'TOWN_EVENT' });
     }
 
-    // Handle overflow — escalate sin
+    // Mark overflow pending (sin escalation deferred until event is dismissed)
     if (result.overflowed) {
-      investigationDispatch({ type: 'PRESSURE_ESCALATE_SIN' });
+      setPendingOverflow(true);
     }
-  }, [state.pressureClock, dispatch, investigationDispatch]);
+  }, [state.descentClock, dispatch]);
 
   // Dismiss current town event
   const handleDismissEvent = useCallback(() => {
     setPendingEvents(prev => {
       const remaining = prev.slice(1);
       if (remaining.length === 0) {
+        // All events dismissed — apply pending overflow if any
+        if (pendingOverflow) {
+          investigationDispatch({ type: 'DESCENT_ESCALATE_SIN' });
+          setPendingOverflow(false);
+        }
         dispatch({ type: 'SET_GAME_PHASE', phase: 'EXPLORING' });
       }
       return remaining;
     });
-  }, [dispatch]);
+  }, [dispatch, pendingOverflow, investigationDispatch]);
 
   // Initialize investigation on mount with town sin chain and clues
   useEffect(() => {
@@ -224,7 +233,7 @@ export function GameView() {
     return () => window.removeEventListener('dialogue-conflict', handler);
   }, [handleConflictFromDialogue]);
 
-  // Handle conflict completion — process pressure costs and consequences
+  // Handle conflict completion — process descent costs and consequences
   const handleConflictComplete = useCallback((info: ConflictOutcomeInfo) => {
     // Check if the conflict NPC is linked to a sin - if so, confront it
     if (activeConflict) {
@@ -241,14 +250,14 @@ export function GameView() {
         : undefined;
 
       if (definition) {
-        // Calculate pressure cost from conflict
-        let pressureCost = 0;
-        if (info.outcome === 'PLAYER_GAVE') pressureCost += definition.pressureCost.onGive;
-        pressureCost += info.escalationsJumped * definition.pressureCost.onEscalate;
-        if (info.hadFallout) pressureCost += definition.pressureCost.onFallout;
+        // Calculate descent cost from conflict
+        let descentCost = 0;
+        if (info.outcome === 'PLAYER_GAVE') descentCost += definition.descentCost.onGive;
+        descentCost += info.escalationsJumped * definition.descentCost.onEscalate;
+        if (info.hadFallout) descentCost += definition.descentCost.onFallout;
 
-        if (pressureCost > 0) {
-          advancePressureWithEffects(pressureCost);
+        if (descentCost > 0) {
+          advanceDescentWithEffects(descentCost);
         }
 
         // Apply consequences based on outcome
@@ -268,8 +277,8 @@ export function GameView() {
             case 'RESOLVE_SIN':
               investigationDispatch({ type: 'MARK_SIN_RESOLVED', sinId: c.sinId });
               break;
-            case 'ADVANCE_PRESSURE':
-              advancePressureWithEffects(c.amount);
+            case 'ADVANCE_DESCENT':
+              advanceDescentWithEffects(c.amount);
               break;
             case 'TRUST_CHANGE':
               npcMemoryDispatch({ type: 'UPDATE_RELATIONSHIP', npcId: c.npcId, delta: c.delta });
@@ -286,7 +295,7 @@ export function GameView() {
     }
 
     setConflictState(null);
-  }, [activeConflict, investigationState.sinProgression, investigationDispatch, dispatch, town.conflictDefinitions, npcMemoryDispatch, advancePressureWithEffects]);
+  }, [activeConflict, investigationState.sinProgression, investigationDispatch, dispatch, town.conflictDefinitions, npcMemoryDispatch, advanceDescentWithEffects]);
 
   // Build action context for ActionMenu
   const actionContext: ActionContext = useMemo(() => {
@@ -295,20 +304,12 @@ export function GameView() {
       npcTrust[memory.npcId] = memory.relationshipLevel;
     }
     return {
-      pressureClock: state.pressureClock,
+      descentClock: state.descentClock,
       investigationState,
       npcTrust,
       completedActionIds: state.completedActionIds,
     };
-  }, [state.pressureClock, state.completedActionIds, investigationState, npcMemories]);
-
-  // Handle free action from ActionMenu
-  const handleFreeAction = useCallback((action: FreeAction) => {
-    if (action.type === 'move' && action.targetLocationId) {
-      dispatch({ type: 'NAVIGATE', locationId: action.targetLocationId });
-    }
-    // 'look' actions show the location description (already visible in sidebar)
-  }, [dispatch]);
+  }, [state.descentClock, state.completedActionIds, investigationState, npcMemories]);
 
   // Handle timed action from ActionMenu
   const handleTimedAction = useCallback((action: TimedAction) => {
@@ -330,14 +331,14 @@ export function GameView() {
       }
     }
 
-    // Advance pressure clock (with overflow/threshold effects)
-    advancePressureWithEffects(action.pressureCost);
+    // Advance descent clock (with overflow/threshold effects)
+    advanceDescentWithEffects(action.descentCost);
 
     // Mark one-shot actions as complete
     if (action.oneShot) {
       dispatch({ type: 'MARK_ACTION_COMPLETE', actionId: action.id });
     }
-  }, [dispatch, investigationDispatch, npcMemoryDispatch, advancePressureWithEffects]);
+  }, [dispatch, investigationDispatch, npcMemoryDispatch, advanceDescentWithEffects]);
 
   // Handle conflict from ActionMenu
   const handleConflictFromMenu = useCallback((definition: ConflictDefinition) => {
@@ -412,17 +413,17 @@ export function GameView() {
           onViewSheet={() => setShowSheet(true)}
         />
 
-        {/* Pressure Clock */}
+        {/* Descent Clock */}
         <div className="bg-surface rounded-lg p-4">
           <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">
-            Pressure
+            Descent
           </h3>
           <div className="flex items-center gap-1">
-            {Array.from({ length: state.pressureClock.segments }).map((_, i) => (
+            {Array.from({ length: state.descentClock.segments }).map((_, i) => (
               <div
                 key={i}
                 className={`h-3 flex-1 rounded-sm ${
-                  i < state.pressureClock.filled
+                  i < state.descentClock.filled
                     ? 'bg-red-500'
                     : 'bg-gray-700'
                 }`}
@@ -430,7 +431,7 @@ export function GameView() {
             ))}
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            {state.pressureClock.filled}/{state.pressureClock.segments}
+            {state.descentClock.filled}/{state.descentClock.segments}
           </p>
         </div>
 
@@ -504,7 +505,6 @@ export function GameView() {
             locationId={currentLocation}
             town={town}
             context={actionContext}
-            onFreeAction={handleFreeAction}
             onTimedAction={handleTimedAction}
             onConflict={handleConflictFromMenu}
           />
@@ -594,13 +594,49 @@ export function GameView() {
       {state.gamePhase === 'TOWN_EVENT' && pendingEvents.length > 0 && (() => {
         const currentThreshold = pendingEvents[0];
         const eventData = town.events?.find(e => e.id === currentThreshold.eventId);
+        const isOverflow = currentThreshold.eventId === 'event-descent-overflow';
+
+        // Compute which sin will escalate (preview before dispatch)
+        let escalationInfo: { name: string; fromLevel: string; toLevel: string } | null = null;
+        if (isOverflow && investigationState.sinProgression.length > 0) {
+          let highest: { node: typeof investigationState.sinProgression[0] } | null = null;
+          for (const node of investigationState.sinProgression) {
+            if (node.resolved) continue;
+            const levelIdx = SIN_CHAIN_ORDER.indexOf(node.level);
+            if (!highest || levelIdx > SIN_CHAIN_ORDER.indexOf(highest.node.level)) {
+              highest = { node };
+            }
+          }
+          if (highest && highest.node.level !== 'hate-and-murder') {
+            const fromIdx = SIN_CHAIN_ORDER.indexOf(highest.node.level);
+            const toLevel = SIN_CHAIN_ORDER[fromIdx + 1];
+            escalationInfo = {
+              name: highest.node.name,
+              fromLevel: highest.node.level.replace(/-/g, ' '),
+              toLevel: toLevel.replace(/-/g, ' '),
+            };
+          }
+        }
+
         return (
           <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-8">
             <div className="bg-surface rounded-lg p-8 max-w-lg w-full space-y-4">
-              <h2 className="text-lg font-semibold text-amber-200">Town Event</h2>
+              <h2 className="text-lg font-semibold text-amber-200">
+                {isOverflow ? 'The Town Descends' : 'Town Event'}
+              </h2>
               <p className="text-gray-200 leading-relaxed">
                 {eventData?.description ?? 'Something stirs in the town...'}
               </p>
+              {escalationInfo && (
+                <div className="border-t border-red-900/50 pt-3 mt-3">
+                  <p className="text-red-300 text-sm font-medium">
+                    Sin escalates: <span className="text-red-200">{escalationInfo.name}</span>
+                  </p>
+                  <p className="text-red-400/70 text-xs mt-1 capitalize">
+                    {escalationInfo.fromLevel} &rarr; {escalationInfo.toLevel}
+                  </p>
+                </div>
+              )}
               <button
                 onClick={handleDismissEvent}
                 className="w-full bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer"
