@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-20)
 ## Current Position
 
 Phase: 6.2 of 8 (E2E Test Overhaul)
-Plan: 01 of 5
+Plan: 03 of 5
 Status: In progress
-Last activity: 2026-01-24 - Completed 06.2-01-PLAN.md (fix E2E step helpers)
+Last activity: 2026-01-24 - Completed 06.2-03-PLAN.md (journey flow E2E coverage)
 
-Progress: [████████████████░░░░] ~82% (Phases 1-6.1 complete, 6.2 plan 1/5 done, Phases 7-8 remain)
+Progress: [████████████████░░░░] ~83% (Phases 1-6.1 complete, 6.2 plans 1,3/5 done, Phases 7-8 remain)
 
 ## Performance Metrics
 
@@ -164,6 +164,8 @@ Recent decisions affecting current work:
 - [06.2-01]: Journey initial phase TOWN_ACTIVE (GameView overlay handles creation, not journey-level phase)
 - [06.2-01]: Dev-mode generateOptions falls back to sendMessage legacy path (direct topic→response)
 - [06.2-01]: Three deterministic conviction seeds for E2E: mercy-faithful, justice-punished, faith-doctrine
+- [06.2-03]: Dev-mode buttons for journey: dev-trigger-test-conviction (tests first active conviction), dev-complete-town (COMPLETE_TOWN + SET_PHASE: TOWN_REFLECTION)
+- [06.2-03]: Journey E2E pattern: trigger test via dev button, complete town via dev button, verify reflection/progress screens
 
 ### Roadmap Evolution
 
@@ -182,9 +184,9 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-24
-Stopped at: Completed 06.2-01-PLAN.md (fix E2E step helpers for Phase 6.1 changes)
+Stopped at: Completed 06.2-03-PLAN.md (journey flow E2E coverage)
 Resume file: None
-Note: Plan 06.2-01 fixed character creation (conviction step), conflict start (approach overlay), and dialogue flow (dev-mode sendMessage fallback). All 34 E2E tests passing.
+Note: Plan 06.2-03 added journey flow E2E tests (conviction reflection, multi-town progression). Dev-mode buttons for test-conviction and complete-town added to GameView. All 52 E2E tests passing.
 
 ## Phase 2 Completion Notes
 
