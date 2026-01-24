@@ -34,6 +34,7 @@ import type { ConflictState } from '@/types/conflict';
 import type { ApproachType } from '@/types/dialogue';
 import type { Die } from '@/types/game';
 import type { DescentThreshold } from '@/types/descent';
+import type { TownRecord } from '@/types/journey';
 
 export function GameView() {
   const town = useTown();
@@ -43,7 +44,7 @@ export function GameView() {
   const { npcs, memories: npcMemories, dispatch: npcMemoryDispatch } = useNPCMemory();
   const { state: investigationState, dispatch: investigationDispatch } = useInvestigation();
   const { dispatch: dialogueDispatch } = useDialogue();
-  const { journey, testConviction, getActiveConvictions } = useJourney();
+  const { journey, dispatch: journeyDispatch, testConviction, getActiveConvictions } = useJourney();
 
   // Track selected NPC for relationship panel
   const [selectedNpcId, setSelectedNpcId] = useState<string | null>(null);
@@ -664,6 +665,48 @@ export function GameView() {
                 className="w-full bg-purple-900/50 hover:bg-purple-800/50 text-purple-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
               >
                 Add Test Trait
+              </button>
+            )}
+            {character && (
+              <button
+                data-testid="dev-trigger-test-conviction"
+                onClick={() => {
+                  const activeConvictions = getActiveConvictions();
+                  if (activeConvictions.length > 0) {
+                    const conviction = activeConvictions[0];
+                    testConviction(
+                      conviction.id,
+                      { type: 'conflict_outcome', outcome: 'PLAYER_WON', npcId: 'test-npc', escalationLevel: 2 },
+                      `Your actions tested your conviction: "${conviction.text}"`,
+                    );
+                  }
+                }}
+                className="w-full bg-cyan-900/50 hover:bg-cyan-800/50 text-cyan-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                Test Conviction
+              </button>
+            )}
+            {character && (
+              <button
+                data-testid="dev-complete-town"
+                onClick={() => {
+                  const record: TownRecord = {
+                    townId: `town-${journey.currentTownIndex}`,
+                    townName: `Town ${journey.currentTownIndex + 1}`,
+                    judgments: [],
+                    convictionTests: journey.pendingTests,
+                    reflectionChoices: [],
+                    traitsGained: [],
+                    reputation: 'just',
+                    resolved: true,
+                    escalatedToMurder: false,
+                  };
+                  journeyDispatch({ type: 'COMPLETE_TOWN', record });
+                  journeyDispatch({ type: 'SET_PHASE', phase: 'TOWN_REFLECTION' });
+                }}
+                className="w-full bg-amber-900/50 hover:bg-amber-800/50 text-amber-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                Complete Town
               </button>
             )}
             {npcsAtLocation.length > 0 && (
