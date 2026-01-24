@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** The player must be able to arrive in a procedurally generated town, discover its moral rot through investigation and NPC interaction, and resolve conflicts using the escalating stakes system — experiencing the weight of judgment that defines Dogs in the Vineyard.
-**Current focus:** Phase 6.2 - E2E Test Overhaul (fix broken tests, add coverage for Phase 6.1 systems)
+**Current focus:** Phase 6.2 COMPLETE. Ready for Phase 7 or Phase 8.
 
 ## Current Position
 
 Phase: 6.2 of 8 (E2E Test Overhaul)
-Plan: 04 of 5 (plans 1-4 done)
-Status: In progress
-Last activity: 2026-01-24 - Completed 06.2-04-PLAN.md (trust mechanics E2E)
+Plan: 05 of 5 (all plans done)
+Status: Phase complete
+Last activity: 2026-01-24 - Completed 06.2-05-PLAN.md (regression tests + full suite validation)
 
-Progress: [█████████████████░░░] ~86% (Phases 1-6.1 complete, 6.2 plans 1-4/5 done, Phases 7-8 remain)
+Progress: [██████████████████░░] ~90% (Phases 1-6.2 complete, Phases 7-8 remain)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 32
+- Total plans completed: 33
 - Average duration: 5.7 min
-- Total execution time: 3.68 hours
+- Total execution time: 3.88 hours
 
 **By Phase:**
 
@@ -37,8 +37,8 @@ Progress: [█████████████████░░░] ~86% (P
 | 06-town-generation | 6 | 55 min | 9.2 min |
 
 **Recent Trend:**
-- Last 5 plans: 06-02 (19min), 06-03 (7min), 06-04 (7min), 06-05 (5min), 06-06 (8min)
-- Trend: Consistent execution for town generation pipeline
+- Last 5 plans: 06.2-01 (6min), 06.2-02 (8min), 06.2-03 (7min), 06.2-04 (6min), 06.2-05 (12min)
+- Trend: E2E test overhaul phase complete with consistent execution
 
 *Updated after each plan completion*
 
@@ -166,6 +166,9 @@ Recent decisions affecting current work:
 - [06.2-01]: Three deterministic conviction seeds for E2E: mercy-faithful, justice-punished, faith-doctrine
 - [06.2-03]: Dev-mode buttons for journey: dev-trigger-test-conviction (tests first active conviction), dev-complete-town (COMPLETE_TOWN + SET_PHASE: TOWN_REFLECTION)
 - [06.2-03]: Journey E2E pattern: trigger test via dev button, complete town via dev button, verify reflection/progress screens
+- [06.2-05]: dblclick() for race condition testing (click+force caused browser crash)
+- [06.2-05]: Exchange cap test uses explicit wait-per-phase pattern for reliability
+- [06.2-05]: Descent overflow resets filled to 0 (not capped at max)
 
 ### Roadmap Evolution
 
@@ -184,9 +187,23 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-24
-Stopped at: Completed 06.2-04-PLAN.md (trust mechanics E2E)
+Stopped at: Completed 06.2-05-PLAN.md (regression tests + full suite validation) - Phase 6.2 COMPLETE
 Resume file: None
-Note: Plan 06.2-04 added trust data-testid attributes (trust-level, trust-broken), dev-mode trust break/adjust buttons, and 4 E2E tests covering trust visibility, conflict reduction, breaking, and cap persistence. 51/52 tests passing (1 pre-existing flaky).
+Note: Plan 06.2-05 added 9 regression tests for f2e30c7 edge cases (descent overflow, streaming errors, exchange cap, conviction transform lifecycle, duty discovery, whitespace guard). Full suite: 61 tests (60 consistent, 1 pre-existing flaky). Phase 6.2 success criteria all met.
+
+## Phase 6.2 Completion Notes
+
+Phase 6.2 complete. E2E test overhaul for Phase 6.1 systems:
+- Plan 01: Fixed broken step helpers (conviction step, approach overlay removal)
+- Plan 02: Character creation (5 tests) + dialogue rework (4 tests) specs
+- Plan 03: Journey flow spec (5 tests) + 10 journey step helpers + dev buttons
+- Plan 04: Trust mechanics spec (4 tests) + trust data-testid attributes + dev buttons
+- Plan 05: Regression spec (9 tests) for f2e30c7 edge cases + full suite validation
+- Total E2E suite: 61 tests (was 34 before Phase 6.2, added 27 new tests)
+- All Phase 6.2 success criteria met: character creation, descent clock, dialogue, journey, trust, edge cases
+- Pre-existing flaky tests: 1-3 (conflict/trust involving NPC AI dice randomness)
+
+Ready for Phase 7 or Phase 8.
 
 ## Phase 2 Completion Notes
 
