@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** The player must be able to arrive in a procedurally generated town, discover its moral rot through investigation and NPC interaction, and resolve conflicts using the escalating stakes system — experiencing the weight of judgment that defines Dogs in the Vineyard.
-**Current focus:** Phase 6.1 complete - Core Mechanics Overhaul (descent clock, convictions, journey, dialogue rework)
+**Current focus:** Phase 6.2 - E2E Test Overhaul (fix broken tests, add coverage for Phase 6.1 systems)
 
 ## Current Position
 
-Phase: 6.1 of 8 (Core Mechanics Overhaul)
-Plan: n/a (executed ad-hoc, documented retrospectively)
-Status: Phase 6.1 complete, Phase 7 (Persistence) not started
-Last activity: 2026-01-23 - Edge case fixes for conviction, dialogue, and journey systems (commit f2e30c7)
+Phase: 6.2 of 8 (E2E Test Overhaul)
+Plan: 01 of 5
+Status: In progress
+Last activity: 2026-01-24 - Completed 06.2-01-PLAN.md (fix E2E step helpers)
 
-Progress: [████████████████░░░░] ~80% (Phases 1-6.1 complete, Phases 7-8 remain)
+Progress: [████████████████░░░░] ~82% (Phases 1-6.1 complete, 6.2 plan 1/5 done, Phases 7-8 remain)
 
 ## Performance Metrics
 
@@ -161,10 +161,14 @@ Recent decisions affecting current work:
 - [06-06]: Both generated towns use chainLength 5 (6-level too complex for validator)
 - [06-06]: Discovery tests use route interception with inline [DISCOVERY:] markers
 - [06-06]: navigateToNPCLocation iterates map nodes to find one with visible NPCs
+- [06.2-01]: Journey initial phase TOWN_ACTIVE (GameView overlay handles creation, not journey-level phase)
+- [06.2-01]: Dev-mode generateOptions falls back to sendMessage legacy path (direct topic→response)
+- [06.2-01]: Three deterministic conviction seeds for E2E: mercy-faithful, justice-punished, faith-doctrine
 
 ### Roadmap Evolution
 
 - Phase 6.1 added (retrospective): Core Mechanics Overhaul — descent clock, convictions, journey persistence, dialogue rework (11 commits done outside GSD, documented post-hoc)
+- Phase 6.2 inserted after Phase 6.1: E2E Test Overhaul — audit, fix broken tests, add coverage for new systems (URGENT)
 - Phase 8 added: AI Town Creation — Player-driven town generation via Claude API with aspect selection and IndexedDB persistence
 
 ### Pending Todos
@@ -177,10 +181,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-01-23
-Stopped at: Phase 6.1 complete (core mechanics overhaul — descent clock, convictions, journey, dialogue rework)
+Last session: 2026-01-24
+Stopped at: Completed 06.2-01-PLAN.md (fix E2E step helpers for Phase 6.1 changes)
 Resume file: None
-Note: Phase 6.1 was executed ad-hoc (11 commits) without GSD planning. Documented retrospectively.
+Note: Plan 06.2-01 fixed character creation (conviction step), conflict start (approach overlay), and dialogue flow (dev-mode sendMessage fallback). All 34 E2E tests passing.
 
 ## Phase 2 Completion Notes
 
