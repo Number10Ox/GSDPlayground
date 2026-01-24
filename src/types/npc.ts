@@ -64,6 +64,7 @@ export interface NPCMemory {
   npcId: string;
   events: ConflictEvent[];
   relationshipLevel: number; // -100 to 100, starts at 0
+  trustBroken?: boolean; // Once true, trust caps at 10 permanently for this session
 }
 
 /**
@@ -85,6 +86,16 @@ export type NPCMemoryAction =
       type: 'UPDATE_RELATIONSHIP';
       npcId: string;
       delta: number;
+    }
+  | {
+      type: 'RIPPLE_TRUST';
+      sourceNpcId: string;
+      delta: number;
+      linkedNpcIds: string[];
+    }
+  | {
+      type: 'BREAK_TRUST';
+      npcIds: string[];
     }
   | {
       type: 'SEED_RELATIONSHIPS';

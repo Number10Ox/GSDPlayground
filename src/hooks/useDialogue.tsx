@@ -61,6 +61,38 @@ function parseDiscoveryMarkers(
 }
 
 /**
+ * extractSafeDisplayText - Splits buffered text into safe-to-display and held-back portions.
+ * Strips complete [DISCOVERY:...] and [DEFLECTED] markers entirely.
+ * Holds back any trailing text that starts with '[' and could be the beginning of a marker.
+ */
+function extractSafeDisplayText(buffer: string): { safe: string; held: string } {
+  // Strip any complete markers
+  let cleaned = buffer
+    .replace(/\[DISCOVERY:\s*[^\]]*\]/g, '')
+    .replace(/\[DEFLECTED\]/g, '');
+
+  // Check if there's an incomplete bracket sequence at the end
+  // that could be the start of a marker
+  const lastBracket = cleaned.lastIndexOf('[');
+  if (lastBracket !== -1) {
+    const afterBracket = cleaned.slice(lastBracket);
+    // If there's no closing bracket, this might be a partial marker — hold it back
+    if (!afterBracket.includes(']')) {
+      const markerStarts = ['[D', '[DE', '[DISC', '[DEFLEC'];
+      const couldBeMarker = markerStarts.some(prefix => afterBracket.startsWith(prefix)) || afterBracket === '[';
+      if (couldBeMarker) {
+        return {
+          safe: cleaned.slice(0, lastBracket),
+          held: buffer.slice(buffer.lastIndexOf('[')),
+        };
+      }
+    }
+  }
+
+  return { safe: cleaned, held: '' };
+}
+
+/**
  * parseDeflectionMarker - Checks for [DEFLECTED] marker in response text.
  * Returns the cleaned text and whether deflection occurred.
  */
@@ -208,6 +240,7 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
 
       const decoder = new TextDecoder();
       let fullText = '';
+      let displayBuffer = '';
 
       try {
         while (true) {
@@ -216,7 +249,28 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
 
           const chunk = decoder.decode(value, { stream: true });
           fullText += chunk;
-          dispatch({ type: 'APPEND_RESPONSE', text: chunk });
+
+          // Buffer text and strip markers before displaying.
+          // We hold back any trailing partial marker (text starting with '[' that
+          // could be the beginning of [DISCOVERY:...] or [DEFLECTED]).
+          displayBuffer += chunk;
+          const { safe, held } = extractSafeDisplayText(displayBuffer);
+          displayBuffer = held;
+
+          if (safe) {
+            dispatch({ type: 'APPEND_RESPONSE', text: safe });
+          }
+        }
+
+        // Flush any remaining buffered text that wasn't a marker
+        if (displayBuffer) {
+          const flushed = displayBuffer
+            .replace(/\[DISCOVERY:\s*[^\]]*\]/g, '')
+            .replace(/\[DEFLECTED\]/g, '')
+            .trim();
+          if (flushed) {
+            dispatch({ type: 'APPEND_RESPONSE', text: flushed });
+          }
         }
       } finally {
         reader.releaseLock();
@@ -270,8 +324,32 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
         dispatch({ type: 'MARK_DEFLECTION', topicLabel: topic.label });
       }
 
-      // Build trust from conversation — flat +5 per exchange
-      npcDispatch({ type: 'UPDATE_RELATIONSHIP', npcId, delta: 5 });
+      // Build trust from conversation — +8 per exchange with this NPC
+      npcDispatch({ type: 'UPDATE_RELATIONSHIP', npcId, delta: 8 });
+
+      // Ripple trust to sin-linked NPCs (word spreads that you're trustworthy)
+      const linkedNpcIds = town.sinChain
+        .filter(sin => sin.linkedNpcs.includes(npcId))
+        .flatMap(sin => sin.linkedNpcs);
+      const uniqueLinked = [...new Set(linkedNpcIds)];
+      if (uniqueLinked.length > 1) {
+        npcDispatch({ type: 'RIPPLE_TRUST', sourceNpcId: npcId, delta: 8, linkedNpcIds: uniqueLinked });
+      }
+
+      // Discovery trust bonus: discovering sin-linked facts builds trust with other NPCs on that sin
+      for (const discovery of discoveries) {
+        if (discovery.sinId) {
+          const sinNode = town.sinChain.find(s => s.id === discovery.sinId);
+          if (sinNode && sinNode.linkedNpcs.length > 0) {
+            npcDispatch({
+              type: 'RIPPLE_TRUST',
+              sourceNpcId: npcId,
+              delta: 10,
+              linkedNpcIds: sinNode.linkedNpcs,
+            });
+          }
+        }
+      }
     },
     [state.currentNPC, dispatch, character, getNPCById, getMemoryForNPC, town, npcDispatch, investigationDispatch]
   );

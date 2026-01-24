@@ -21,6 +21,13 @@ const ESCALATION_PENALTIES: Record<EscalationLevel, number> = {
   GUNPLAY: -30,
 };
 
+/** Maximum trust level when trust has been broken. */
+const BROKEN_TRUST_CAP = 10;
+/** Trust level dropped to when trust breaks. */
+const BROKEN_TRUST_PENALTY = -20;
+/** Minimum trust required for trust to be "breakable". */
+const BREAK_THRESHOLD = 15;
+
 /**
  * NPC Memory State
  */
@@ -133,18 +140,68 @@ function npcMemoryReducer(
         };
       }
 
-      // Update existing memory
+      // Update existing memory, respecting broken trust cap
       const memory = state.memories[memoryIndex];
+      const cap = memory.trustBroken ? BROKEN_TRUST_CAP : 100;
       const newMemories = [...state.memories];
       newMemories[memoryIndex] = {
         ...memory,
-        relationshipLevel: clamp(memory.relationshipLevel + delta, -100, 100),
+        relationshipLevel: clamp(memory.relationshipLevel + delta, -100, cap),
       };
 
       return {
         ...state,
         memories: newMemories,
       };
+    }
+
+    case 'RIPPLE_TRUST': {
+      const { sourceNpcId, delta, linkedNpcIds } = action;
+      // Apply a fraction of the trust delta to linked NPCs (not the source)
+      const rippleDelta = Math.round(delta * 0.5);
+      if (rippleDelta === 0) return state;
+
+      const rippleMemories = [...state.memories];
+      for (const npcId of linkedNpcIds) {
+        if (npcId === sourceNpcId) continue;
+        const idx = rippleMemories.findIndex(m => m.npcId === npcId);
+        if (idx === -1) {
+          rippleMemories.push({
+            npcId,
+            events: [],
+            relationshipLevel: clamp(rippleDelta, -100, 100),
+          });
+        } else {
+          const mem = rippleMemories[idx];
+          const cap = mem.trustBroken ? BROKEN_TRUST_CAP : 100;
+          rippleMemories[idx] = {
+            ...mem,
+            relationshipLevel: clamp(mem.relationshipLevel + rippleDelta, -100, cap),
+          };
+        }
+      }
+      return { ...state, memories: rippleMemories };
+    }
+
+    case 'BREAK_TRUST': {
+      const { npcIds } = action;
+      const breakMemories = [...state.memories];
+      for (const npcId of npcIds) {
+        const idx = breakMemories.findIndex(m => m.npcId === npcId);
+        if (idx === -1) {
+          // Only break trust that was established (> threshold)
+          // If no memory exists, trust was never built — nothing to break
+          continue;
+        }
+        const mem = breakMemories[idx];
+        if (mem.trustBroken || mem.relationshipLevel <= BREAK_THRESHOLD) continue;
+        breakMemories[idx] = {
+          ...mem,
+          trustBroken: true,
+          relationshipLevel: BROKEN_TRUST_PENALTY,
+        };
+      }
+      return { ...state, memories: breakMemories };
     }
 
     case 'SEED_RELATIONSHIPS': {

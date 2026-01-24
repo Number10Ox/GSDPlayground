@@ -7,6 +7,7 @@ import { conflictReducer, initialConflictState } from '@/reducers/conflictReduce
 import { useConflictAtmosphere } from '@/hooks/useConflictAtmosphere';
 import { useGameState } from '@/hooks/useGameState';
 import { useNPCMemory } from '@/hooks/useNPCMemory';
+import { useTown } from '@/hooks/useTown';
 import { getConflictOpening, getEscalationNarration } from '@/utils/conflictNarration';
 import { RaiseControls } from './RaiseControls';
 import { EscalationConfirm } from './EscalationConfirm';
@@ -104,6 +105,7 @@ export function ConflictView({
   const { state: gameState, dispatch: gameDispatch } = useGameState();
   const { character } = useCharacter();
   const { dispatch: npcDispatch, getWitnessesAtLocation } = useNPCMemory();
+  const town = useTown();
   const [state, dispatch] = useReducer(
     conflictReducer,
     initialState ?? initialConflictState
@@ -198,16 +200,18 @@ export function ConflictView({
     const targetNpcId = gameState.activeConflict?.npcId;
 
     // Record to NPC memory
+    const escalationLevel: EscalationLevel = state.fallout.falloutType === 'LETHAL'
+      ? 'GUNPLAY'
+      : state.fallout.falloutType === 'VIOLENT'
+        ? 'FIGHTING'
+        : state.fallout.falloutType === 'PHYSICAL'
+          ? 'PHYSICAL'
+          : 'JUST_TALKING';
+
     npcDispatch({
       type: 'RECORD_CONFLICT',
       conflictData: {
-        escalationLevel: state.fallout.falloutType === 'LETHAL'
-          ? 'GUNPLAY'
-          : state.fallout.falloutType === 'VIOLENT'
-            ? 'FIGHTING'
-            : state.fallout.falloutType === 'PHYSICAL'
-              ? 'PHYSICAL'
-              : 'JUST_TALKING',
+        escalationLevel,
         outcome: state.outcome,
         location: gameState.currentLocation,
         description: outcomeDescriptions[state.outcome],
@@ -215,7 +219,19 @@ export function ConflictView({
       },
       witnesses: state.witnesses.length > 0 ? state.witnesses : witnesses,
     });
-  }, [state, gameState.activeConflict, gameState.currentLocation, npcDispatch, witnesses]);
+
+    // Break trust with sin-linked NPCs when violence was used
+    if (targetNpcId && (escalationLevel === 'FIGHTING' || escalationLevel === 'GUNPLAY')) {
+      const linkedNpcIds = town.sinChain
+        .filter(sin => sin.linkedNpcs.includes(targetNpcId))
+        .flatMap(sin => sin.linkedNpcs)
+        .filter(id => id !== targetNpcId);
+      const uniqueLinked = [...new Set(linkedNpcIds)];
+      if (uniqueLinked.length > 0) {
+        npcDispatch({ type: 'BREAK_TRUST', npcIds: uniqueLinked });
+      }
+    }
+  }, [state, gameState.activeConflict, gameState.currentLocation, npcDispatch, witnesses, town.sinChain]);
 
   // NPC AI turn handling
   useEffect(() => {

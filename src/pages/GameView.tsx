@@ -102,6 +102,21 @@ export function GameView() {
       if (remaining.length === 0) {
         // All events dismissed — apply pending overflow if any
         if (pendingOverflow) {
+          // Break trust with NPCs linked to the sin that's about to escalate (inaction)
+          const sinOrder: import('@/types/investigation').SinLevel[] = [
+            'pride', 'injustice', 'sin', 'demonic-attacks', 'false-doctrine', 'sorcery', 'hate-and-murder',
+          ];
+          let highestUnresolved: typeof investigationState.sinProgression[0] | null = null;
+          for (const node of investigationState.sinProgression) {
+            if (node.resolved) continue;
+            if (!highestUnresolved || sinOrder.indexOf(node.level) > sinOrder.indexOf(highestUnresolved.level)) {
+              highestUnresolved = node;
+            }
+          }
+          if (highestUnresolved && highestUnresolved.linkedNpcs.length > 0) {
+            npcMemoryDispatch({ type: 'BREAK_TRUST', npcIds: highestUnresolved.linkedNpcs });
+          }
+
           investigationDispatch({ type: 'DESCENT_ESCALATE_SIN' });
           setPendingOverflow(false);
         }
@@ -109,7 +124,7 @@ export function GameView() {
       }
       return remaining;
     });
-  }, [dispatch, pendingOverflow, investigationDispatch]);
+  }, [dispatch, pendingOverflow, investigationDispatch, investigationState.sinProgression, npcMemoryDispatch]);
 
   // Initialize investigation on mount with town sin chain and clues
   useEffect(() => {
@@ -212,6 +227,15 @@ export function GameView() {
         );
         if (linkedSin) {
           investigationDispatch({ type: 'CONFRONT_SIN', sinId: linkedSin.id });
+          // Confronting a sin builds trust with all NPCs linked to it
+          if (linkedSin.linkedNpcs.length > 0) {
+            npcMemoryDispatch({
+              type: 'RIPPLE_TRUST',
+              sourceNpcId: activeConflict.npcId,
+              delta: 15,
+              linkedNpcIds: linkedSin.linkedNpcs,
+            });
+          }
         }
       }
 
@@ -245,9 +269,29 @@ export function GameView() {
               // Mark the sin as discovered
               investigationDispatch({ type: 'CONFRONT_SIN', sinId: c.sinId });
               break;
-            case 'RESOLVE_SIN':
+            case 'RESOLVE_SIN': {
               investigationDispatch({ type: 'MARK_SIN_RESOLVED', sinId: c.sinId });
+              const resolvedSin = investigationState.sinProgression.find(s => s.id === c.sinId);
+              if (resolvedSin && resolvedSin.linkedNpcs.length > 0) {
+                if (info.escalationsJumped > 0) {
+                  // Forced resolution through escalation — break trust with linked NPCs
+                  // who aren't the direct target (they feel betrayed/sided against)
+                  const betrayedNpcs = resolvedSin.linkedNpcs.filter(id => id !== activeConflict.npcId);
+                  if (betrayedNpcs.length > 0) {
+                    npcMemoryDispatch({ type: 'BREAK_TRUST', npcIds: betrayedNpcs });
+                  }
+                } else {
+                  // Peaceful resolution builds trust with linked NPCs
+                  npcMemoryDispatch({
+                    type: 'RIPPLE_TRUST',
+                    sourceNpcId: activeConflict.npcId,
+                    delta: 20,
+                    linkedNpcIds: resolvedSin.linkedNpcs,
+                  });
+                }
+              }
               break;
+            }
             case 'ADVANCE_DESCENT':
               advanceDescentWithEffects(c.amount);
               break;
