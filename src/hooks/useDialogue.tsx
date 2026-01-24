@@ -469,12 +469,17 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
           return;
         }
       } catch {
-        // Fall back to mock options
+        // In dev mode, fall back to legacy sendMessage path (direct topic→response)
+        // This preserves E2E test compatibility where topic click leads directly to streaming
+        if (import.meta.env.DEV) {
+          await sendMessage(topic);
+          return;
+        }
       }
 
       dispatch({ type: 'SET_OPTIONS', options: mockOptions });
     },
-    [state.currentNPC, dispatch, character, getNPCById, getMemoryForNPC]
+    [state.currentNPC, dispatch, character, getNPCById, getMemoryForNPC, sendMessage]
   );
 
   /**

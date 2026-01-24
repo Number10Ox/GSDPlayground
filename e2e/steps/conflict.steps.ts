@@ -12,11 +12,19 @@ import { Page, expect } from '@playwright/test';
 /**
  * Start a test conflict by clicking the dev-mode test conflict button.
  * This triggers a conflict with predefined NPC and stakes for testing.
+ * Phase 6.1: Now handles the approach selection overlay before conflict starts.
  */
 export async function startConflict(page: Page, npcName: string, stakes: string) {
   // Click test conflict button (dev mode only)
   await page.getByTestId('start-test-conflict').click();
-  await expect(page.getByTestId('conflict-view')).toBeVisible();
+
+  // Phase 6.1: Approach selection overlay appears first
+  const approachOverlay = page.getByTestId('approach-selection-overlay');
+  await expect(approachOverlay).toBeVisible({ timeout: 3000 });
+  await page.getByTestId('select-approach-body').click();
+
+  // Now conflict view should be visible
+  await expect(page.getByTestId('conflict-view')).toBeVisible({ timeout: 5000 });
   await expect(page.getByTestId('conflict-stakes')).toContainText(stakes);
 }
 

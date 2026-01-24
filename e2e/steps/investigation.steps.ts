@@ -22,14 +22,15 @@ export async function startConversation(page: Page, npcId: string) {
 
 /**
  * Select a topic chip in the dialogue view.
- * The topic chip testid follows the pattern: topic-chip-{npcId}-{label}
- * (generated from Topic.id which is `${npcId}-${label}`).
- * Selecting a topic now directly triggers streaming (no approach selection).
+ * In dev mode, generateOptions auto-falls-back to sendMessage (legacy path)
+ * when the /api/dialogue-options endpoint is unavailable, so clicking a topic
+ * chip directly triggers response streaming without option selection.
+ * The topic chip testid follows the pattern: topic-chip-{npcId}-{label}.
  */
 export async function selectTopic(page: Page, topicLabel: string, npcId: string = 'sister-martha') {
   const topicChipId = `${npcId}-${topicLabel}`;
   await page.getByTestId(`topic-chip-${topicChipId}`).click();
-  // Topic selection now directly starts streaming — wait briefly for it to begin
+  // In dev mode, topic selection triggers direct streaming via sendMessage fallback
   await page.waitForTimeout(500);
 }
 
@@ -103,9 +104,10 @@ export async function verifyFatigue(page: Page, current: number, max: number) {
 // ─── Cycle Helpers ───────────────────────────────────────────────────────────
 
 /**
- * Advance the cycle by confirming allocations and continuing through
- * summary to trigger REST phase (which advances sin).
- * Handles both WAKE and ALLOCATE starting states.
+ * @deprecated Since Phase 6.1 - the daily cycle system (WAKE/ALLOCATE/RESOLVE/SUMMARY/REST)
+ * was replaced by the descent clock. This function references deleted components
+ * (DicePool, die, action-card, confirm-allocations-button, continue-button, next-day-button).
+ * Not called by any current spec file. Retained for reference only.
  */
 export async function advanceCycle(page: Page) {
   // Check if we need to start the day first (WAKE phase)
