@@ -154,10 +154,14 @@ export async function advanceCycle(page: Page) {
  * Uses the same pattern as character.steps.ts setupCharacterForTest.
  */
 export async function createCharacterForTest(page: Page, name: string = 'Test Dog') {
-  const createBtn = page.getByTestId('create-character-button');
-  await expect(createBtn).toBeVisible({ timeout: 5000 });
-  await createBtn.click();
-  await expect(page.getByTestId('creation-name-input')).toBeVisible({ timeout: 3000 });
+  // The creation wizard auto-shows when no character exists
+  const nameInput = page.getByTestId('creation-name-input');
+  if (!await nameInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+    const createBtn = page.getByTestId('create-character-button');
+    await expect(createBtn).toBeVisible({ timeout: 5000 });
+    await createBtn.click();
+    await expect(nameInput).toBeVisible({ timeout: 3000 });
+  }
 
   // Enter name
   await page.getByTestId('creation-name-input').fill(name);
@@ -180,8 +184,30 @@ export async function createCharacterForTest(page: Page, name: string = 'Test Do
   const plusWill = page.getByTestId('creation-stat-will-plus');
   for (let i = 0; i < 1; i++) await plusWill.click(); // 1 -> 2
 
+  // Advance from allocate to belongings
+  const allocateNext = page.getByTestId('creation-allocate-next');
+  await expect(allocateNext).toBeEnabled({ timeout: 2000 });
+  await allocateNext.click();
+
+  // Select first 2 belongings
+  const belongingButtons = page.locator('[data-testid^="creation-belonging-"]');
+  await expect(belongingButtons.first()).toBeVisible({ timeout: 3000 });
+  const count = await belongingButtons.count();
+  for (let i = 0; i < Math.min(2, count); i++) {
+    await belongingButtons.nth(i).click();
+  }
+  const belongingsNext = page.getByTestId('creation-belongings-next');
+  await expect(belongingsNext).toBeEnabled({ timeout: 2000 });
+  await belongingsNext.click();
+
+  // Select first initiation approach
+  const approachButton = page.locator('[data-testid^="creation-approach-"]').first();
+  await expect(approachButton).toBeVisible({ timeout: 3000 });
+  await approachButton.click();
+
   // Confirm
   const confirmButton = page.getByTestId('creation-confirm');
+  await expect(confirmButton).toBeVisible({ timeout: 3000 });
   await expect(confirmButton).toBeEnabled({ timeout: 2000 });
   await confirmButton.click();
 

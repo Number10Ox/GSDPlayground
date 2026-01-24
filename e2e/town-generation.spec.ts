@@ -13,6 +13,7 @@ import {
   getTownCardSinDepths,
 } from './steps/townGeneration.steps';
 import { createCharacterForTest } from './steps/investigation.steps';
+import { skipArrivalOverlay } from './steps/character.steps';
 
 /**
  * Town Generation E2E Tests
@@ -108,11 +109,8 @@ test.describe('Town Generation', () => {
     // Create character (needed for approach chips)
     await createCharacterForTest(page, 'Brother Test');
 
-    // Start the day to enable map interaction
-    const startDayBtn = page.getByTestId('start-day-button');
-    await expect(startDayBtn).toBeVisible({ timeout: 5000 });
-    await startDayBtn.click();
-    await page.waitForTimeout(500);
+    // Skip town arrival overlay
+    await skipArrivalOverlay(page);
 
     // Navigate to a location with NPCs
     await navigateToNPCLocation(page);
@@ -161,11 +159,8 @@ test.describe('Town Generation', () => {
     // Create character
     await createCharacterForTest(page, 'Brother Seeker');
 
-    // Start the day
-    const startDayBtn = page.getByTestId('start-day-button');
-    await expect(startDayBtn).toBeVisible({ timeout: 5000 });
-    await startDayBtn.click();
-    await page.waitForTimeout(500);
+    // Skip town arrival overlay
+    await skipArrivalOverlay(page);
 
     // Navigate to NPC location
     await navigateToNPCLocation(page);

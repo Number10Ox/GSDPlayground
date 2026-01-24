@@ -126,8 +126,12 @@ export async function attemptDiscovery(page: Page) {
   // Select acuity approach
   await page.getByTestId('approach-chip-acuity').click();
 
-  // Wait for response streaming to complete
-  await page.waitForTimeout(2000);
+  // Wait for response streaming to complete (RESPONSE_COMPLETE shows continue button)
+  const continueBtn = page.getByTestId('dialogue-continue');
+  await expect(continueBtn).toBeVisible({ timeout: 5000 });
+
+  // Acknowledge the response to advance to SHOWING_DISCOVERY phase
+  await continueBtn.click();
 
   // Check if discovery summary appeared
   const discoverySummary = page.getByTestId('discovery-summary');

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": 1769190018854,
+  "updated": 1769215181118,
   "files": {
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/vite.config.ts": {
       "exports": [
@@ -43,17 +43,16 @@
         "LocationId",
         "Location",
         "Scene",
+        "GamePhase",
         "GameState",
         "GameAction",
         "DieType",
         "Die",
-        "CyclePhase",
         "ClockType",
-        "Clock",
-        "AvailableAction"
+        "Clock"
       ],
       "imports": [],
-      "indexed": 1769189350410
+      "indexed": 1769210394582
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/hooks/useGameState.tsx": {
       "exports": [
@@ -62,10 +61,10 @@
       ],
       "imports": [
         "react",
-        "@/utils/dice",
+        "@/utils/pressureClock",
         "@/hooks/useTown"
       ],
-      "indexed": 1769189371772
+      "indexed": 1769214581265
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/ui/NarrativeText.tsx": {
       "exports": [
@@ -111,7 +110,7 @@
         "@/hooks/useGameState",
         "@/components/Character/StatDisplay"
       ],
-      "indexed": 1769118886781
+      "indexed": 1769210804130
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/pages/GameView.tsx": {
       "exports": [
@@ -125,16 +124,14 @@
         "@/components/CharacterInfo/CharacterInfo",
         "@/components/Character/CharacterCreation",
         "@/components/Character/CharacterSheet",
-        "@/components/CycleView/CycleView",
         "@/components/Clocks/ClockList",
         "@/components/NPCMemory",
         "@/components/Conflict/ConflictView",
         "@/components/Dialogue/DialogueView",
         "@/components/MentalMap/MentalMap",
-        "@/components/FatigueClock/FatigueClock",
+        "@/components/ActionMenu/ActionMenu",
         "@/components/Resolution/ResolutionSummary",
         "@/components/TownArrival/TownArrival",
-        "@/components/Judgment/JudgmentPanel",
         "@/hooks/useGameState",
         "@/hooks/useCharacter",
         "@/hooks/useNPCMemory",
@@ -144,9 +141,10 @@
         "@/reducers/conflictReducer",
         "@/hooks/useTown",
         "@/utils/topicResolver",
-        "@/utils/conflictDice"
+        "@/utils/conflictDice",
+        "@/utils/pressureClock"
       ],
-      "indexed": 1769189547528
+      "indexed": 1769211496046
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Clocks/Clock.tsx": {
       "exports": [
@@ -159,10 +157,10 @@
       "exports": [
         "rollDie",
         "getDieMax",
-        "generateDicePool"
+        "generateDieId"
       ],
       "imports": [],
-      "indexed": 1769117384686
+      "indexed": 1769211024417
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Clocks/ClockList.tsx": {
       "exports": [
@@ -188,106 +186,12 @@
       "imports": [],
       "indexed": 1769053116307
     },
-    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/DicePool/DieComponent.tsx": {
-      "exports": [
-        "DieComponent"
-      ],
-      "imports": [
-        "framer-motion",
-        "./DieIcon"
-      ],
-      "indexed": 1769062022634
-    },
-    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/DicePool/DicePool.tsx": {
-      "exports": [
-        "DicePool"
-      ],
-      "imports": [
-        "react",
-        "./DieComponent"
-      ],
-      "indexed": 1769053159202
-    },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/DicePool/index.ts": {
       "exports": [
-        "DicePool",
-        "DieComponent",
         "DieIcon"
       ],
       "imports": [],
-      "indexed": 1769053163305
-    },
-    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Actions/ActionCard.tsx": {
-      "exports": [
-        "ActionCard"
-      ],
-      "imports": [
-        "@/components/DicePool/DieIcon"
-      ],
-      "indexed": 1769062036461
-    },
-    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Actions/ActionList.tsx": {
-      "exports": [
-        "ActionList"
-      ],
-      "imports": [
-        "./ActionCard"
-      ],
-      "indexed": 1769053711745
-    },
-    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Actions/index.ts": {
-      "exports": [
-        "ActionCard",
-        "ActionList"
-      ],
-      "imports": [],
-      "indexed": 1769053715766
-    },
-    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/CycleSummary/CycleSummary.tsx": {
-      "exports": [
-        "CycleSummary"
-      ],
-      "imports": [
-        "framer-motion",
-        "@/components/DicePool/DieIcon"
-      ],
-      "indexed": 1769062057994
-    },
-    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/CycleSummary/index.ts": {
-      "exports": [
-        "CycleSummary"
-      ],
-      "imports": [],
-      "indexed": 1769053750369
-    },
-    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/CycleView/CycleView.tsx": {
-      "exports": [
-        "CycleView"
-      ],
-      "imports": [
-        "react",
-        "framer-motion",
-        "@/hooks/useGameState",
-        "@/hooks/useCharacter",
-        "@/hooks/useInvestigation",
-        "@/hooks/useNPCMemory",
-        "@/hooks/useTown",
-        "@/utils/dice",
-        "@/utils/actionGenerator",
-        "@/utils/actionResolver",
-        "@/data/duties",
-        "@/components/DicePool/DicePool",
-        "@/components/Actions/ActionList",
-        "@/components/CycleSummary/CycleSummary"
-      ],
-      "indexed": 1769189475775
-    },
-    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/CycleView/index.ts": {
-      "exports": [
-        "CycleView"
-      ],
-      "imports": [],
-      "indexed": 1769053797647
+      "indexed": 1769211005042
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/playwright.config.ts": {
       "exports": [
@@ -309,45 +213,6 @@
       ],
       "indexed": 1769061689723
     },
-    "/Users/jedwards/workspace/JobPrep/GSDPlayground/e2e/steps/cycle.steps.ts": {
-      "exports": [
-        "completeCharacterCreation",
-        "dismissTownArrival",
-        "navigateToGame",
-        "startDay",
-        "selectFirstAvailableDie",
-        "selectDieByIndex",
-        "assignDieToAction",
-        "confirmAllocations",
-        "continuePastSummary",
-        "goToNextDay",
-        "restEarly",
-        "expectDayNumber",
-        "expectDicePoolVisible",
-        "expectActionPanelVisible",
-        "expectCycleSummaryVisible",
-        "expectWakeOverlayVisible",
-        "expectRestOverlayVisible",
-        "getDiceCount",
-        "getActionCardByName",
-        "navigateToLocation",
-        "expectResolveScreenVisible",
-        "continuePastResolve",
-        "assignDieToFirstAvailableAction"
-      ],
-      "imports": [
-        "@playwright/test"
-      ],
-      "indexed": 1769189576258
-    },
-    "/Users/jedwards/workspace/JobPrep/GSDPlayground/e2e/cycle-flow.spec.ts": {
-      "exports": [],
-      "imports": [
-        "./fixtures/base",
-        "./steps/cycle.steps"
-      ],
-      "indexed": 1769187505069
-    },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/types/conflict.ts": {
       "exports": [
         "ESCALATION_ORDER",
@@ -367,7 +232,7 @@
         "ConflictAction"
       ],
       "imports": [],
-      "indexed": 1769117787010
+      "indexed": 1769210442863
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/reducers/conflictReducer.ts": {
       "exports": [
@@ -379,7 +244,7 @@
         "@/utils/fallout",
         "@/utils/dice"
       ],
-      "indexed": 1769117801742
+      "indexed": 1769210709177
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/utils/fallout.ts": {
       "exports": [
@@ -470,7 +335,8 @@
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Conflict/ConflictView.tsx": {
       "exports": [
-        "ConflictView"
+        "ConflictView",
+        "ConflictOutcomeInfo"
       ],
       "imports": [
         "react",
@@ -491,7 +357,7 @@
         "@/components/Character/RelationshipDice",
         "@/hooks/useCharacter"
       ],
-      "indexed": 1769183140025
+      "indexed": 1769211377113
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Conflict/index.ts": {
       "exports": [
@@ -588,9 +454,10 @@
       "exports": [],
       "imports": [
         "./fixtures/base",
-        "./steps/conflict.steps"
+        "./steps/conflict.steps",
+        "./steps/character.steps"
       ],
-      "indexed": 1769145565134
+      "indexed": 1769214993416
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/types/character.ts": {
       "exports": [
@@ -724,11 +591,14 @@
         "enterCharacterName",
         "selectBackground",
         "allocateStatDice",
+        "selectBelongings",
+        "selectInitiationApproach",
         "confirmCreation",
         "verifyCharacterInSidebar",
         "verifyStatVisible",
         "verifyDicePoolHasDice",
         "setupCharacterForTest",
+        "skipArrivalOverlay",
         "triggerConflictForTest",
         "verifyTraitInvocationPanel",
         "invokeTrait",
@@ -742,7 +612,7 @@
       "imports": [
         "@playwright/test"
       ],
-      "indexed": 1769132041720
+      "indexed": 1769214434669
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/e2e/character.spec.ts": {
       "exports": [],
@@ -751,7 +621,7 @@
         "./steps/character.steps",
         "./steps/conflict.steps"
       ],
-      "indexed": 1769145568674
+      "indexed": 1769214156883
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/types/dialogue.ts": {
       "exports": [
@@ -764,7 +634,7 @@
         "DialogueAction"
       ],
       "imports": [],
-      "indexed": 1769182642960
+      "indexed": 1769197857983
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/utils/knowledgeGating.ts": {
       "exports": [
@@ -792,7 +662,7 @@
         "investigationReducer"
       ],
       "imports": [],
-      "indexed": 1769182673138
+      "indexed": 1769210486215
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/hooks/useInvestigation.tsx": {
       "exports": [
@@ -822,10 +692,10 @@
       "imports": [
         "ai",
         "@ai-sdk/anthropic",
-        "@/utils/knowledgeGating",
-        "@/utils/promptTemplates"
+        "../src/utils/knowledgeGating.ts",
+        "../src/utils/promptTemplates.ts"
       ],
-      "indexed": 1769183938672
+      "indexed": 1769198880239
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/utils/mockDialogue.ts": {
       "exports": [
@@ -842,7 +712,7 @@
         "dialogueReducer"
       ],
       "imports": [],
-      "indexed": 1769126748315
+      "indexed": 1769197887193
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/hooks/useMentalMap.tsx": {
       "exports": [
@@ -872,7 +742,7 @@
         "@/utils/mockDialogue",
         "@/utils/innerVoiceTemplates"
       ],
-      "indexed": 1769149913173
+      "indexed": 1769210803021
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/MentalMap/SinNode.tsx": {
       "exports": [
@@ -937,9 +807,10 @@
         "TypewriterText"
       ],
       "imports": [
+        "react",
         "framer-motion"
       ],
-      "indexed": 1769150086434
+      "indexed": 1769210816758
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Dialogue/InnerVoice.tsx": {
       "exports": [
@@ -969,7 +840,6 @@
         "react",
         "framer-motion",
         "@/hooks/useDialogue",
-        "@/hooks/useInvestigation",
         "@/hooks/useCharacter",
         "@/hooks/useNPCMemory",
         "@/components/Dialogue/TopicChips",
@@ -979,16 +849,7 @@
         "@/components/Dialogue/DiscoverySummary",
         "@/components/Dialogue/ConflictTrigger"
       ],
-      "indexed": 1769149866928
-    },
-    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/FatigueClock/FatigueClock.tsx": {
-      "exports": [
-        "FatigueClock"
-      ],
-      "imports": [
-        "react"
-      ],
-      "indexed": 1769127223162
+      "indexed": 1769215028309
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Dialogue/ConflictTrigger.tsx": {
       "exports": [
@@ -1006,13 +867,12 @@
         "ResolutionStatus",
         "SinNode",
         "Discovery",
-        "FatigueClock",
         "LocationClue",
         "InvestigationState",
         "InvestigationAction"
       ],
       "imports": [],
-      "indexed": 1769182619801
+      "indexed": 1769210461865
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/data/testTown.ts": {
       "exports": [
@@ -1063,7 +923,7 @@
       "imports": [
         "@playwright/test"
       ],
-      "indexed": 1769132056586
+      "indexed": 1769214069846
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/e2e/investigation.spec.ts": {
       "exports": [],
@@ -1072,9 +932,10 @@
         "fs",
         "path",
         "url",
-        "./steps/investigation.steps"
+        "./steps/investigation.steps",
+        "./steps/character.steps"
       ],
-      "indexed": 1769145572448
+      "indexed": 1769215181118
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/types/town.ts": {
       "exports": [
@@ -1090,7 +951,7 @@
         "EventEffect"
       ],
       "imports": [],
-      "indexed": 1769189242469
+      "indexed": 1769210420662
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/utils/topicResolver.ts": {
       "exports": [
@@ -1104,7 +965,7 @@
         "bridalFalls"
       ],
       "imports": [],
-      "indexed": 1769189292104
+      "indexed": 1769214536793
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/data/towns/index.ts": {
       "exports": [
@@ -1189,7 +1050,7 @@
         "@/utils/seededRandom",
         "@/generators/sinChainGenerator"
       ],
-      "indexed": 1769189233109
+      "indexed": 1769198340039
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/templates/locationTemplates.ts": {
       "exports": [
@@ -1232,7 +1093,7 @@
         "@/generators/topicRuleGenerator",
         "@/generators/validators/playabilityValidator"
       ],
-      "indexed": 1769189277379
+      "indexed": 1769210839199
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/generators/validators/sinChainValidator.ts": {
       "exports": [
@@ -1287,16 +1148,17 @@
       "imports": [
         "@playwright/test"
       ],
-      "indexed": 1769145932176
+      "indexed": 1769215099636
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/e2e/town-generation.spec.ts": {
       "exports": [],
       "imports": [
         "./fixtures/base",
         "./steps/townGeneration.steps",
-        "./steps/investigation.steps"
+        "./steps/investigation.steps",
+        "./steps/character.steps"
       ],
-      "indexed": 1769145985630
+      "indexed": 1769214265524
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/utils/conflictDice.ts": {
       "exports": [
@@ -1314,29 +1176,7 @@
         "react",
         "framer-motion"
       ],
-      "indexed": 1769150022071
-    },
-    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/utils/actionResolver.ts": {
-      "exports": [
-        "resolveAction",
-        "ActionEffect",
-        "ActionResult"
-      ],
-      "imports": [],
-      "indexed": 1769190018854
-    },
-    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/utils/actionGenerator.ts": {
-      "exports": [
-        "parseActionType",
-        "generateActionsForLocation",
-        "generateGlobalActions",
-        "generateDutyActions",
-        "generateAllActions",
-        "ActionType",
-        "DutyContext"
-      ],
-      "imports": [],
-      "indexed": 1769189406964
+      "indexed": 1769213935227
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/utils/conflictNarration.ts": {
       "exports": [
@@ -1355,13 +1195,14 @@
         "resolveBlessSick",
         "resolveJudgment",
         "JUDGMENT_CHOICES",
+        "ActionEffect",
         "AuthorityActionType",
         "AuthorityAction",
         "JudgmentChoice",
         "JudgmentOutcome"
       ],
       "imports": [],
-      "indexed": 1769183055663
+      "indexed": 1769211061134
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/Judgment/JudgmentPanel.tsx": {
       "exports": [
@@ -1373,14 +1214,6 @@
         "@/utils/authorityActions"
       ],
       "indexed": 1769183081722
-    },
-    "/Users/jedwards/workspace/JobPrep/GSDPlayground/e2e/cycle-resolve.spec.ts": {
-      "exports": [],
-      "imports": [
-        "./fixtures/base",
-        "./steps/cycle.steps"
-      ],
-      "indexed": 1769187524943
     },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/data/belongingsTable.ts": {
       "exports": [
@@ -1400,15 +1233,6 @@
       "imports": [],
       "indexed": 1769189162108
     },
-    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/data/duties.ts": {
-      "exports": [
-        "BRIDAL_FALLS_DUTIES",
-        "DutyTrigger",
-        "DutyDefinition"
-      ],
-      "imports": [],
-      "indexed": 1769189330261
-    },
     "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/data/relationshipSeeds.ts": {
       "exports": [
         "RELATIONSHIP_SEEDS",
@@ -1416,6 +1240,90 @@
       ],
       "imports": [],
       "indexed": 1769189497103
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/types/actions.ts": {
+      "exports": [
+        "UnlockCondition",
+        "FreeAction",
+        "FreeActionEffect",
+        "TimedAction",
+        "TimedActionEffect",
+        "ConflictDefinition",
+        "ConflictConsequence",
+        "ActionTier"
+      ],
+      "imports": [],
+      "indexed": 1769210360441
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/types/pressure.ts": {
+      "exports": [
+        "PressureClock",
+        "PressureThreshold"
+      ],
+      "imports": [],
+      "indexed": 1769210373094
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/utils/pressureClock.ts": {
+      "exports": [
+        "advancePressure",
+        "checkUnlockCondition",
+        "calculateConflictPressureCost",
+        "PressureAdvanceResult",
+        "UnlockContext"
+      ],
+      "imports": [],
+      "indexed": 1769210533775
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/utils/actionAvailability.ts": {
+      "exports": [
+        "isUnlocked",
+        "getAvailableActions",
+        "ActionContext",
+        "FreeAction",
+        "AvailableActions"
+      ],
+      "imports": [],
+      "indexed": 1769211096558
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/src/components/ActionMenu/ActionMenu.tsx": {
+      "exports": [
+        "ActionMenu"
+      ],
+      "imports": [
+        "@/types/conflict",
+        "@/utils/actionAvailability"
+      ],
+      "indexed": 1769211124909
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/e2e/steps/free-roam.steps.ts": {
+      "exports": [
+        "createCharacter",
+        "skipArrival",
+        "performTimedAction",
+        "startConflictFromMenu",
+        "checkPressure",
+        "navigateTo"
+      ],
+      "imports": [
+        "@playwright/test"
+      ],
+      "indexed": 1769214423426
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/e2e/free-roam.spec.ts": {
+      "exports": [],
+      "imports": [
+        "@playwright/test",
+        "./steps/free-roam.steps"
+      ],
+      "indexed": 1769214467399
+    },
+    "/Users/jedwards/workspace/JobPrep/GSDPlayground/e2e/pressure-clock.spec.ts": {
+      "exports": [],
+      "imports": [
+        "@playwright/test",
+        "./steps/free-roam.steps"
+      ],
+      "indexed": 1769214524824
     }
   }
 }

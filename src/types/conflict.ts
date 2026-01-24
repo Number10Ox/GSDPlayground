@@ -83,6 +83,7 @@ export type ConflictState =
       npcPool: Die[];
       playerEscalation: EscalationLevel;
       npcEscalation: EscalationLevel;
+      maxEscalation?: EscalationLevel;  // Ceiling — cannot escalate beyond this
       turnHistory: ConflictTurn[];
       currentTurn: ConflictTurnPhase;
       currentRaise: CurrentRaise | null;
@@ -106,6 +107,8 @@ export type ConflictAction =
       stakes: string;
       playerDice: Die[];
       npcDice: Die[];
+      startingEscalation?: EscalationLevel;
+      maxEscalation?: EscalationLevel;
     }
   | {
       type: 'PLAYER_RAISE';

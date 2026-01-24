@@ -6,6 +6,8 @@
 import type { Location } from '@/types/game';
 import type { NPC } from '@/types/npc';
 import type { SinNode, LocationClue } from '@/types/investigation';
+import type { TimedAction, ConflictDefinition } from '@/types/actions';
+import type { PressureThreshold } from '@/types/pressure';
 
 /**
  * TopicRule - Declarative rule for which topics are available to NPCs.
@@ -74,6 +76,12 @@ export interface TownData {
   events?: TownEvent[];
   /** Whether the town has formal law enforcement (enables Sheriff NPC) */
   hasLaw?: boolean;
+  /** Timed actions available at locations (tick pressure clock) */
+  timedActions?: TimedAction[];
+  /** Conflict encounters available at locations (full DitV conflicts) */
+  conflictDefinitions?: ConflictDefinition[];
+  /** Pressure thresholds that trigger events */
+  pressureThresholds?: PressureThreshold[];
 }
 
 /**
@@ -88,7 +96,7 @@ export interface TownEvent {
 }
 
 export type EventTrigger =
-  | { type: 'CYCLE_COUNT'; min: number }
+  | { type: 'PRESSURE_REACHED'; value: number }
   | { type: 'SIN_LEVEL'; sinId: string; level: string }
   | { type: 'DISCOVERY_MADE'; discoveryId: string }
   | { type: 'NPC_TRUST'; npcId: string; threshold: number }

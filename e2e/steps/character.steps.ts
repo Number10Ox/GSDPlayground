@@ -10,11 +10,17 @@ import { Page, expect } from '@playwright/test';
 // Creation flow helpers
 
 /**
- * Click the "Create Character" button to open the creation modal.
+ * Open the character creation modal.
+ * The creation wizard auto-shows when no character exists, so we first check
+ * if it's already visible before clicking the button.
  */
 export async function openCharacterCreation(page: Page) {
+  const nameInput = page.getByTestId('creation-name-input');
+  if (await nameInput.isVisible({ timeout: 1000 }).catch(() => false)) {
+    return; // Already open
+  }
   await page.getByTestId('create-character-button').click();
-  await expect(page.getByTestId('creation-name-input')).toBeVisible({ timeout: 2000 });
+  await expect(nameInput).toBeVisible({ timeout: 2000 });
 }
 
 /**
@@ -60,11 +66,41 @@ export async function allocateStatDice(page: Page, statName: string, targetCount
 }
 
 /**
+ * Navigate through the belongings step by selecting the first 2 items.
+ */
+export async function selectBelongings(page: Page) {
+  // Wait for belongings step to appear
+  const belongingButtons = page.locator('[data-testid^="creation-belonging-"]');
+  await expect(belongingButtons.first()).toBeVisible({ timeout: 3000 });
+
+  // Select the first two belongings
+  const count = await belongingButtons.count();
+  for (let i = 0; i < Math.min(2, count); i++) {
+    await belongingButtons.nth(i).click();
+  }
+
+  // Click Next
+  const nextBtn = page.getByTestId('creation-belongings-next');
+  await expect(nextBtn).toBeEnabled({ timeout: 2000 });
+  await nextBtn.click();
+}
+
+/**
+ * Navigate through the initiation step by selecting the first approach.
+ */
+export async function selectInitiationApproach(page: Page) {
+  const approachButton = page.locator('[data-testid^="creation-approach-"]').first();
+  await expect(approachButton).toBeVisible({ timeout: 3000 });
+  await approachButton.click();
+}
+
+/**
  * Confirm character creation by clicking the Confirm button.
  * Waits for creation modal to disappear and character info to update.
  */
 export async function confirmCreation(page: Page) {
   const confirmButton = page.getByTestId('creation-confirm');
+  await expect(confirmButton).toBeVisible({ timeout: 3000 });
   await expect(confirmButton).toBeEnabled({ timeout: 2000 });
   await confirmButton.click();
   // Wait for creation modal to close (CharacterCreation is a fixed overlay)
@@ -116,17 +152,53 @@ export async function setupCharacterForTest(page: Page, name: string = 'Test Dog
   await allocateStatDice(page, 'body', 3);
   await allocateStatDice(page, 'heart', 2);
   await allocateStatDice(page, 'will', 2);
+  // Advance from allocate to belongings
+  const allocateNext = page.getByTestId('creation-allocate-next');
+  await expect(allocateNext).toBeEnabled({ timeout: 2000 });
+  await allocateNext.click();
+  // Navigate through belongings and initiation
+  await selectBelongings(page);
+  await selectInitiationApproach(page);
   await confirmCreation(page);
+  // Skip town arrival overlay that appears after character creation
+  await skipArrivalOverlay(page);
+}
+
+/**
+ * Skip the town arrival overlay if present.
+ * Clicks through all phases until dismissed.
+ */
+export async function skipArrivalOverlay(page: Page) {
+  const arrivalOverlay = page.getByTestId('town-arrival');
+  if (!await arrivalOverlay.isVisible({ timeout: 2000 }).catch(() => false)) {
+    return;
+  }
+
+  for (let i = 0; i < 6; i++) {
+    await page.waitForTimeout(700); // Wait for framer-motion animation to settle
+    if (!await arrivalOverlay.isVisible({ timeout: 500 }).catch(() => false)) {
+      return;
+    }
+    // Try "Look around first" button (GREET phase skip)
+    const lookAround = page.locator('button:has-text("Look around first")');
+    if (await lookAround.isVisible({ timeout: 500 }).catch(() => false)) {
+      await lookAround.click({ force: true });
+      await expect(arrivalOverlay).not.toBeVisible({ timeout: 3000 });
+      return;
+    }
+    // Otherwise click Continue (force through animations)
+    const continueBtn = page.getByTestId('arrival-continue');
+    if (await continueBtn.isVisible({ timeout: 500 }).catch(() => false)) {
+      await continueBtn.click({ force: true });
+    }
+  }
 }
 
 /**
  * Start a test conflict using the dev-mode trigger button.
- * Reuses the pattern from conflict E2E tests.
+ * In the pressure clock flow, the test button is visible in EXPLORING phase.
  */
 export async function triggerConflictForTest(page: Page) {
-  // Start day first to get into ALLOCATE phase (where test button is visible)
-  await page.getByTestId('start-day-button').click();
-  // Click the dev-mode test conflict button
   const testButton = page.getByTestId('start-test-conflict');
   await expect(testButton).toBeVisible({ timeout: 3000 });
   await testButton.click();

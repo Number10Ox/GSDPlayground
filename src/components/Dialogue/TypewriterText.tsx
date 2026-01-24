@@ -1,3 +1,4 @@
+import { type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface TypewriterTextProps {
@@ -9,7 +10,7 @@ interface TypewriterTextProps {
  * renderWithBold - Renders text with **bold** markdown converted to styled spans.
  * Bold text is highlighted in amber to draw attention to key words.
  */
-function renderWithBold(text: string): (string | JSX.Element)[] {
+function renderWithBold(text: string): (string | ReactNode)[] {
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
   return parts.map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) {

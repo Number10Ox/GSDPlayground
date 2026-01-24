@@ -61,12 +61,8 @@ export function CharacterInfo({ onCreateCharacter, onViewSheet }: CharacterInfoP
         ))}
       </div>
 
-      {/* Cycle and condition info */}
+      {/* Condition info */}
       <div className="border-t border-gray-700 pt-3 space-y-2">
-        <div className="flex justify-between items-center">
-          <span className="text-gray-400 text-sm">Cycle</span>
-          <span className="text-amber-400 font-medium text-sm">Day {state.cycleNumber}</span>
-        </div>
         <div className="flex justify-between items-center">
           <span className="text-gray-400 text-sm">Condition</span>
           <span className={`font-medium text-sm ${conditionColor}`}>

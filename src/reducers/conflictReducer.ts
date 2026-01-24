@@ -74,14 +74,33 @@ export function conflictReducer(
       if (state.phase !== 'INACTIVE') {
         return state;
       }
+
+      const startLevel = action.startingEscalation ?? 'JUST_TALKING';
+
+      // If starting above JUST_TALKING, add escalation dice for each level up to startLevel
+      let playerPool = [...action.playerDice];
+      let npcPool = [...action.npcDice];
+
+      if (startLevel !== 'JUST_TALKING') {
+        // Add dice for each escalation level from PHYSICAL up to startLevel
+        const levels: EscalationLevel[] = ['PHYSICAL', 'FIGHTING', 'GUNPLAY'];
+        for (const level of levels) {
+          if (ESCALATION_ORDER[level] <= ESCALATION_ORDER[startLevel]) {
+            playerPool = [...playerPool, ...generateEscalationDice(level)];
+            npcPool = [...npcPool, ...generateEscalationDice(level)];
+          }
+        }
+      }
+
       return {
         phase: 'ACTIVE',
         npcId: action.npcId,
         stakes: action.stakes,
-        playerPool: action.playerDice,
-        npcPool: action.npcDice,
-        playerEscalation: 'JUST_TALKING',
-        npcEscalation: 'JUST_TALKING',
+        playerPool,
+        npcPool,
+        playerEscalation: startLevel,
+        npcEscalation: startLevel,
+        maxEscalation: action.maxEscalation,
         turnHistory: [],
         currentTurn: 'PLAYER_RAISE',
         currentRaise: null,
@@ -235,6 +254,13 @@ export function conflictReducer(
       ) {
         return state;
       }
+      // Enforce escalation ceiling
+      if (
+        state.maxEscalation &&
+        ESCALATION_ORDER[action.newLevel] > ESCALATION_ORDER[state.maxEscalation]
+      ) {
+        return state;
+      }
 
       // Generate new dice for escalation
       const newDice = generateEscalationDice(action.newLevel);
@@ -383,6 +409,13 @@ export function conflictReducer(
       if (
         ESCALATION_ORDER[action.newLevel] <=
         ESCALATION_ORDER[state.npcEscalation]
+      ) {
+        return state;
+      }
+      // Enforce escalation ceiling
+      if (
+        state.maxEscalation &&
+        ESCALATION_ORDER[action.newLevel] > ESCALATION_ORDER[state.maxEscalation]
       ) {
         return state;
       }

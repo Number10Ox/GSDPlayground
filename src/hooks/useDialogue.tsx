@@ -262,11 +262,8 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
         : approach === 'will' ? -3
         : 5;
       npcDispatch({ type: 'UPDATE_RELATIONSHIP', npcId, delta: trustDelta });
-
-      // Advance fatigue after each exchange
-      investigationDispatch({ type: 'ADVANCE_FATIGUE' });
     },
-    [state.currentNPC, dispatch, investigationDispatch, character, getNPCById, getMemoryForNPC, town, npcDispatch]
+    [state.currentNPC, dispatch, character, getNPCById, getMemoryForNPC, town, npcDispatch]
   );
 
   /**

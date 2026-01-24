@@ -13,7 +13,9 @@
       "Bash(source ~/.nvm/nvm.sh)",
       "Bash(nvm list:*)",
       "Bash(nvm alias:*)",
-      "Bash(nvm use:*)"
+      "Bash(nvm use:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)"
     ]
   }
 }

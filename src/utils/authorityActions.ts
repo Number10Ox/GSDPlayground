@@ -1,4 +1,11 @@
-import type { ActionEffect } from '@/utils/actionResolver';
+/**
+ * ActionEffect - Effect of a resolved action (trust changes, etc.)
+ */
+export interface ActionEffect {
+  type: 'TRUST_CHANGE';
+  npcId: string;
+  delta: number;
+}
 
 /**
  * AuthorityActionType - The Dog's divine authority powers.

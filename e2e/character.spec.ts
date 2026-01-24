@@ -4,10 +4,11 @@ import {
   enterCharacterName,
   selectBackground,
   allocateStatDice,
+  selectBelongings,
+  selectInitiationApproach,
   confirmCreation,
   verifyCharacterInSidebar,
   verifyStatVisible,
-  verifyDicePoolHasDice,
   setupCharacterForTest,
   triggerConflictForTest,
   verifyTraitInvocationPanel,
@@ -17,6 +18,7 @@ import {
   verifyInventoryItem,
   verifyItemIsGun,
   getConflictDiceCount,
+  skipArrivalOverlay,
 } from './steps/character.steps';
 import {
   raiseWithDice,
@@ -33,10 +35,7 @@ test.describe('Character System', () => {
   });
 
   test('Scenario: Character creation with point-buy', async ({ page }) => {
-    // Verify no character exists (sidebar shows Create Character button)
-    await expect(page.getByTestId('create-character-button')).toBeVisible();
-
-    // Open creation modal
+    // Open creation modal (auto-opens when no character exists)
     await openCharacterCreation(page);
 
     // Enter name
@@ -51,8 +50,20 @@ test.describe('Character System', () => {
     await allocateStatDice(page, 'heart', 2);
     await allocateStatDice(page, 'will', 2);
 
+    // Advance from allocate to belongings
+    const allocateNext = page.getByTestId('creation-allocate-next');
+    await expect(allocateNext).toBeEnabled({ timeout: 2000 });
+    await allocateNext.click();
+
+    // Select belongings and initiation approach
+    await selectBelongings(page);
+    await selectInitiationApproach(page);
+
     // Confirm creation
     await confirmCreation(page);
+
+    // Skip town arrival overlay
+    await skipArrivalOverlay(page);
 
     // Verify character appears in sidebar
     await verifyCharacterInSidebar(page, 'Brother Ezekiel');
@@ -64,15 +75,19 @@ test.describe('Character System', () => {
     await verifyStatVisible(page, 'will');
   });
 
-  test('Scenario: Stats affect dice pool', async ({ page }) => {
+  test('Scenario: Stats affect conflict dice pool', async ({ page }) => {
     // Create character with known stats
     await setupCharacterForTest(page, 'Sister Hannah');
 
-    // Start the cycle (dice pool generated from character stats)
-    await page.getByTestId('start-day-button').click();
+    // Start a test conflict — dice pool is built from character stats
+    await triggerConflictForTest(page);
 
-    // Verify dice pool has dice (generated from character stats)
-    await verifyDicePoolHasDice(page);
+    // Wait for player's raise turn
+    await expect(page.getByText('Your turn to Raise')).toBeVisible({ timeout: 3000 });
+
+    // Verify conflict has dice (generated from character stats)
+    const diceCount = await getConflictDiceCount(page);
+    expect(diceCount).toBeGreaterThan(0);
   });
 
   test('Scenario: Trait invocation during conflict', async ({ page }) => {

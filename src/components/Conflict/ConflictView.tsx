@@ -68,6 +68,13 @@ function selectRaiseDice(pool: Die[]): [Die, Die] | null {
   return [shuffled[0], shuffled[1]];
 }
 
+export interface ConflictOutcomeInfo {
+  outcome: ConflictOutcome;
+  hadFallout: boolean;
+  falloutSeverity: FalloutSeverity;
+  escalationsJumped: number;
+}
+
 interface ConflictViewProps {
   // Optional initial state for testing
   initialState?: ReturnType<typeof conflictReducer>;
@@ -77,8 +84,8 @@ interface ConflictViewProps {
   witnesses?: string[];
   // NPC aggression level (0-1): how likely they are to escalate. Derived from resistChance.
   npcAggression?: number;
-  // Callback when conflict completes
-  onComplete?: () => void;
+  // Callback when conflict completes (receives outcome details for pressure cost calculation)
+  onComplete?: (info: ConflictOutcomeInfo) => void;
 }
 
 /**
@@ -132,10 +139,28 @@ export function ConflictView({
       gameDispatch({ type: 'APPLY_FALLOUT', severity });
       // Clear active conflict in game state
       gameDispatch({ type: 'END_GAME_CONFLICT' });
-      // Notify parent
-      onComplete?.();
+
+      // Determine outcome info for pressure cost calculation
+      const outcome: ConflictOutcome = state.phase === 'RESOLVED'
+        ? state.outcome
+        : 'PLAYER_GAVE';
+
+      // Count player escalations from the current state's turn history
+      let escalations = 0;
+      if (state.phase === 'ACTIVE') {
+        escalations = state.turnHistory.filter(
+          t => t.actor === 'PLAYER' && t.action === 'ESCALATE'
+        ).length;
+      }
+
+      onComplete?.({
+        outcome,
+        hadFallout: severity !== 'NONE',
+        falloutSeverity: severity,
+        escalationsJumped: escalations,
+      });
     },
-    [gameDispatch, onComplete]
+    [gameDispatch, onComplete, state, initialState]
   );
 
   // Escalation modal state
@@ -248,22 +273,35 @@ export function ConflictView({
     }
   }, [state]);
 
-  // Get next escalation level
+  // Get next escalation level (respects maxEscalation ceiling)
   function getNextEscalationLevel(current: EscalationLevel): EscalationLevel | null {
     const levels: EscalationLevel[] = ['JUST_TALKING', 'PHYSICAL', 'FIGHTING', 'GUNPLAY'];
     const currentIndex = levels.indexOf(current);
     if (currentIndex < levels.length - 1) {
-      return levels[currentIndex + 1];
+      const next = levels[currentIndex + 1];
+      // Respect escalation ceiling
+      if (state.phase === 'ACTIVE' && state.maxEscalation) {
+        if (ESCALATION_ORDER[next] > ESCALATION_ORDER[state.maxEscalation]) {
+          return null;
+        }
+      }
+      return next;
     }
     return null;
   }
 
-  // Get available escalation levels (above current)
+  // Get available escalation levels (above current, respecting ceiling)
   const availableEscalations = useMemo(() => {
     if (state.phase !== 'ACTIVE') return [];
     const levels: EscalationLevel[] = ['PHYSICAL', 'FIGHTING', 'GUNPLAY'];
     const currentOrder = ESCALATION_ORDER[state.playerEscalation];
-    return levels.filter((l) => ESCALATION_ORDER[l] > currentOrder);
+    const maxOrder = state.maxEscalation
+      ? ESCALATION_ORDER[state.maxEscalation]
+      : Infinity;
+    return levels.filter((l) => {
+      const order = ESCALATION_ORDER[l];
+      return order > currentOrder && order <= maxOrder;
+    });
   }, [state]);
 
   // Handle player raise

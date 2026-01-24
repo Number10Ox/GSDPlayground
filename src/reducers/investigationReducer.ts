@@ -21,13 +21,11 @@ export const SIN_CHAIN_ORDER: SinLevel[] = [
 /**
  * Initial investigation state.
  * Sin progression is empty until START_INVESTIGATION populates it.
- * Fatigue clock defaults to 6 segments per cycle.
  */
 export const initialInvestigationState: InvestigationState = {
   discoveries: [],
   sinProgression: [],
   clues: [],
-  fatigueClock: { current: 0, max: 6 },
   townResolved: false,
   sinEscalatedToMurder: false,
 };
@@ -43,10 +41,15 @@ export function investigationReducer(
 ): InvestigationState {
   switch (action.type) {
     case 'START_INVESTIGATION': {
-      // Initialize the sin progression chain and clues for this town
+      // Initialize the sin progression chain and clues for this town.
+      // The first sin (pride) is always discovered on arrival — it's the
+      // surface-level problem visible to any Dog entering the town.
+      const seededNodes = action.sinNodes.map((node, index) =>
+        index === 0 ? { ...node, discovered: true } : node
+      );
       return {
         ...state,
-        sinProgression: action.sinNodes,
+        sinProgression: seededNodes,
         clues: action.clues ?? [],
       };
     }
@@ -116,30 +119,6 @@ export function investigationReducer(
       };
     }
 
-    case 'ADVANCE_FATIGUE': {
-      // Silent fail: already at max
-      if (state.fatigueClock.current >= state.fatigueClock.max) {
-        return state;
-      }
-      return {
-        ...state,
-        fatigueClock: {
-          ...state.fatigueClock,
-          current: state.fatigueClock.current + 1,
-        },
-      };
-    }
-
-    case 'RESET_FATIGUE': {
-      return {
-        ...state,
-        fatigueClock: {
-          ...state.fatigueClock,
-          current: 0,
-        },
-      };
-    }
-
     case 'MARK_SIN_RESOLVED': {
       const { sinId } = action;
       const nodeExists = state.sinProgression.some((node) => node.id === sinId);
@@ -166,8 +145,9 @@ export function investigationReducer(
       };
     }
 
+    case 'PRESSURE_ESCALATE_SIN':
     case 'ADVANCE_SIN_PROGRESSION': {
-      // Called at end of each cycle: time pressure mechanic.
+      // Called when pressure clock overflows: time pressure mechanic.
       // Escalates the highest-severity unresolved sin in-place (keeps NPC links).
       if (state.sinProgression.length === 0) return state;
 

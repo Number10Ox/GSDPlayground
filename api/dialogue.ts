@@ -1,8 +1,8 @@
 import { streamText } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
-import { filterKnowledgeByTrust } from '@/utils/knowledgeGating';
-import { buildSystemPrompt, buildUserPrompt } from '@/utils/promptTemplates';
-import type { KnowledgeFact, ApproachType } from '@/types/dialogue';
+import { filterKnowledgeByTrust } from '../src/utils/knowledgeGating.ts';
+import { buildSystemPrompt, buildUserPrompt } from '../src/utils/promptTemplates.ts';
+import type { KnowledgeFact, ApproachType } from '../src/types/dialogue.ts';
 
 /**
  * Valid approach types for runtime validation.

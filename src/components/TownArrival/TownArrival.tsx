@@ -59,7 +59,7 @@ export function TownArrival({ townName, arrival, greeterName, onComplete, onGree
   }, [arrival.greeterNpcId, onGreet, onComplete]);
 
   return (
-    <div className="fixed inset-0 z-50 bg-gray-950 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 bg-gray-950 flex items-center justify-center" data-testid="town-arrival">
       <div className="max-w-2xl w-full px-8">
         <AnimatePresence mode="wait">
           {phase === 'NARRATIVE' && (
@@ -78,6 +78,7 @@ export function TownArrival({ townName, arrival, greeterName, onComplete, onGree
               </p>
               <button
                 onClick={advance}
+                data-testid="arrival-continue"
                 className="mt-8 w-full text-center text-gray-500 hover:text-gray-300 text-sm py-2 transition-colors cursor-pointer"
               >
                 Continue...
@@ -101,6 +102,7 @@ export function TownArrival({ townName, arrival, greeterName, onComplete, onGree
               </p>
               <button
                 onClick={advance}
+                data-testid="arrival-continue"
                 className="mt-8 w-full text-center text-gray-500 hover:text-gray-300 text-sm py-2 transition-colors cursor-pointer"
               >
                 Continue...
@@ -129,6 +131,7 @@ export function TownArrival({ townName, arrival, greeterName, onComplete, onGree
               </ul>
               <button
                 onClick={advance}
+                data-testid="arrival-continue"
                 className="mt-8 w-full text-center text-gray-500 hover:text-gray-300 text-sm py-2 transition-colors cursor-pointer"
               >
                 Continue...

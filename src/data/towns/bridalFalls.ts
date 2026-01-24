@@ -12,6 +12,8 @@ import type { TownData, TopicRule, TownEvent } from '@/types/town';
 import type { Location } from '@/types/game';
 import type { NPC, NPCKnowledge, ConflictThreshold } from '@/types/npc';
 import type { SinNode, LocationClue } from '@/types/investigation';
+import type { TimedAction, ConflictDefinition } from '@/types/actions';
+import type { PressureThreshold } from '@/types/pressure';
 
 // ─── Sin Chain ──────────────────────────────────────────────────────────────
 
@@ -57,7 +59,7 @@ const sinChain: SinNode[] = [
 // ─── Locations ──────────────────────────────────────────────────────────────
 
 const locations: Location[] = [
-  { id: 'town-square', name: 'Town Square', description: 'The heart of Bridal Falls', x: 500, y: 400, connections: ['church', 'general-store', 'sheriffs-office', 'well'] },
+  { id: 'town-square', name: 'Town Square', description: 'The heart of Bridal Falls', x: 500, y: 400, connections: ['church', 'general-store', 'sheriffs-office', 'well', 'homestead'] },
   { id: 'church', name: 'The Chapel', description: 'A modest house of worship where Steward Ezekiel holds court', x: 500, y: 200, connections: ['town-square', 'cemetery'] },
   { id: 'general-store', name: 'General Store', description: 'Where Martha tends to the sick between her own bouts of illness', x: 300, y: 400, connections: ['town-square'] },
   { id: 'sheriffs-office', name: "Sheriff's Office", description: 'Sheriff Jacob keeps the Steward\'s order here', x: 700, y: 400, connections: ['town-square'] },
@@ -512,7 +514,7 @@ const events: TownEvent[] = [
   {
     id: 'event-martha-collapse',
     description: 'Sister Martha collapses in the general store. Thomas rushes to her side, shouting for help. The Steward watches from the chapel steps but does not move.',
-    trigger: { type: 'CYCLE_COUNT', min: 2 },
+    trigger: { type: 'PRESSURE_REACHED', value: 2 },
     effects: [
       { type: 'TRUST_CHANGE', npcId: 'brother-thomas', delta: 10 },
       { type: 'NARRATIVE', text: 'Martha\'s condition is worsening. Time is running out.' },
@@ -532,7 +534,7 @@ const events: TownEvent[] = [
   {
     id: 'event-steward-sermon',
     description: 'Steward Ezekiel holds an emergency sermon, declaring the sickness proof of sin among the faithless. He names no names, but his eyes fix on Martha\'s empty seat.',
-    trigger: { type: 'CYCLE_COUNT', min: 3 },
+    trigger: { type: 'PRESSURE_REACHED', value: 3 },
     effects: [
       { type: 'ADVANCE_SIN' },
       { type: 'NARRATIVE', text: 'The Steward tightens his grip. Fear spreads faster than the sickness.' },
@@ -542,7 +544,7 @@ const events: TownEvent[] = [
   {
     id: 'event-thomas-caught',
     description: 'A crash in the night. Thomas is caught leaving the store with a satchel of herbs. The Sheriff holds him by the collar, waiting for the Steward\'s word.',
-    trigger: { type: 'CYCLE_COUNT', min: 4 },
+    trigger: { type: 'PRESSURE_REACHED', value: 4 },
     effects: [
       { type: 'TRUST_CHANGE', npcId: 'brother-thomas', delta: -10 },
       { type: 'UNLOCK_CLUE', clueId: 'clue-store-ledger' },
@@ -553,13 +555,237 @@ const events: TownEvent[] = [
   {
     id: 'event-child-sick',
     description: 'Ruth\'s youngest student does not come to school. Then another. The sickness has reached the children.',
-    trigger: { type: 'CYCLE_COUNT', min: 5 },
+    trigger: { type: 'PRESSURE_REACHED', value: 5 },
     effects: [
       { type: 'ADVANCE_SIN' },
       { type: 'NARRATIVE', text: 'Children are falling ill. The town cannot endure much more.' },
     ],
     fired: false,
   },
+];
+
+// ─── Timed Actions ──────────────────────────────────────────────────────────
+
+const timedActions: TimedAction[] = [
+  {
+    id: 'action-pray-chapel',
+    name: 'Pray at the Chapel',
+    description: 'Spend time in quiet prayer, restoring your spirit.',
+    locationId: 'church',
+    pressureCost: 1,
+    effects: [{ type: 'RESTORE_CONDITION', amount: 15 }],
+    oneShot: false,
+  },
+  {
+    id: 'action-tend-martha',
+    name: 'Tend to Martha',
+    description: 'Help ease her suffering with faith and care.',
+    locationId: 'general-store',
+    pressureCost: 1,
+    effects: [
+      { type: 'TRUST_CHANGE', npcId: 'sister-martha', delta: 10 },
+      { type: 'TRUST_CHANGE', npcId: 'brother-thomas', delta: 5 },
+    ],
+    oneShot: true,
+  },
+  {
+    id: 'action-search-homestead',
+    name: 'Search the Homestead',
+    description: 'Look through Thomas\'s things for clues about his desperation.',
+    locationId: 'homestead',
+    pressureCost: 1,
+    effects: [{ type: 'DISCOVER_CLUE', clueId: 'clue-homestead-herbs' }],
+    unlockCondition: { type: 'trust_min', npcId: 'brother-thomas', value: 20 },
+    oneShot: true,
+  },
+  {
+    id: 'action-inspect-well',
+    name: 'Inspect the Well Water',
+    description: 'Something about this water isn\'t right.',
+    locationId: 'well',
+    pressureCost: 1,
+    effects: [{ type: 'DISCOVER_CLUE', clueId: 'clue-well-taint' }],
+    oneShot: true,
+  },
+  {
+    id: 'action-read-decree',
+    name: 'Read the Posted Decree',
+    description: 'Study the Steward\'s decree nailed to the chapel door.',
+    locationId: 'church',
+    pressureCost: 1,
+    effects: [{ type: 'DISCOVER_CLUE', clueId: 'clue-chapel-decree' }],
+    oneShot: true,
+  },
+  {
+    id: 'action-visit-graves',
+    name: 'Visit the Fresh Graves',
+    description: 'Someone has been buried recently. The earth is still soft.',
+    locationId: 'cemetery',
+    pressureCost: 1,
+    effects: [{ type: 'DISCOVER_CLUE', clueId: 'clue-cemetery-graves' }],
+    oneShot: true,
+  },
+  {
+    id: 'action-check-ledger',
+    name: 'Examine the Store Ledger',
+    description: 'The ledger might show who has been buying what — and who has been denied.',
+    locationId: 'general-store',
+    pressureCost: 1,
+    effects: [{ type: 'DISCOVER_CLUE', clueId: 'clue-store-ledger' }],
+    unlockCondition: { type: 'pressure_min', value: 3 },
+    oneShot: true,
+  },
+  {
+    id: 'action-consecrate-well',
+    name: 'Consecrate the Well',
+    description: 'Bless the water and purify what you can.',
+    locationId: 'well',
+    pressureCost: 1,
+    effects: [
+      { type: 'RESTORE_CONDITION', amount: 10 },
+      { type: 'NARRATIVE', text: 'The water runs clear, if only for now.' },
+    ],
+    unlockCondition: { type: 'clue_found', clueId: 'clue-well-taint' },
+    oneShot: true,
+  },
+];
+
+// ─── Conflict Definitions ───────────────────────────────────────────────────
+
+const conflictDefinitions: ConflictDefinition[] = [
+  {
+    id: 'conflict-confront-steward',
+    npcId: 'steward-ezekiel',
+    stakes: 'Confront the Steward about his decree',
+    locationId: 'church',
+    minEscalation: 'JUST_TALKING',
+    maxEscalation: 'FIGHTING',
+    npcAggression: 0.6,
+    pressureCost: { onGive: 1, onEscalate: 1, onFallout: 1 },
+    unlockCondition: { type: 'sin_discovered', sinId: 'sin-pride' },
+    consequences: {
+      playerWins: [
+        { type: 'RESOLVE_SIN', sinId: 'sin-pride' },
+        { type: 'NARRATIVE', text: 'The Steward yields. His pride cracks, if only for a moment.' },
+      ],
+      playerGives: [
+        { type: 'ADVANCE_PRESSURE', amount: 1 },
+        { type: 'NARRATIVE', text: 'The Steward smiles coldly. Your words failed to move him.' },
+      ],
+      npcGives: [
+        { type: 'TRUST_CHANGE', npcId: 'steward-ezekiel', delta: -20 },
+        { type: 'NARRATIVE', text: 'Ezekiel backs down, hatred burning in his eyes.' },
+      ],
+    },
+  },
+  {
+    id: 'conflict-demand-truth-thomas',
+    npcId: 'brother-thomas',
+    stakes: 'Demand the truth about the herbs',
+    locationId: 'homestead',
+    minEscalation: 'JUST_TALKING',
+    maxEscalation: 'PHYSICAL',
+    npcAggression: 0.3,
+    pressureCost: { onGive: 1, onEscalate: 1, onFallout: 1 },
+    unlockCondition: { type: 'clue_found', clueId: 'clue-homestead-herbs' },
+    consequences: {
+      playerWins: [
+        { type: 'DISCOVER_SIN', sinId: 'sin-theft' },
+        { type: 'NARRATIVE', text: 'Thomas confesses — he\'s been stealing from the store to treat Martha.' },
+      ],
+      playerGives: [
+        { type: 'NARRATIVE', text: 'Thomas clams up. You\'ll need another way to learn the truth.' },
+      ],
+      npcGives: [
+        { type: 'TRUST_CHANGE', npcId: 'brother-thomas', delta: -15 },
+        { type: 'UNLOCK_CLUE', clueId: 'clue-store-ledger' },
+        { type: 'NARRATIVE', text: 'Thomas breaks down and points you to the store ledger.' },
+      ],
+    },
+  },
+  {
+    id: 'conflict-challenge-sheriff',
+    npcId: 'sheriff-jacob',
+    stakes: 'Challenge the Sheriff\'s loyalty',
+    locationId: 'sheriffs-office',
+    minEscalation: 'JUST_TALKING',
+    maxEscalation: 'GUNPLAY',
+    npcAggression: 0.5,
+    pressureCost: { onGive: 1, onEscalate: 1, onFallout: 1 },
+    unlockCondition: { type: 'pressure_min', value: 4 },
+    consequences: {
+      playerWins: [
+        { type: 'TRUST_CHANGE', npcId: 'sheriff-jacob', delta: 30 },
+        { type: 'NARRATIVE', text: 'Jacob\'s resolve breaks. He admits the Steward has gone too far.' },
+      ],
+      playerGives: [
+        { type: 'ADVANCE_PRESSURE', amount: 2 },
+        { type: 'NARRATIVE', text: 'Jacob stands firm. The Steward\'s grip tightens on the law.' },
+      ],
+      npcGives: [
+        { type: 'TRUST_CHANGE', npcId: 'sheriff-jacob', delta: 15 },
+        { type: 'NARRATIVE', text: 'The Sheriff lowers his weapon. "You\'re right. This isn\'t the King\'s way."' },
+      ],
+    },
+  },
+  {
+    id: 'conflict-convince-martha',
+    npcId: 'sister-martha',
+    stakes: 'Convince Martha to testify against the Steward',
+    locationId: 'general-store',
+    minEscalation: 'JUST_TALKING',
+    maxEscalation: 'JUST_TALKING',
+    npcAggression: 0.2,
+    pressureCost: { onGive: 1, onEscalate: 0, onFallout: 1 },
+    unlockCondition: { type: 'sin_discovered', sinId: 'sin-injustice' },
+    consequences: {
+      playerWins: [
+        { type: 'TRUST_CHANGE', npcId: 'sister-martha', delta: 20 },
+        { type: 'NARRATIVE', text: 'Martha nods, tears in her eyes. "I\'ll speak. Someone has to."' },
+      ],
+      playerGives: [
+        { type: 'NARRATIVE', text: 'Martha shakes her head. "I can\'t. He\'ll hurt Thomas."' },
+      ],
+      npcGives: [
+        { type: 'TRUST_CHANGE', npcId: 'sister-martha', delta: 10 },
+        { type: 'NARRATIVE', text: 'Martha agrees reluctantly. Her hands tremble.' },
+      ],
+    },
+  },
+  {
+    id: 'conflict-ambush-store',
+    npcId: 'steward-ezekiel',
+    stakes: 'The Steward\'s men ambush you at the store',
+    locationId: 'general-store',
+    minEscalation: 'PHYSICAL',
+    maxEscalation: 'GUNPLAY',
+    npcAggression: 0.8,
+    pressureCost: { onGive: 2, onEscalate: 1, onFallout: 1 },
+    unlockCondition: { type: 'pressure_min', value: 6 },
+    consequences: {
+      playerWins: [
+        { type: 'ADVANCE_PRESSURE', amount: 1 },
+        { type: 'NARRATIVE', text: 'You fight them off. The Steward will think twice before trying that again.' },
+      ],
+      playerGives: [
+        { type: 'ADVANCE_PRESSURE', amount: 2 },
+        { type: 'NARRATIVE', text: 'They beat you and leave you in the dirt. The message is clear.' },
+      ],
+      npcGives: [
+        { type: 'TRUST_CHANGE', npcId: 'steward-ezekiel', delta: -30 },
+        { type: 'NARRATIVE', text: 'His men scatter. The Steward\'s authority cracks.' },
+      ],
+    },
+  },
+];
+
+// ─── Pressure Thresholds ────────────────────────────────────────────────────
+
+const pressureThresholds: PressureThreshold[] = [
+  { at: 2, eventId: 'event-martha-collapse', fired: false },
+  { at: 3, eventId: 'event-steward-sermon', fired: false },
+  { at: 4, eventId: 'event-thomas-caught', fired: false },
+  { at: 5, eventId: 'event-child-sick', fired: false },
 ];
 
 // ─── Assembled Town ─────────────────────────────────────────────────────────
@@ -576,4 +802,7 @@ export const bridalFalls: TownData = {
   arrival,
   events,
   hasLaw: true,
+  timedActions,
+  conflictDefinitions,
+  pressureThresholds,
 };

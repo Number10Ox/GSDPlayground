@@ -50,16 +50,6 @@ export interface Discovery {
 }
 
 /**
- * FatigueClock - Tracks conversation cost per cycle.
- * Each conversation advances the clock by 1 segment.
- * Max defaults to 6 segments per cycle.
- */
-export interface FatigueClock {
-  current: number;
-  max: number;
-}
-
-/**
  * LocationClue - Environmental evidence discoverable at a location.
  * Found through investigation actions during the cycle system.
  */
@@ -79,7 +69,6 @@ export interface InvestigationState {
   discoveries: Discovery[];
   sinProgression: SinNode[];
   clues: LocationClue[];
-  fatigueClock: FatigueClock;
   townResolved: boolean;
   sinEscalatedToMurder: boolean;
 }
@@ -91,9 +80,8 @@ export type InvestigationAction =
   | { type: 'START_INVESTIGATION'; sinNodes: SinNode[]; clues?: LocationClue[] }
   | { type: 'RECORD_DISCOVERY'; discovery: Discovery }
   | { type: 'FIND_CLUE'; clueId: string }
-  | { type: 'ADVANCE_FATIGUE' }
-  | { type: 'RESET_FATIGUE' }
   | { type: 'MARK_SIN_RESOLVED'; sinId: string }
   | { type: 'MARK_TOWN_RESOLVED' }
   | { type: 'ADVANCE_SIN_PROGRESSION' }
+  | { type: 'PRESSURE_ESCALATE_SIN' }
   | { type: 'CONFRONT_SIN'; sinId: string };

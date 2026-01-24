@@ -11,15 +11,12 @@ import {
   endConversation,
   openMentalMap,
   closeMentalMap,
-  verifyFatigue,
-  advanceCycle,
   createCharacterForTest,
-  startInvestigation,
   verifyDiscovery,
   verifySinNodeVisible,
   verifySinNodeDiscovered,
-  triggerConflict,
 } from './steps/investigation.steps';
+import { skipArrivalOverlay } from './steps/character.steps';
 
 // Load dialogue recordings from fixture file
 const __filename = fileURLToPath(import.meta.url);
@@ -94,14 +91,8 @@ test.describe('Investigation System', () => {
     // Create character (needed for approach chips to render)
     await createCharacterForTest(page, 'Brother Ezekiel');
 
-    // Investigation auto-starts on mount; ensure fatigue clock is visible
-    await startInvestigation(page);
-
-    // Start the day to dismiss wake overlay (allows map interaction)
-    const startDayBtn = page.getByTestId('start-day-button');
-    await expect(startDayBtn).toBeVisible({ timeout: 3000 });
-    await startDayBtn.click();
-    await page.waitForTimeout(500);
+    // Skip town arrival overlay
+    await skipArrivalOverlay(page);
   });
 
   test('player can start conversation with NPC', async ({ page }) => {
@@ -115,9 +106,6 @@ test.describe('Investigation System', () => {
 
     // Topic chips should be visible (SELECTING_TOPIC phase)
     await expect(page.getByTestId('topic-chips')).toBeVisible();
-
-    // Fatigue should be at 0/6 (no conversations yet)
-    await verifyFatigue(page, 0, 6);
   });
 
   test('player selects topic then approach', async ({ page }) => {
@@ -140,9 +128,6 @@ test.describe('Investigation System', () => {
 
     // Wait for response to stream and complete
     await waitForResponse(page);
-
-    // Fatigue should advance to 1/6
-    await verifyFatigue(page, 1, 6);
   });
 
   test('discovery appears after revealing conversation', async ({ page }) => {
@@ -187,58 +172,6 @@ test.describe('Investigation System', () => {
     await closeMentalMap(page);
   });
 
-  test('fatigue prevents conversations when exhausted', async ({ page }) => {
-    // Navigate to general-store
-    await page.locator('[data-testid="map-node-general-store"]').dispatchEvent('click');
-    await page.waitForTimeout(500);
-
-    // Exhaust fatigue (6 conversations)
-    for (let i = 0; i < 6; i++) {
-      await startConversation(page, 'sister-martha');
-      await selectTopic(page, 'greeting', 'sister-martha');
-      await selectApproach(page, 'heart');
-      await waitForResponse(page);
-
-      // Close discovery if it appeared
-      const discoverySummary = page.getByTestId('discovery-summary');
-      const isDiscoveryVisible = await discoverySummary.isVisible().catch(() => false);
-      if (isDiscoveryVisible) {
-        await closeDiscovery(page);
-      }
-      await endConversation(page);
-    }
-
-    // Verify fatigue is at 6/6
-    await verifyFatigue(page, 6, 6);
-
-    // Try to start another conversation - should be blocked
-    await page.getByTestId('npc-button-sister-martha').click();
-
-    // Dialogue should NOT open
-    await expect(page.getByTestId('dialogue-view')).not.toBeVisible({ timeout: 2000 });
-
-    // Fatigue warning toast should appear
-    await expect(page.getByTestId('fatigue-warning')).toBeVisible({ timeout: 2000 });
-  });
-
-  test('sin escalation on cycle end', async ({ page }) => {
-    // Open mental map before cycle to see initial state
-    await openMentalMap(page);
-    const initialNodes = await page.locator('[data-testid^="sin-node-"]').count();
-    await closeMentalMap(page);
-
-    // Advance cycle (triggers ADVANCE_SIN_PROGRESSION in REST phase)
-    await advanceCycle(page);
-
-    // Open mental map after cycle - should have a new sin node
-    await openMentalMap(page);
-    const afterNodes = await page.locator('[data-testid^="sin-node-"]').count();
-
-    // Sin chain should have grown (new escalated node added)
-    expect(afterNodes).toBeGreaterThan(initialNodes);
-
-    await closeMentalMap(page);
-  });
 
   test('aggressive approach can trigger conflict', async ({ page }) => {
     // Navigate to sheriff's office
@@ -252,12 +185,12 @@ test.describe('Investigation System', () => {
     await selectTopic(page, 'the-town', 'sheriff-jacob');
     await selectApproach(page, 'body');
 
-    // After the response streams and completes, the ConflictTrigger component
-    // renders (forceTriggered in dev mode). It shows a warning message briefly
-    // then triggers the conflict after 1s delay. We need to catch either:
-    // 1. The conflict-trigger element (if we check fast enough)
-    // 2. The conflict-view element (after the conflict starts)
-    // Wait for either conflict-trigger or conflict-view to appear
+    // Wait for response to stream and complete, then acknowledge it
+    await waitForResponse(page);
+
+    // After acknowledge, phase transitions to SELECTING_TOPIC.
+    // ConflictTrigger renders when last approach was body/will (forceTriggered in dev).
+    // It shows a warning message briefly then triggers the conflict after 1s delay.
     const conflictTrigger = page.getByTestId('conflict-trigger');
     const conflictView = page.getByTestId('conflict-view');
 

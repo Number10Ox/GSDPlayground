@@ -1,7 +1,6 @@
 import { useRef, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useDialogue } from '@/hooks/useDialogue';
-import { useInvestigation } from '@/hooks/useInvestigation';
 import { useCharacter } from '@/hooks/useCharacter';
 import { useNPCMemory } from '@/hooks/useNPCMemory';
 import { TopicChips } from '@/components/Dialogue/TopicChips';
@@ -48,7 +47,6 @@ function getHighestStat(stats: Record<StatName, { dice: { id: string; type: DieT
  */
 export function DialogueView() {
   const { state, sendMessage, endConversation, dispatch } = useDialogue();
-  const { state: investigationState } = useInvestigation();
   const { character } = useCharacter();
   const { getNPCById } = useNPCMemory();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -101,10 +99,6 @@ export function DialogueView() {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Fatigue indicator */}
-            <span className="text-gray-500 text-xs">
-              {investigationState.fatigueClock.current}/{investigationState.fatigueClock.max} fatigue
-            </span>
             {/* Leave button */}
             <button
               onClick={endConversation}
@@ -192,6 +186,7 @@ export function DialogueView() {
                   npcId={state.currentNPC}
                   approach={lastTurnApproach}
                   conflictThresholds={npc.conflictThresholds}
+                  forceTriggered={import.meta.env.DEV}
                   onConflictStart={(npcId, stakes) => {
                     endConversation();
                     // Pass approach so conflict uses correct stat for dice pool

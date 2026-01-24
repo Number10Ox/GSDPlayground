@@ -5,16 +5,15 @@ import { NarrativePanel } from '@/components/NarrativePanel/NarrativePanel';
 import { CharacterInfo } from '@/components/CharacterInfo/CharacterInfo';
 import { CharacterCreation } from '@/components/Character/CharacterCreation';
 import { CharacterSheet } from '@/components/Character/CharacterSheet';
-import { CycleView } from '@/components/CycleView/CycleView';
 import { ClockList } from '@/components/Clocks/ClockList';
 import { ConflictMarker, RelationshipPanel } from '@/components/NPCMemory';
 import { ConflictView } from '@/components/Conflict/ConflictView';
 import { DialogueView } from '@/components/Dialogue/DialogueView';
 import { MentalMap } from '@/components/MentalMap/MentalMap';
-import { FatigueClock } from '@/components/FatigueClock/FatigueClock';
+import { ActionMenu } from '@/components/ActionMenu/ActionMenu';
+import type { ConflictOutcomeInfo } from '@/components/Conflict/ConflictView';
 import { ResolutionSummary } from '@/components/Resolution/ResolutionSummary';
 import { TownArrival } from '@/components/TownArrival/TownArrival';
-import { JudgmentPanel } from '@/components/Judgment/JudgmentPanel';
 import { useGameState } from '@/hooks/useGameState';
 import { useCharacter } from '@/hooks/useCharacter';
 import { useNPCMemory } from '@/hooks/useNPCMemory';
@@ -25,16 +24,20 @@ import { initialConflictState, conflictReducer } from '@/reducers/conflictReduce
 import { useTown } from '@/hooks/useTown';
 import { resolveTopicsForNPC } from '@/utils/topicResolver';
 import { buildPlayerDicePool, buildNPCDicePool } from '@/utils/conflictDice';
+import type { ActionContext, FreeAction } from '@/utils/actionAvailability';
+import { advancePressure } from '@/utils/pressureClock';
+import type { TimedAction, ConflictDefinition } from '@/types/actions';
 import type { ConflictState } from '@/types/conflict';
 import type { ApproachType } from '@/types/dialogue';
 import type { Die } from '@/types/game';
+import type { PressureThreshold } from '@/types/pressure';
 
 export function GameView() {
   const town = useTown();
   const { state, dispatch } = useGameState();
   const { character, dispatch: charDispatch } = useCharacter();
-  const { clocks, cycleNumber, cyclePhase, currentLocation, locations, activeConflict } = state;
-  const { npcs, dispatch: npcMemoryDispatch } = useNPCMemory();
+  const { clocks, currentLocation, locations, activeConflict } = state;
+  const { npcs, memories: npcMemories, dispatch: npcMemoryDispatch } = useNPCMemory();
   const { state: investigationState, dispatch: investigationDispatch } = useInvestigation();
   const { dispatch: dialogueDispatch } = useDialogue();
 
@@ -57,15 +60,43 @@ export function GameView() {
   // Track last dialogue approach for conflict dice pool
   const [lastApproach, setLastApproach] = useState<ApproachType>('will');
 
-  // Fatigue toast message
-  const [fatigueToast, setFatigueToast] = useState(false);
-
   // Town arrival sequence state — deferred until character exists
   const [showArrival, setShowArrival] = useState(false);
   const [arrivalDone, setArrivalDone] = useState(!town.arrival);
 
   // Conflict state for ConflictView (dev mode test conflicts)
   const [conflictState, setConflictState] = useState<ConflictState | null>(null);
+
+  // Town event overlay state
+  const [pendingEvents, setPendingEvents] = useState<PressureThreshold[]>([]);
+
+  // Advance pressure with side effects (overflow → sin escalation, threshold → events)
+  const advancePressureWithEffects = useCallback((amount: number) => {
+    const result = advancePressure(state.pressureClock, amount);
+    dispatch({ type: 'ADVANCE_PRESSURE', amount });
+
+    // Queue triggered threshold events
+    if (result.triggeredThresholds.length > 0) {
+      setPendingEvents(prev => [...prev, ...result.triggeredThresholds]);
+      dispatch({ type: 'SET_GAME_PHASE', phase: 'TOWN_EVENT' });
+    }
+
+    // Handle overflow — escalate sin
+    if (result.overflowed) {
+      investigationDispatch({ type: 'PRESSURE_ESCALATE_SIN' });
+    }
+  }, [state.pressureClock, dispatch, investigationDispatch]);
+
+  // Dismiss current town event
+  const handleDismissEvent = useCallback(() => {
+    setPendingEvents(prev => {
+      const remaining = prev.slice(1);
+      if (remaining.length === 0) {
+        dispatch({ type: 'SET_GAME_PHASE', phase: 'EXPLORING' });
+      }
+      return remaining;
+    });
+  }, [dispatch]);
 
   // Initialize investigation on mount with town sin chain and clues
   useEffect(() => {
@@ -103,16 +134,8 @@ export function GameView() {
     }
   }, [character, relationshipsSeeded, npcs, npcMemoryDispatch]);
 
-  // Handle NPC click - open dialogue if not fatigued
+  // Handle NPC click - open dialogue
   const handleNpcClick = useCallback((npcId: string) => {
-    const { fatigueClock } = investigationState;
-    if (fatigueClock.current >= fatigueClock.max) {
-      // Show fatigue toast
-      setFatigueToast(true);
-      setTimeout(() => setFatigueToast(false), 2000);
-      return;
-    }
-
     // Get discovered sin IDs and found clue IDs for topic generation
     const discoveredSinIds = investigationState.sinProgression
       .filter(s => s.discovered)
@@ -201,8 +224,8 @@ export function GameView() {
     return () => window.removeEventListener('dialogue-conflict', handler);
   }, [handleConflictFromDialogue]);
 
-  // Handle conflict completion
-  const handleConflictComplete = useCallback(() => {
+  // Handle conflict completion — process pressure costs and consequences
+  const handleConflictComplete = useCallback((info: ConflictOutcomeInfo) => {
     // Check if the conflict NPC is linked to a sin - if so, confront it
     if (activeConflict) {
       const linkedSin = investigationState.sinProgression.find(
@@ -211,21 +234,153 @@ export function GameView() {
       if (linkedSin) {
         investigationDispatch({ type: 'CONFRONT_SIN', sinId: linkedSin.id });
       }
+
+      // Find the conflict definition (if initiated from ActionMenu)
+      const definition = activeConflict.conflictDefinitionId
+        ? town.conflictDefinitions?.find(d => d.id === activeConflict.conflictDefinitionId)
+        : undefined;
+
+      if (definition) {
+        // Calculate pressure cost from conflict
+        let pressureCost = 0;
+        if (info.outcome === 'PLAYER_GAVE') pressureCost += definition.pressureCost.onGive;
+        pressureCost += info.escalationsJumped * definition.pressureCost.onEscalate;
+        if (info.hadFallout) pressureCost += definition.pressureCost.onFallout;
+
+        if (pressureCost > 0) {
+          advancePressureWithEffects(pressureCost);
+        }
+
+        // Apply consequences based on outcome
+        const consequenceKey = info.outcome === 'PLAYER_GAVE'
+          ? 'playerGives'
+          : info.outcome === 'NPC_GAVE'
+            ? 'npcGives'
+            : 'playerWins';
+        const consequences = definition.consequences[consequenceKey];
+
+        for (const c of consequences) {
+          switch (c.type) {
+            case 'DISCOVER_SIN':
+              // Mark the sin as discovered
+              investigationDispatch({ type: 'CONFRONT_SIN', sinId: c.sinId });
+              break;
+            case 'RESOLVE_SIN':
+              investigationDispatch({ type: 'MARK_SIN_RESOLVED', sinId: c.sinId });
+              break;
+            case 'ADVANCE_PRESSURE':
+              advancePressureWithEffects(c.amount);
+              break;
+            case 'TRUST_CHANGE':
+              npcMemoryDispatch({ type: 'UPDATE_RELATIONSHIP', npcId: c.npcId, delta: c.delta });
+              break;
+            case 'UNLOCK_CLUE':
+              investigationDispatch({ type: 'FIND_CLUE', clueId: c.clueId });
+              break;
+            case 'NARRATIVE':
+              // Narrative consequences are informational for now
+              break;
+          }
+        }
+      }
     }
 
     setConflictState(null);
-    dispatch({ type: 'END_GAME_CONFLICT' });
-  }, [activeConflict, investigationState.sinProgression, investigationDispatch, dispatch]);
+  }, [activeConflict, investigationState.sinProgression, investigationDispatch, dispatch, town.conflictDefinitions, npcMemoryDispatch, advancePressureWithEffects]);
 
-  // Watch for cycle end (REST phase) - reset fatigue and advance sin progression
-  const [prevCyclePhase, setPrevCyclePhase] = useState(cyclePhase);
-  useEffect(() => {
-    if (prevCyclePhase !== 'REST' && cyclePhase === 'REST') {
-      investigationDispatch({ type: 'RESET_FATIGUE' });
-      investigationDispatch({ type: 'ADVANCE_SIN_PROGRESSION' });
+  // Build action context for ActionMenu
+  const actionContext: ActionContext = useMemo(() => {
+    const npcTrust: Record<string, number> = {};
+    for (const memory of npcMemories) {
+      npcTrust[memory.npcId] = memory.relationshipLevel;
     }
-    setPrevCyclePhase(cyclePhase);
-  }, [cyclePhase, prevCyclePhase, investigationDispatch]);
+    return {
+      pressureClock: state.pressureClock,
+      investigationState,
+      npcTrust,
+      completedActionIds: state.completedActionIds,
+    };
+  }, [state.pressureClock, state.completedActionIds, investigationState, npcMemories]);
+
+  // Handle free action from ActionMenu
+  const handleFreeAction = useCallback((action: FreeAction) => {
+    if (action.type === 'move' && action.targetLocationId) {
+      dispatch({ type: 'NAVIGATE', locationId: action.targetLocationId });
+    }
+    // 'look' actions show the location description (already visible in sidebar)
+  }, [dispatch]);
+
+  // Handle timed action from ActionMenu
+  const handleTimedAction = useCallback((action: TimedAction) => {
+    // Apply effects
+    for (const effect of action.effects) {
+      switch (effect.type) {
+        case 'RESTORE_CONDITION':
+          dispatch({ type: 'UPDATE_CONDITION', delta: effect.amount });
+          break;
+        case 'DISCOVER_CLUE':
+          investigationDispatch({ type: 'FIND_CLUE', clueId: effect.clueId });
+          break;
+        case 'TRUST_CHANGE':
+          npcMemoryDispatch({ type: 'UPDATE_RELATIONSHIP', npcId: effect.npcId, delta: effect.delta });
+          break;
+        case 'NARRATIVE':
+          // Narrative effects are purely informational for now
+          break;
+      }
+    }
+
+    // Advance pressure clock (with overflow/threshold effects)
+    advancePressureWithEffects(action.pressureCost);
+
+    // Mark one-shot actions as complete
+    if (action.oneShot) {
+      dispatch({ type: 'MARK_ACTION_COMPLETE', actionId: action.id });
+    }
+  }, [dispatch, investigationDispatch, npcMemoryDispatch, advancePressureWithEffects]);
+
+  // Handle conflict from ActionMenu
+  const handleConflictFromMenu = useCallback((definition: ConflictDefinition) => {
+    const npc = town.npcs.find(n => n.id === definition.npcId);
+
+    let playerDice: Die[];
+    if (character) {
+      playerDice = buildPlayerDicePool(character, lastApproach);
+    } else {
+      playerDice = [
+        { id: 'player-0', type: 'd6', value: Math.floor(Math.random() * 6) + 1, assignedTo: null },
+        { id: 'player-1', type: 'd6', value: Math.floor(Math.random() * 6) + 1, assignedTo: null },
+        { id: 'player-2', type: 'd6', value: Math.floor(Math.random() * 6) + 1, assignedTo: null },
+        { id: 'player-3', type: 'd4', value: Math.floor(Math.random() * 4) + 1, assignedTo: null },
+      ];
+    }
+
+    const npcDice: Die[] = npc
+      ? buildNPCDicePool(npc, lastApproach)
+      : [
+          { id: 'npc-0', type: 'd6', value: Math.floor(Math.random() * 6) + 1, assignedTo: null },
+          { id: 'npc-1', type: 'd6', value: Math.floor(Math.random() * 6) + 1, assignedTo: null },
+          { id: 'npc-2', type: 'd4', value: Math.floor(Math.random() * 4) + 1, assignedTo: null },
+        ];
+
+    const initialState = conflictReducer(initialConflictState, {
+      type: 'START_CONFLICT',
+      npcId: definition.npcId,
+      stakes: definition.stakes,
+      playerDice,
+      npcDice,
+      startingEscalation: definition.minEscalation,
+      maxEscalation: definition.maxEscalation,
+    });
+
+    dispatch({
+      type: 'START_GAME_CONFLICT',
+      npcId: definition.npcId,
+      stakes: definition.stakes,
+      conflictDefinitionId: definition.id,
+    });
+    setConflictState(initialState);
+  }, [dispatch, character, lastApproach, town.npcs]);
 
   // Get current location info
   const currentLocationInfo = useMemo(() => {
@@ -246,9 +401,6 @@ export function GameView() {
           <NodeMap />
         </div>
 
-        {/* Cycle UI overlays */}
-        <CycleView />
-
         {/* Narrative panel */}
         <NarrativePanel />
       </main>
@@ -260,22 +412,26 @@ export function GameView() {
           onViewSheet={() => setShowSheet(true)}
         />
 
-        {/* Cycle status */}
+        {/* Pressure Clock */}
         <div className="bg-surface rounded-lg p-4">
           <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">
-            Day {cycleNumber}
+            Pressure
           </h3>
-          <p className="text-xs text-gray-500 capitalize">
-            Phase: {cyclePhase.toLowerCase()}
-          </p>
-
-          {/* Fatigue Clock */}
-          <div className="mt-3 flex items-center justify-center">
-            <FatigueClock
-              current={investigationState.fatigueClock.current}
-              max={investigationState.fatigueClock.max}
-            />
+          <div className="flex items-center gap-1">
+            {Array.from({ length: state.pressureClock.segments }).map((_, i) => (
+              <div
+                key={i}
+                className={`h-3 flex-1 rounded-sm ${
+                  i < state.pressureClock.filled
+                    ? 'bg-red-500'
+                    : 'bg-gray-700'
+                }`}
+              />
+            ))}
           </div>
+          <p className="text-xs text-gray-500 mt-1">
+            {state.pressureClock.filled}/{state.pressureClock.segments}
+          </p>
         </div>
 
         {/* Mental Map button */}
@@ -333,7 +489,7 @@ export function GameView() {
         )}
 
         {/* Location info card */}
-        <div className="bg-surface rounded-lg p-4 flex-1">
+        <div className="bg-surface rounded-lg p-4">
           <h3 className="text-lg font-semibold text-gray-100 border-b border-gray-700 pb-2 mb-4">
             {currentLocationInfo?.name ?? 'Bridal Falls'}
           </h3>
@@ -341,6 +497,18 @@ export function GameView() {
             {currentLocationInfo?.description ?? 'A small town nestled in the mountains. Something feels wrong here.'}
           </p>
         </div>
+
+        {/* Action Menu (visible during EXPLORING phase) */}
+        {state.gamePhase === 'EXPLORING' && (
+          <ActionMenu
+            locationId={currentLocation}
+            town={town}
+            context={actionContext}
+            onFreeAction={handleFreeAction}
+            onTimedAction={handleTimedAction}
+            onConflict={handleConflictFromMenu}
+          />
+        )}
 
         {/* Dev mode: Test helpers */}
         {import.meta.env.DEV && !activeConflict && (
@@ -391,15 +559,6 @@ export function GameView() {
         )}
       </aside>
 
-      {/* Fatigue toast */}
-      <AnimatePresence>
-        {fatigueToast && (
-          <div data-testid="fatigue-warning" className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-red-900/90 text-red-200 px-4 py-2 rounded-lg text-sm font-medium shadow-lg animate-fade-in">
-            Too tired to talk. Rest to recover.
-          </div>
-        )}
-      </AnimatePresence>
-
       {/* Relationship panel (overlay) */}
       <AnimatePresence>
         {selectedNpcId && (
@@ -430,6 +589,29 @@ export function GameView() {
           </div>
         </div>
       )}
+
+      {/* Town event overlay */}
+      {state.gamePhase === 'TOWN_EVENT' && pendingEvents.length > 0 && (() => {
+        const currentThreshold = pendingEvents[0];
+        const eventData = town.events?.find(e => e.id === currentThreshold.eventId);
+        return (
+          <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-8">
+            <div className="bg-surface rounded-lg p-8 max-w-lg w-full space-y-4">
+              <h2 className="text-lg font-semibold text-amber-200">Town Event</h2>
+              <p className="text-gray-200 leading-relaxed">
+                {eventData?.description ?? 'Something stirs in the town...'}
+              </p>
+              <button
+                onClick={handleDismissEvent}
+                className="w-full bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer"
+                data-testid="dismiss-event"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Resolution summary (overlay - highest z-index) */}
       <ResolutionSummary />

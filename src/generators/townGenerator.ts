@@ -246,6 +246,7 @@ export function generateTown(config: TownGenerationConfig): TownData {
     locations,
     npcs,
     sinChain: updatedSinChain,
+    clues: [],
     topicRules,
     hasLaw,
   };

@@ -1,37 +1,42 @@
 import { createContext, useContext, useReducer, type ReactNode, type Dispatch } from 'react';
-import type { GameState, GameAction, Location, Clock } from '@/types/game';
-import { generateDicePool } from '@/utils/dice';
+import type { GameState, GameAction, Location } from '@/types/game';
+import type { PressureClock } from '@/types/pressure';
+import { advancePressure } from '@/utils/pressureClock';
 import { useTown } from '@/hooks/useTown';
 
-// Clocks representing ongoing threats and progress
-const INITIAL_CLOCKS: Clock[] = [
-  { id: 'sin-escalation', label: 'Sin Escalation', segments: 6, filled: 1, type: 'danger', autoAdvance: true },
-  { id: 'trust-earned', label: 'Trust Earned', segments: 8, filled: 0, type: 'progress', autoAdvance: false },
-];
+function createInitialPressureClock(thresholds?: PressureClock['thresholds']): PressureClock {
+  return {
+    segments: 8,
+    filled: 0,
+    thresholds: thresholds ?? [],
+  };
+}
 
-function createInitialState(locations: Location[]): GameState {
+interface InitialStateArgs {
+  locations: Location[];
+  pressureThresholds?: PressureClock['thresholds'];
+}
+
+function createInitialState({ locations, pressureThresholds }: InitialStateArgs): GameState {
   return {
     currentLocation: locations[0]?.id ?? 'town-square',
     isPanelOpen: false,
     currentScene: null,
     locations,
 
-    cyclePhase: 'WAKE',
-    cycleNumber: 1,
-    dicePool: [],
-    selectedDieId: null,
-    clocks: INITIAL_CLOCKS,
-    availableActions: [],
+    gamePhase: 'EXPLORING',
+    pressureClock: createInitialPressureClock(pressureThresholds),
+    clocks: [],
 
     characterCondition: 100,
     activeConflict: null,
-    fulfilledDutyIds: [],
+    completedActionIds: [],
   };
 }
 
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
-    // Existing Phase 1 actions
+    // Navigation
     case 'NAVIGATE': {
       const location = state.locations.find(l => l.id === action.locationId);
       if (!location) return state;
@@ -52,157 +57,35 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'CLOSE_PANEL':
       return { ...state, isPanelOpen: false };
 
-    // Cycle actions
-    case 'START_CYCLE': {
-      // Valid in: WAKE, REST
-      if (state.cyclePhase !== 'WAKE' && state.cyclePhase !== 'REST') {
-        return state;
-      }
-      // From REST: go to WAKE for next day with incremented cycle number
-      if (state.cyclePhase === 'REST') {
-        return {
-          ...state,
-          cyclePhase: 'WAKE',
-          cycleNumber: state.cycleNumber + 1,
-        };
-      }
-      // From WAKE: go to ALLOCATE with provided pool or condition-only fallback
+    // Phase transitions
+    case 'SET_GAME_PHASE':
+      return { ...state, gamePhase: action.phase };
+
+    // Pressure clock
+    case 'ADVANCE_PRESSURE': {
+      const result = advancePressure(state.pressureClock, action.amount);
       return {
         ...state,
-        cyclePhase: 'ALLOCATE',
-        dicePool: action.dicePool ?? generateDicePool(state.characterCondition),
-        selectedDieId: null,
+        pressureClock: result.newClock,
+        // Note: triggered thresholds and overflow are handled by the component
+        // that dispatches this action (GameView processes the return value separately)
       };
     }
 
-    case 'SELECT_DIE': {
-      // Valid in: ALLOCATE
-      if (state.cyclePhase !== 'ALLOCATE') {
-        return state;
-      }
-      const die = state.dicePool.find(d => d.id === action.dieId);
-      // Only allow selecting unassigned dice
-      if (!die || die.assignedTo !== null) {
-        return state;
-      }
-      // Toggle behavior: if same die selected, deselect
-      if (state.selectedDieId === action.dieId) {
-        return { ...state, selectedDieId: null };
-      }
-      return { ...state, selectedDieId: action.dieId };
-    }
-
-    case 'ASSIGN_DIE': {
-      // Valid in: ALLOCATE
-      if (state.cyclePhase !== 'ALLOCATE') {
-        return state;
-      }
-      // Requires a selected die
-      if (state.selectedDieId === null) {
-        return state;
-      }
+    case 'RESET_PRESSURE_CLOCK':
       return {
         ...state,
-        dicePool: state.dicePool.map(die =>
-          die.id === state.selectedDieId
-            ? { ...die, assignedTo: action.actionId }
-            : die
-        ),
-        selectedDieId: null, // Clear selection after assignment
+        pressureClock: {
+          ...state.pressureClock,
+          filled: 0,
+          thresholds: state.pressureClock.thresholds.map(t => ({ ...t, fired: false })),
+        },
       };
-    }
 
-    case 'UNASSIGN_DIE': {
-      // Valid in: ALLOCATE
-      if (state.cyclePhase !== 'ALLOCATE') {
-        return state;
-      }
-      const dieToUnassign = state.dicePool.find(d => d.id === action.dieId);
-      if (!dieToUnassign) {
-        return state;
-      }
-      return {
-        ...state,
-        dicePool: state.dicePool.map(die =>
-          die.id === action.dieId
-            ? { ...die, assignedTo: null }
-            : die
-        ),
-        // If unassigned die was selected, clear selection
-        selectedDieId: state.selectedDieId === action.dieId ? null : state.selectedDieId,
-      };
-    }
-
-    case 'CONFIRM_ALLOCATIONS': {
-      // Valid in: ALLOCATE
-      if (state.cyclePhase !== 'ALLOCATE') {
-        return state;
-      }
-      // At least one die must be assigned
-      const hasAssignedDice = state.dicePool.some(die => die.assignedTo !== null);
-      if (!hasAssignedDice) {
-        return state;
-      }
-      return {
-        ...state,
-        cyclePhase: 'RESOLVE',
-        selectedDieId: null,
-      };
-    }
-
-    case 'RESOLVE_NEXT': {
-      // Valid in: RESOLVE
-      if (state.cyclePhase !== 'RESOLVE') {
-        return state;
-      }
-      // For now, just transition to SUMMARY (actual resolution logic in Plan 04)
-      return {
-        ...state,
-        cyclePhase: 'SUMMARY',
-      };
-    }
-
-    case 'CONTINUE_FROM_RESOLVE': {
-      // Valid in: RESOLVE
-      if (state.cyclePhase !== 'RESOLVE') {
-        return state;
-      }
-      // Remove spent (assigned) dice from pool, keep unassigned
-      const remainingDice = state.dicePool.filter(d => d.assignedTo === null);
-      if (remainingDice.length > 0) {
-        // Still have dice — return to ALLOCATE for more actions
-        return {
-          ...state,
-          cyclePhase: 'ALLOCATE',
-          dicePool: remainingDice,
-          selectedDieId: null,
-        };
-      }
-      // No dice left — proceed to SUMMARY (end of day)
-      return {
-        ...state,
-        cyclePhase: 'SUMMARY',
-        dicePool: [],
-      };
-    }
-
-    case 'VIEW_SUMMARY': {
-      // Valid in: RESOLVE
-      if (state.cyclePhase !== 'RESOLVE') {
-        return state;
-      }
-      return {
-        ...state,
-        cyclePhase: 'SUMMARY',
-      };
-    }
-
+    // Clocks (general-purpose, non-pressure)
     case 'ADVANCE_CLOCK': {
-      // Valid in: any phase (typically called during RESOLVE)
       const clockIndex = state.clocks.findIndex(c => c.id === action.clockId);
-      if (clockIndex === -1) {
-        return state;
-      }
+      if (clockIndex === -1) return state;
       const clock = state.clocks[clockIndex];
       const newFilled = Math.min(clock.segments, clock.filled + action.amount);
       return {
@@ -215,98 +98,54 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
-    case 'END_CYCLE': {
-      // Valid in: SUMMARY
-      if (state.cyclePhase !== 'SUMMARY') {
-        return state;
-      }
-      // Advance autoAdvance clocks by 1
-      const advancedClocks = state.clocks.map(clock =>
-        clock.autoAdvance
-          ? { ...clock, filled: Math.min(clock.segments, clock.filled + 1) }
-          : clock
-      );
+    // Condition
+    case 'UPDATE_CONDITION':
       return {
         ...state,
-        cyclePhase: 'REST',
-        dicePool: [], // Clear dice pool
-        selectedDieId: null,
-        clocks: advancedClocks,
+        characterCondition: Math.max(0, Math.min(100, state.characterCondition + action.delta)),
       };
-    }
 
-    case 'REST_EARLY': {
-      // Valid in: ALLOCATE
-      if (state.cyclePhase !== 'ALLOCATE') {
-        return state;
-      }
-      // Skip to SUMMARY with remaining dice unused
+    // Actions (one-shot tracking)
+    case 'MARK_ACTION_COMPLETE':
+      if (state.completedActionIds.includes(action.actionId)) return state;
       return {
         ...state,
-        cyclePhase: 'SUMMARY',
-        selectedDieId: null,
+        completedActionIds: [...state.completedActionIds, action.actionId],
       };
-    }
 
-    // Conflict actions
+    // Conflict
     case 'APPLY_FALLOUT': {
-      // Apply fallout severity to character condition
-      // NONE: no change, MINOR: -10, SERIOUS: -30, DEADLY: -50, DEATH: 0
       const severityPenalty: Record<string, number> = {
         NONE: 0,
         MINOR: 10,
         SERIOUS: 30,
         DEADLY: 50,
-        DEATH: state.characterCondition, // Set to 0
+        DEATH: state.characterCondition,
       };
       const penalty = severityPenalty[action.severity] ?? 0;
-      const newCondition = Math.max(0, state.characterCondition - penalty);
       return {
         ...state,
-        characterCondition: newCondition,
+        characterCondition: Math.max(0, state.characterCondition - penalty),
       };
     }
 
-    case 'START_GAME_CONFLICT': {
-      // Set up active conflict tracking in game state
+    case 'START_GAME_CONFLICT':
       return {
         ...state,
+        gamePhase: 'IN_CONFLICT',
         activeConflict: {
           npcId: action.npcId,
           stakes: action.stakes,
+          conflictDefinitionId: action.conflictDefinitionId,
         },
       };
-    }
 
-    case 'END_GAME_CONFLICT': {
-      // Clear active conflict
+    case 'END_GAME_CONFLICT':
       return {
         ...state,
+        gamePhase: 'EXPLORING',
         activeConflict: null,
       };
-    }
-
-    case 'FULFILL_DUTY': {
-      if (state.fulfilledDutyIds.includes(action.dutyId)) return state;
-      return {
-        ...state,
-        fulfilledDutyIds: [...state.fulfilledDutyIds, action.dutyId],
-      };
-    }
-
-    case 'UPDATE_ACTIONS': {
-      return {
-        ...state,
-        availableActions: action.actions,
-      };
-    }
-
-    case 'UPDATE_CONDITION': {
-      return {
-        ...state,
-        characterCondition: Math.max(0, Math.min(100, state.characterCondition + action.delta)),
-      };
-    }
 
     default:
       return state;
@@ -320,7 +159,11 @@ const GameContext = createContext<{
 
 export function GameProvider({ children }: { children: ReactNode }) {
   const town = useTown();
-  const [state, dispatch] = useReducer(gameReducer, town.locations, createInitialState);
+  const [state, dispatch] = useReducer(
+    gameReducer,
+    { locations: town.locations, pressureThresholds: town.pressureThresholds },
+    createInitialState
+  );
   return (
     <GameContext.Provider value={{ state, dispatch }}>
       {children}

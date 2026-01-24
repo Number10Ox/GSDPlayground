@@ -13,14 +13,15 @@ import {
   dismissResolution,
   getAvailableDiceCount,
 } from './steps/conflict.steps';
+import { setupCharacterForTest } from './steps/character.steps';
 
 test.describe('Conflict System', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     // Select Bridal Falls from town selection
     await page.getByTestId('select-town-bridal-falls').click();
-    // Start day to get into game (allocate phase)
-    await page.getByTestId('start-day-button').click();
+    // Create character and skip arrival to reach EXPLORING phase
+    await setupCharacterForTest(page);
   });
 
   test('Scenario: Basic raise and see exchange', async ({ page }) => {
@@ -125,16 +126,21 @@ test.describe('Conflict System', () => {
   test('Scenario: Taking the blow shows in bidding history', async ({ page }) => {
     await startConflict(page, 'Sheriff Jacob', 'who controls the law');
 
-    // Player raises
+    // Player raises (uses 2 of 4 dice, leaving 2 in pool)
     await raiseWithDice(page, 2);
 
     // Wait for NPC to see and raise
     await waitForNPCTurn(page);
 
+    // Escalate to PHYSICAL to get 2 more dice (pool: 2 → 4)
+    // This ensures we have 3+ dice available to see with
+    await escalateTo(page, 'physical');
+    await confirmEscalation(page);
+
     // Player sees with 3+ dice (take the blow)
     await seeWithDice(page, 3);
 
-    // Verify "Takes the Blow" or "Took the Blow" in history
+    // Verify "Takes the Blow" in history
     await verifyBiddingHistoryEntry(page, 'Takes the Blow');
   });
 
